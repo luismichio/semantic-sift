@@ -26,6 +26,21 @@ Semantic-Sift is a standalone, protocol-compliant **MCP (Model Context Protocol)
 - **Logic**: Uses a lightweight BERT-based model (`microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank`) to calculate token importance. It removes linguistic filler while preserving instruction-carrying tokens and core semantic entities.
 - **Goal**: ~20-80% reduction (configurable) while maintaining the 95%+ fidelity of the original meaning.
 
+## 🔄 The Refinery Loop (RAG Synergy)
+
+Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and **Grounding** (LlamaIndex/Meechi Core). This creates a high-density information loop:
+
+1. **Extraction**: Raw PDF/HTML is converted to Markdown via Docling.
+2. **Refinery (Semantic-Sift)**: 
+    - The `sift_extraction` tool strips repeating footers, metadata noise, and linguistic filler.
+    - Markdown structure (Tables, Headers) is preserved via protected tokens.
+3. **Grounding**: The "Sifted" Markdown is indexed by LlamaIndex.
+
+### Benefits of the Refinery Loop:
+- **Clean Embeddings**: Vector models only see pure semantic signal, reducing retrieval hallucinations.
+- **Context Density**: ~30% more information can be packed into each RAG retrieved chunk.
+- **Cost Reduction**: Lower token usage during both ingestion and query phases.
+
 ---
 
 ## 🛠️ Technical Stack

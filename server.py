@@ -100,5 +100,46 @@ async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
     except Exception as e:
         return f"Error during document sifting: {str(e)}"
 
+@mcp.tool()
+async def sift_extraction(content: str, source_type: str = "markdown") -> str:
+    """
+    Specifically designed to refine outputs from Docling or LiteParse.
+    Removes extraction-specific noise (debris) and prunes dense technical docs
+    for high-quality RAG indexing.
+    """
+    # 1. Targeted Document Debris Removal (Heuristic)
+    # Remove common repeating patterns often found in OCR/Long PDF extractions
+    # (e.g., repeating page numbers, copyright notices, headers)
+    debris_patterns = [
+        r'Page \d+ of \d+',
+        r'© .*? All rights reserved',
+        r'---+\s*$', # Empty separator lines
+        r'^\s*·\s*$', # Single bullets on lines
+    ]
+    
+    refined = content
+    for pattern in debris_patterns:
+        refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
+
+    # 2. Semantic Sift (Keep important signal)
+    # For extractions, we want to be less aggressive than chat to keep technical accuracy
+    try:
+        from llmlingua import PromptCompressor
+        compressor = PromptCompressor(
+            model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
+            use_llmlingua2=True
+        )
+        
+        results = compressor.compress_prompt(
+            [refined],
+            rate=0.7, # Keep 70% (gentle sift for indexing)
+            force_tokens=['\n', '|', '-', ':', '#'], # Protect Markdown structure
+            chunk_end_tokens=['\n', '.'],
+            return_word_label=False
+        )
+        return results.get('compressed_prompt', refined)
+    except Exception as e:
+        return f"Error during extraction sifting: {str(e)}"
+
 if __name__ == "__main__":
     mcp.run()
