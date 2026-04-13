@@ -43,6 +43,34 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 
 ---
 
+## 🛠️ Tool Reference
+
+### `sift_logs(raw_text)`
+- **Category**: Structural Sieve
+- **Best For**: Vercel/GitHub build logs, terminal outputs, and repetitive CLI data.
+- **Operation**: Strips ISO timestamps, collapses progress bars, and filters out boilerplate module/file listings.
+- **Benefit**: Near-instant cleanup of "log-bloat" for fast debugging analysis.
+
+### `sift_chat(text, rate)`
+- **Category**: Semantic Sift
+- **Best For**: Conversation history, meeting transcripts, and natural language instructions.
+- **Operation**: Powered by LLMLingua-2 (BERT) to identify instructional signal and prune linguistic filler.
+- **Benefit**: Reduces the token-load of long conversation logs while preserving 95%+ of the core meaning.
+
+### `sift_doc(text, budget_tokens)`
+- **Category**: Hybrid Signal Extractor
+- **Best For**: Large PDFs, MDX articles, and long-form research.
+- **Operation**: A multi-stage process that first structural-distills noise and then semantically-compresses the remaining prose.
+- **Benefit**: Allows the agent to "see" entire documents in a high-density format that fits comfortably in a standard context window.
+
+### `sift_extraction(content, source_type)`
+- **Category**: RAG Refinery
+- **Best For**: Outputs from Docling, LiteParse, or other OCR/PDF extractors.
+- **Operation**: Specifically tuned to prune OCR artifacts and metadata debris while protecting Markdown structure (tables, headers) and technical entities.
+- **Benefit**: Transforms "noisy" raw extractions into "lean" signal for high-accuracy LlamaIndex grounding.
+
+---
+
 ## 🛠️ Technical Stack
 
 - **Kernel**: Python 3.13 (Native performance for AI libraries).
