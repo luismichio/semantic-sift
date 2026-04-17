@@ -81,6 +81,12 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Operation**: Scans for agent instruction files and injects the Semantic-Sift SOPs. Provides a diagnostic report of Python/CUDA/GPU status.
 - **Benefit**: Ensures every repository is "Sift-Aware" with zero manual effort.
 
+### `sift_analyze(text)`
+- **Category**: Context Advisory
+- **Best For**: Deciding whether or not a body of text needs sifting.
+- **Operation**: Uses heuristic regex to detect timestamps, UUIDs, and repetition. Formulates a recommendation based on noise density and length.
+- **Benefit**: Prevents redundant sifting and helps the agent manage its own context window autonomously.
+
 ---
 
 ## 🛠️ Technical Stack

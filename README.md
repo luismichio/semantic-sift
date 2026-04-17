@@ -44,6 +44,13 @@ Automatically injects sifting best practices into your agent instruction files.
 - Provides a full environment diagnostic report (Python, CUDA, GPU).
 - **Tool**: `sift_onboard`
 
+### 5. Context Advisory (Smart Recommendations)
+**Actionable Intelligence on SNR.**
+Analyzes text to determine if it's "noisy" enough to require sifting.
+- Calculates an "Estimated Noise %" based on heuristics.
+- Recommends the specific tool (`sift_logs` vs `sift_chat`) to use.
+- **Tool**: `sift_analyze`
+
 ---
 
 ## 🚀 Quick Start

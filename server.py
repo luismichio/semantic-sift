@@ -350,5 +350,53 @@ async def sift_onboard() -> str:
     report.append("\n**Semantic-Sift is now fully configured and ready for high-fidelity sifting.**")
     return "\n".join(report)
 
+@mcp.tool()
+async def sift_analyze(text: str) -> str:
+    """
+    Evaluates context quality (SNR) and recommends appropriate sifting tools.
+    Returns a score and an actionable recommendation.
+    """
+    char_count = len(text)
+    line_count = len(text.splitlines())
+    avg_line_len = char_count / line_count if line_count > 0 else 0
+    
+    # Noise Heuristics
+    # 1. Timestamps
+    timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text))
+    # 2. Hex/UUIDs
+    uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text))
+    # 3. Repetitive symbols (Progress bars, separators)
+    repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
+    
+    # Calculate Noise Score (Weighted heuristic)
+    noise_hits = (timestamps * 10) + (uuids * 5) + (repetition * 2)
+    noise_ratio = (noise_hits / char_count * 100) if char_count > 0 else 0
+    
+    # Cap ratio at 100%
+    noise_ratio = min(noise_ratio, 100.0)
+    
+    report = [
+        "## 📊 Context Analysis Report",
+        f"- **Length**: {char_count:,} characters",
+        f"- **Density**: {line_count:,} lines ({avg_line_len:.1f} avg chars/line)",
+        f"- **Estimated Noise**: {noise_ratio:.1f}%",
+        "\n### 🎯 Recommendation"
+    ]
+    
+    if noise_ratio > 15.0:
+        report.append("- **Action**: Run `sift_logs`.")
+        report.append("- **Reason**: High structural noise detected (timestamps/patterns).")
+    elif char_count > 8000:
+        report.append("- **Action**: Run `sift_doc` or `sift_chat`.")
+        report.append("- **Reason**: Long-form context detected. Semantic pruning recommended to improve SNR.")
+    elif char_count < 2000:
+        report.append("- **Action**: No sifting required.")
+        report.append("- **Reason**: Context is already concise and likely high-signal.")
+    else:
+        report.append("- **Action**: Optional `sift_chat`.")
+        report.append("- **Reason**: Moderate length. Sift if precise focus is needed.")
+        
+    return "\n".join(report)
+
 if __name__ == "__main__":
     mcp.run()
