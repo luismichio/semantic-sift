@@ -1,0 +1,55 @@
+{
+  "general": {
+    "maxAttempts": 3
+  },
+  "modelConfigs": {
+    "default": {
+      "generateContentConfig": {
+        "thinkingConfig": {
+          "thinkingBudget": 2048,
+          "thinkingLevel": "LOW"
+        }
+      }
+    }
+  },
+  "tools": {
+    "shell": {
+      "inactivityTimeout": 60
+    }
+  },
+  "experimental": {
+    "modelSteering": true
+  },
+  "mcpServers": {
+    "context-mode": {
+      "command": "context-mode",
+      "args": []
+    },
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide",
+        "--project",
+        "C:/Users/luism/Workbench/GitHub/semantic-sift"
+      ]
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "type": "http",
+      "headers": {
+        "Authorization": "Bearer ***REDACTED***"
+      }
+    },
+    "semantic-sift": {
+      "command": "python",
+      "args": [
+        "C:/Users/luism/Workbench/GitHub/semantic-sift/server.py"
+      ]
+    }
+  }
+}

@@ -69,6 +69,12 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Operation**: Specifically tuned to prune OCR artifacts and metadata debris while protecting Markdown structure (tables, headers) and technical entities.
 - **Benefit**: Transforms "noisy" raw extractions into "lean" signal for high-accuracy LlamaIndex grounding.
 
+### `get_sift_stats(scope)`
+- **Category**: Telemetry Tier
+- **Best For**: Monitoring efficiency and quantifying token savings.
+- **Operation**: Aggregates metrics from `.sift_telemetry.json` for either the `current` session or `all` historical sessions.
+- **Benefit**: Provides transparency into the "incineration" rate of noise and tracks processing overhead.
+
 ---
 
 ## 🛠️ Technical Stack

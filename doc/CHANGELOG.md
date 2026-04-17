@@ -5,6 +5,16 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Device-Aware Resilience**: Added automatic torch device detection (CUDA/CPU) to prevent crashes when GPU support is missing.
+- **Telemetry Tier**: Implemented a persistent telemetry system (`.sift_telemetry.json`) that tracks compression ratios, character savings, and processing latency across sessions.
+- **get_sift_stats**: New MCP tool to query session-based or global performance metrics.
+- **MCP Configuration**: Integrated `context-mode`, `serena`, and `github` MCP servers into the workspace via `.gemini/settings.json`.
+- **Serena Project Configuration**: Added `.serena/project.yml` and `.serena/project.local.yml` for local agent orchestration.
+- **Agent Guidelines**: Created `AGENTS.md` to define project-specific standards and philosophy.
+
 ## [1.0.0] - 2026-04-13
 
 ### Added

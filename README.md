@@ -30,6 +30,13 @@ Powered by **LLMLingua-2**, it uses a BERT-based model to identify and keep inst
 - Keeps entity structure and questions intact.
 - **Tool**: `sift_chat`
 
+### 3. Telemetry Tier (Efficiency Tracking)
+**Quantifiable Signal-to-Noise Ratio.**
+Semantic-Sift tracks its own efficiency persistently across sessions.
+- Monitors character savings and compression ratios.
+- Tracks processing latency to ensure real-time performance.
+- **Tool**: `get_sift_stats`
+
 ---
 
 ## 🚀 Quick Start
