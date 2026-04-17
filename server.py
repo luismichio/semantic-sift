@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import json
 import uuid
 import time
@@ -14,6 +15,34 @@ START_TIME = datetime.now().isoformat()
 
 # Device Detection
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+# SOP Template for Onboarding
+SOP_TEMPLATE = """
+---
+
+# 🔍 Semantic-Sift — Standard Operating Procedures
+
+To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follow these usage guidelines.
+
+## 🛠️ Tool Selection & Thresholds
+
+| Tool | Trigger Condition | Goal |
+| :--- | :--- | :--- |
+| `sift_logs` | Any log/terminal output > 50 lines or containing progress bars. | Heuristic removal of timestamps/noise. |
+| `sift_chat` | Previous conversation history exceeding 5,000 characters. | Prune linguistic filler (default rate: 0.5). |
+| `sift_doc` | Reading documentation files > 10,000 characters. | Hybrid distillation (Heuristic + Semantic). |
+| `sift_extraction` | Processing raw OCR or Docling extractions. | Preserve Markdown structure while cleaning debris. |
+
+## 📐 Rate Guidelines
+- **Aggressive (0.3)**: Use for "lost in the middle" scenarios or massive histories.
+- **Balanced (0.5)**: Default. Best for general conversation and instructions.
+- **Gentle (0.7)**: Use for technical documentation where every keyword matters.
+
+## 🚫 Sifting Forbidden
+- **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
+- **NEVER** sift small, surgical code snippets (symbol-level).
+- **NEVER** sift security-sensitive configuration files (`.env`, secrets).
+"""
 
 # Create the MCP server
 mcp = FastMCP("Semantic-Sift")
@@ -262,6 +291,64 @@ async def get_sift_stats(scope: str = "current") -> str:
         return "\n".join(output)
     except Exception as e:
         return f"Error reading telemetry: {str(e)}"
+
+@mcp.tool()
+async def sift_onboard() -> str:
+    """
+    Automates the installation of Semantic-Sift guidelines into project instruction files.
+    Returns a diagnostic report of the environment and setup status.
+    """
+    report = ["# 🔍 Semantic-Sift Onboarding Report\n"]
+    
+    # 1. Environment Diagnostic
+    py_version = sys.version.split()[0]
+    cuda_active = torch.cuda.is_available()
+    cuda_version = torch.version.cuda if cuda_active else "N/A"
+    
+    report.append("## 💻 Environment")
+    report.append(f"- **Python**: {py_version}")
+    report.append(f"- **CUDA Active**: {cuda_active}")
+    report.append(f"- **CUDA Version**: {cuda_version}")
+    report.append(f"- **Device Map**: {DEVICE}")
+    report.append(f"- **Session ID**: {SESSION_ID}\n")
+
+    # 2. Instruction Injection
+    instruction_files = ["AGENTS.md", "GEMINI.md", ".clinerules", ".cursorrules"]
+    target_file = None
+    cwd = os.getcwd()
+    
+    for filename in instruction_files:
+        if os.path.exists(os.path.join(cwd, filename)):
+            target_file = filename
+            break
+    
+    if not target_file:
+        target_file = "AGENTS.md"
+        try:
+            with open(os.path.join(cwd, target_file), "w") as f:
+                f.write(f"# Project Instructions\n")
+            report.append(f"## 📝 Setup\n- Created new `{target_file}`.")
+        except Exception as e:
+            return f"Error creating instruction file: {str(e)}"
+    else:
+        report.append(f"## 📝 Setup\n- Detected existing `{target_file}`.")
+
+    # Check for SOPs
+    try:
+        with open(os.path.join(cwd, target_file), "r") as f:
+            content = f.read()
+        
+        if "Semantic-Sift — Standard Operating Procedures" in content:
+            report.append("- Semantic-Sift SOPs already present. No injection needed.")
+        else:
+            with open(os.path.join(cwd, target_file), "a") as f:
+                f.write(SOP_TEMPLATE)
+            report.append("- **Surgically injected Semantic-Sift SOPs into the file.**")
+    except Exception as e:
+        report.append(f"- Error updating `{target_file}`: {str(e)}")
+
+    report.append("\n**Semantic-Sift is now fully configured and ready for high-fidelity sifting.**")
+    return "\n".join(report)
 
 if __name__ == "__main__":
     mcp.run()

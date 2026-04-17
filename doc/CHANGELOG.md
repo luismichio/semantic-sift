@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Automated Onboarding**: New `sift_onboard` tool that automatically injects Semantic-Sift usage guidelines into project instruction files (`AGENTS.md`, `.clinerules`, etc.) and provides an environment diagnostic report.
 - **GPU Acceleration**: Migrated to Python 3.12 environment (`venv312`) to enable CUDA 12.1 support for RTX 2070 Super.
 - **Device-Aware Resilience**: Added automatic torch device detection (CUDA/CPU) to prevent crashes when GPU support is missing.
 - **Telemetry Tier**: Implemented a persistent telemetry system (`.sift_telemetry.json`) that tracks compression ratios, character savings, and processing latency across sessions.

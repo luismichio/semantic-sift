@@ -37,6 +37,13 @@ Semantic-Sift tracks its own efficiency persistently across sessions.
 - Tracks processing latency to ensure real-time performance.
 - **Tool**: `get_sift_stats`
 
+### 4. Automated Onboarding (One-Click Setup)
+**Zero-Configuration Guidelines.**
+Automatically injects sifting best practices into your agent instruction files.
+- Detects `AGENTS.md`, `.clinerules`, or `.cursorrules`.
+- Provides a full environment diagnostic report (Python, CUDA, GPU).
+- **Tool**: `sift_onboard`
+
 ---
 
 ## 🚀 Quick Start

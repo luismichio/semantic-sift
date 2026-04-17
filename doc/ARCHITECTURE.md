@@ -75,6 +75,12 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Operation**: Aggregates metrics from `.sift_telemetry.json` for either the `current` session or `all` historical sessions.
 - **Benefit**: Provides transparency into the "incineration" rate of noise and tracks processing overhead.
 
+### `sift_onboard()`
+- **Category**: Automation & Setup
+- **Best For**: Initial installation and environment verification.
+- **Operation**: Scans for agent instruction files and injects the Semantic-Sift SOPs. Provides a diagnostic report of Python/CUDA/GPU status.
+- **Benefit**: Ensures every repository is "Sift-Aware" with zero manual effort.
+
 ---
 
 ## 🛠️ Technical Stack
