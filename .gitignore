@@ -8,3 +8,4 @@ __pycache__/
 *.safetensors
 test_sift.py
 .sift_telemetry.json
+.sift_cache/

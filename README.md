@@ -51,6 +51,13 @@ Analyzes text to determine if it's "noisy" enough to require sifting.
 - Recommends the specific tool (`sift_logs` vs `sift_chat`) to use.
 - **Tool**: `sift_analyze`
 
+### 6. Intelligence Tier (Re-ranking & Caching)
+**Relevance-First Sifting.**
+Prioritizes and optimizes sifting operations for speed and accuracy.
+- **Re-ranking**: Ranks multiple text chunks by relevance using BGE-Reranker. (`sift_rank`)
+- **Semantic Caching**: Automatically stores results to make repeat sifts instantaneous.
+- **Tool**: `sift_rank`
+
 ---
 
 ## 🚀 Quick Start

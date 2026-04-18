@@ -5,13 +5,18 @@ import json
 import uuid
 import time
 import torch
+import hashlib
 from datetime import datetime
 from mcp.server.fastmcp import FastMCP
 
 # Global Telemetry Config
 SESSION_ID = str(uuid.uuid4())
 TELEMETRY_FILE = ".sift_telemetry.json"
+CACHE_DIR = ".sift_cache"
 START_TIME = datetime.now().isoformat()
+
+# Ensure cache directory exists
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Device Detection
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -32,6 +37,7 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 | `sift_chat` | Previous conversation history exceeding 5,000 characters. | Prune linguistic filler (default rate: 0.5). |
 | `sift_doc` | Reading documentation files > 10,000 characters. | Hybrid distillation (Heuristic + Semantic). |
 | `sift_extraction` | Processing raw OCR or Docling extractions. | Preserve Markdown structure while cleaning debris. |
+| `sift_rank` | Selecting best chunks from multiple retrieved documents. | Filter by semantic relevance before sifting. |
 
 ## 📐 Rate Guidelines
 - **Aggressive (0.3)**: Use for "lost in the middle" scenarios or massive histories.
@@ -47,7 +53,7 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 # Create the MCP server
 mcp = FastMCP("Semantic-Sift")
 
-def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency_ms: float):
+def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False):
     """Logs tool performance metrics to a persistent JSON file."""
     try:
         data = {}
@@ -65,13 +71,16 @@ def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency
             "calls": 0,
             "original_chars": 0,
             "final_chars": 0,
-            "total_latency_ms": 0
+            "total_latency_ms": 0,
+            "cache_hits": 0
         })
         
         tool_stats["calls"] += 1
         tool_stats["original_chars"] += original_chars
         tool_stats["final_chars"] += final_chars
         tool_stats["total_latency_ms"] += latency_ms
+        if cache_hit:
+            tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
         
         data[SESSION_ID]["tools"][tool_name] = tool_stats
         
@@ -80,6 +89,25 @@ def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency
     except Exception:
         # Silently fail for telemetry to avoid breaking primary tool functionality
         pass
+
+def get_cache_key(tool_name: str, text: str, **kwargs) -> str:
+    """Generates a unique SHA-256 hash for a sifting request."""
+    payload = f"{tool_name}:{text}:{json.dumps(kwargs, sort_keys=True)}"
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+def check_cache(key: str) -> str | None:
+    """Retrieves result from local disk cache if it exists."""
+    cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
+    if os.path.exists(cache_path):
+        with open(cache_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return None
+
+def set_cache(key: str, result: str):
+    """Saves a sifting result to local disk cache."""
+    cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
+    with open(cache_path, "w", encoding="utf-8") as f:
+        f.write(result)
 
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
@@ -127,6 +155,12 @@ async def sift_chat(text: str, rate: float = 0.5) -> str:
     Preserves instructions while stripping verbal filler.
     """
     start_t = time.time()
+    cache_key = get_cache_key("sift_chat", text, rate=rate)
+    cached_result = check_cache(cache_key)
+    if cached_result:
+        log_telemetry("sift_chat", len(text), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
+        return cached_result
+
     try:
         from llmlingua import PromptCompressor
         
@@ -147,6 +181,7 @@ async def sift_chat(text: str, rate: float = 0.5) -> str:
         )
         
         result = results.get('compressed_prompt', text)
+        set_cache(cache_key, result)
         latency = (time.time() - start_t) * 1000
         log_telemetry("sift_chat", len(text), len(result), latency)
         return result
@@ -161,6 +196,12 @@ async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
     2. LLMLingua-2 Sift (Semantically prunes to the token budget)
     """
     start_t = time.time()
+    cache_key = get_cache_key("sift_doc", text, budget_tokens=budget_tokens)
+    cached_result = check_cache(cache_key)
+    if cached_result:
+        log_telemetry("sift_doc", len(text), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
+        return cached_result
+
     # Stage 1: Structural cleaning
     cleaned = await sift_logs(text)
     
@@ -182,6 +223,7 @@ async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
             return_word_label=False
         )
         result = results.get('compressed_prompt', cleaned)
+        set_cache(cache_key, result)
         latency = (time.time() - start_t) * 1000
         log_telemetry("sift_doc", len(text), len(result), latency)
         return result
@@ -196,6 +238,12 @@ async def sift_extraction(content: str, source_type: str = "markdown") -> str:
     for high-quality RAG indexing.
     """
     start_t = time.time()
+    cache_key = get_cache_key("sift_extraction", content, source_type=source_type)
+    cached_result = check_cache(cache_key)
+    if cached_result:
+        log_telemetry("sift_extraction", len(content), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
+        return cached_result
+
     # 1. Targeted Document Debris Removal (Heuristic)
     debris_patterns = [
         r'Page \d+ of \d+',
@@ -225,6 +273,7 @@ async def sift_extraction(content: str, source_type: str = "markdown") -> str:
             return_word_label=False
         )
         result = results.get('compressed_prompt', refined)
+        set_cache(cache_key, result)
         latency = (time.time() - start_t) * 1000
         log_telemetry("sift_extraction", len(content), len(result), latency)
         return result
@@ -258,6 +307,7 @@ async def get_sift_stats(scope: str = "current") -> str:
         total_orig = 0
         total_final = 0
         total_latency = 0
+        total_cache_hits = 0
         tool_breakdown = {}
         
         for session in target_sessions:
@@ -266,15 +316,18 @@ async def get_sift_stats(scope: str = "current") -> str:
                 total_orig += stats["original_chars"]
                 total_final += stats["final_chars"]
                 total_latency += stats["total_latency_ms"]
+                total_cache_hits += stats.get("cache_hits", 0)
                 
                 if tool not in tool_breakdown:
-                    tool_breakdown[tool] = {"calls": 0, "saved": 0}
+                    tool_breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
                 tool_breakdown[tool]["calls"] += stats["calls"]
                 tool_breakdown[tool]["saved"] += (stats["original_chars"] - stats["final_chars"])
+                tool_breakdown[tool]["cache_hits"] += stats.get("cache_hits", 0)
 
         saved = total_orig - total_final
         ratio = (saved / total_orig * 100) if total_orig > 0 else 0
         avg_latency = (total_latency / total_calls) if total_calls > 0 else 0
+        cache_hit_rate = (total_cache_hits / total_calls * 100) if total_calls > 0 else 0
         
         output = [
             f"--- Semantic-Sift Telemetry ({scope.capitalize()}) ---",
@@ -282,11 +335,12 @@ async def get_sift_stats(scope: str = "current") -> str:
             f"Characters Processed: {total_orig:,}",
             f"Characters Pruned: {saved:,} ({ratio:.1f}% reduction)",
             f"Avg Latency: {avg_latency:.1f}ms",
+            f"Cache Hit Rate: {cache_hit_rate:.1f}% ({total_cache_hits} hits)",
             "\nBreakdown by Tool:"
         ]
         
         for tool, stats in tool_breakdown.items():
-            output.append(f"- {tool}: {stats['calls']} calls, {stats['saved']:,} chars saved")
+            output.append(f"- {tool}: {stats['calls']} calls, {stats['saved']:,} chars saved ({stats['cache_hits']} cache hits)")
             
         return "\n".join(output)
     except Exception as e:
@@ -397,6 +451,41 @@ async def sift_analyze(text: str) -> str:
         report.append("- **Reason**: Moderate length. Sift if precise focus is needed.")
         
     return "\n".join(report)
+
+@mcp.tool()
+async def sift_rank(query: str, documents: list[str], top_n: int = 3) -> str:
+    """
+    Ranks multiple text chunks by relevance to a query using BGE-Reranker.
+    Returns the top_n most relevant chunks.
+    """
+    try:
+        from sentence_transformers import CrossEncoder
+        
+        # Load lightweight reranker model
+        # BAAI/bge-reranker-base is ~200MB, good for local use
+        model = CrossEncoder('BAAI/bge-reranker-base', device=DEVICE)
+        
+        # Format pairs for reranking
+        pairs = [[query, doc] for doc in documents]
+        
+        # Predict scores
+        scores = model.predict(pairs)
+        
+        # Sort documents by score
+        scored_docs = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)
+        
+        # Select top_n
+        selected = scored_docs[:top_n]
+        
+        report = [f"## 🎯 Reranking Results (Top {top_n})\n"]
+        for i, (score, doc) in enumerate(selected):
+            report.append(f"### Rank {i+1} (Score: {score:.4f})")
+            report.append(f"{doc[:500]}..." if len(doc) > 500 else doc)
+            report.append("\n---\n")
+            
+        return "\n".join(report)
+    except Exception as e:
+        return f"Error during reranking: {str(e)}"
 
 if __name__ == "__main__":
     mcp.run()

@@ -3,3 +3,4 @@ llmlingua
 torch
 transformers
 numpy
+sentence-transformers

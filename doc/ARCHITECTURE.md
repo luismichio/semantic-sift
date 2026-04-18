@@ -87,6 +87,12 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Operation**: Uses heuristic regex to detect timestamps, UUIDs, and repetition. Formulates a recommendation based on noise density and length.
 - **Benefit**: Prevents redundant sifting and helps the agent manage its own context window autonomously.
 
+### `sift_rank(query, documents)`
+- **Category**: Intelligence Tier
+- **Best For**: Multi-document RAG retrieval.
+- **Operation**: Uses a local BGE-Reranker model (`BAAI/bge-reranker-base`) to score documents against a query. Returns top-N results.
+- **Benefit**: Ensures the most relevant information is prioritized before the sifting/compression stage.
+
 ---
 
 ## 🛠️ Technical Stack
@@ -94,7 +100,10 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Kernel**: Python 3.13 (Native performance for AI libraries).
 - **Communication**: FastMCP (Standardized I/O for AI Agents).
 - **AI Core**: PyTorch + Hugging Face Transformers.
-- **Model**: LLMLingua-2 (MeetingBank fine-tuned).
+- **Models**: 
+    - **LLMLingua-2**: Semantic Compression.
+    - **BGE-Reranker**: Relevance ranking.
+- **Caching**: Local SHA-256 persistent disk cache for instantaneous repeat sifts.
 
 ---
 
