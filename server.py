@@ -9,17 +9,27 @@ import hashlib
 from datetime import datetime
 from mcp.server.fastmcp import FastMCP
 
-# Global Telemetry Config
+# Global Configuration
 SESSION_ID = str(uuid.uuid4())
 TELEMETRY_FILE = ".sift_telemetry.json"
 CACHE_DIR = ".sift_cache"
 START_TIME = datetime.now().isoformat()
 
-# Ensure cache directory exists
+# Ensure directories exist
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Device Detection
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+# Master list of instruction files for various IDEs and tools
+INSTRUCTION_TARGETS = [
+    "AGENTS.md",                         # Generic / Studio of Two
+    "GEMINI.md",                         # Gemini CLI / Antigravity
+    ".clinerules",                       # Cline / Roo Code
+    ".cursorrules",                      # Cursor
+    ".windsurfrules",                    # Windsurf
+    ".github/copilot-instructions.md"    # GitHub Copilot
+]
 
 # SOP Template for Onboarding
 SOP_TEMPLATE = """
@@ -158,6 +168,8 @@ COLLABORATION_MAP = {
 # Create the MCP server
 mcp = FastMCP("Semantic-Sift")
 
+# --- Helpers ---
+
 def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False):
     """Logs tool performance metrics to a persistent JSON file."""
     try:
@@ -192,7 +204,6 @@ def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency
         with open(TELEMETRY_FILE, "w") as f:
             json.dump(data, f, indent=2)
     except Exception:
-        # Silently fail for telemetry to avoid breaking primary tool functionality
         pass
 
 def get_cache_key(tool_name: str, text: str, **kwargs) -> str:
@@ -217,38 +228,22 @@ def set_cache(key: str, result: str):
 def get_global_mcp_configs() -> list[dict]:
     """Attempts to find and parse multiple system-wide MCP configurations."""
     configs = []
-    
-    # Define potential paths and their specific JSON keys for MCP servers
     discovery_grid = [
-        # Claude Desktop (Standard)
         {"path": "~/AppData/Roaming/Claude/claude_desktop_config.json", "key": "mcpServers", "os": "win32"},
         {"path": "~/Library/Application Support/Claude/claude_desktop_config.json", "key": "mcpServers", "os": "darwin"},
-        
-        # Continue
         {"path": "~/.continue/config.json", "key": "mcpServers"},
-        
-        # Zed IDE
         {"path": "~/.config/zed/settings.json", "key": "context_servers"},
         {"path": ".zed/settings.json", "key": "context_servers"},
-        
-        # GitHub Copilot
         {"path": "~/.copilot/mcp-config.json", "key": "mcpServers"},
         {"path": ".copilot/mcp-config.json", "key": "mcpServers"},
         {"path": "~/.mcp.json", "key": "mcpServers"},
-        
-        # OpenCode
         {"path": "~/.opencode.json", "key": "mcpServers"},
         {"path": ".opencode.json", "key": "mcpServers"},
-        
-        # Antigravity (Google)
         {"path": "~/.gemini/antigravity/mcp_config.json", "key": "mcpServers"},
     ]
-    
     for item in discovery_grid:
-        # Check OS if specified
         if "os" in item and sys.platform != item["os"]:
             continue
-            
         full_path = os.path.expanduser(item["path"])
         if os.path.exists(full_path):
             try:
@@ -259,40 +254,59 @@ def get_global_mcp_configs() -> list[dict]:
                 pass
     return configs
 
+def update_instruction_files(section_id: str, header: str, content: str) -> list[str]:
+    """Surgically injects or updates a section in all detected instruction files."""
+    actions = []
+    cwd = os.getcwd()
+    found_any = False
+    block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"
+    block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
+    full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
+    for filename in INSTRUCTION_TARGETS:
+        target_path = os.path.join(cwd, filename)
+        if os.path.exists(target_path):
+            found_any = True
+            try:
+                with open(target_path, "r", encoding="utf-8") as f:
+                    file_content = f.read()
+                pattern = re.compile(rf'{re.escape(block_id)}.*?{re.escape(block_end)}', re.DOTALL)
+                if pattern.search(file_content):
+                    new_content = pattern.sub(full_payload.strip(), file_content)
+                    with open(target_path, "w", encoding="utf-8") as f:
+                        f.write(new_content)
+                    actions.append(f"Updated `{filename}`.")
+                else:
+                    with open(target_path, "a", encoding="utf-8") as f:
+                        f.write(full_payload)
+                    actions.append(f"Injected into `{filename}`.")
+            except Exception as e:
+                actions.append(f"Error updating `{filename}`: {str(e)}")
+    if not found_any:
+        fallback = "AGENTS.md"
+        try:
+            with open(os.path.join(cwd, fallback), "w", encoding="utf-8") as f:
+                f.write(f"# Project Instructions\n{full_payload}")
+            actions.append(f"Created new `{fallback}`.")
+        except Exception as e:
+            actions.append(f"Error creating `{fallback}`: {str(e)}")
+    return actions
+
+# --- Tools ---
+
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
-    """
-    Sifts through raw technical logs (Vercel, GitHub, Console) 
-    to remove noise and keep only the instructional signal.
-    """
+    """Sifts through raw technical logs to remove noise."""
     start_t = time.time()
     lines = raw_text.splitlines()
     sifted = []
-    
-    # Common noise patterns to remove
-    # 1. Timestamps (e.g., 2026-04-13T02:18:19Z)
     timestamp_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?\s*')
-    
-    # 2. Progress bars or repetitive build status lines
     progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
-
-    # 3. Webpacker/Vite successful module listings (too noisy)
     module_pattern = re.compile(r'^\s*[\d\.]+\s+[\w\-\.\/]+\s+\d+\s+bytes.*$')
-
     for line in lines:
-        # Clean timestamp
         clean_line = timestamp_pattern.sub('', line).strip()
-        
-        # Skip if empty or matches noise
-        if not clean_line:
+        if not clean_line or progress_pattern.search(clean_line) or module_pattern.match(clean_line):
             continue
-        if progress_pattern.search(clean_line):
-            continue
-        if module_pattern.match(clean_line):
-            continue
-            
         sifted.append(clean_line)
-        
     result = "\n".join(sifted)
     latency = (time.time() - start_t) * 1000
     log_telemetry("sift_logs", len(raw_text), len(result), latency)
@@ -300,36 +314,17 @@ async def sift_logs(raw_text: str) -> str:
 
 @mcp.tool()
 async def sift_chat(text: str, rate: float = 0.5) -> str:
-    """
-    Semantically prunes conversation history using LLMLingua-2.
-    Preserves instructions while stripping verbal filler.
-    """
+    """Semantically prunes conversation history using LLMLingua-2."""
     start_t = time.time()
     cache_key = get_cache_key("sift_chat", text, rate=rate)
     cached_result = check_cache(cache_key)
     if cached_result:
         log_telemetry("sift_chat", len(text), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
         return cached_result
-
     try:
         from llmlingua import PromptCompressor
-        
-        # Initialize compressor with LLMLingua-2 model
-        compressor = PromptCompressor(
-            model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
-            use_llmlingua2=True,
-            device_map=DEVICE
-        )
-        
-        # Perform compression
-        results = compressor.compress_prompt(
-            [text],
-            rate=rate,
-            force_tokens=['\n', '?'], # Protect structure and questions
-            chunk_end_tokens=['.', '\n'],
-            return_word_label=False
-        )
-        
+        compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
+        results = compressor.compress_prompt([text], rate=rate, force_tokens=['\n', '?'], chunk_end_tokens=['.', '\n'], return_word_label=False)
         result = results.get('compressed_prompt', text)
         set_cache(cache_key, result)
         latency = (time.time() - start_t) * 1000
@@ -340,38 +335,18 @@ async def sift_chat(text: str, rate: float = 0.5) -> str:
 
 @mcp.tool()
 async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
-    """
-    Condenses long documents (MDX, PDF text) using a multi-stage approach:
-    1. Heuristic Sieve (Removes structural noise)
-    2. LLMLingua-2 Sift (Semantically prunes to the token budget)
-    """
+    """Condenses long documents using a multi-stage approach."""
     start_t = time.time()
     cache_key = get_cache_key("sift_doc", text, budget_tokens=budget_tokens)
     cached_result = check_cache(cache_key)
     if cached_result:
         log_telemetry("sift_doc", len(text), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
         return cached_result
-
-    # Stage 1: Structural cleaning
     cleaned = await sift_logs(text)
-    
-    # Stage 2: Calculate target rate if text is still too long
     try:
         from llmlingua import PromptCompressor
-        compressor = PromptCompressor(
-            model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
-            use_llmlingua2=True,
-            device_map=DEVICE
-        )
-        
-        # We protect technical tokens to ensure we don't break code/entities
-        results = compressor.compress_prompt(
-            [cleaned],
-            rate=0.4, # Target aggressive 60% reduction for long docs
-            force_tokens=['[', ']', '{', '}', '/', '\\', '.', '_'], # Protect paths/JSON
-            chunk_end_tokens=['\n', '.', ';'],
-            return_word_label=False
-        )
+        compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
+        results = compressor.compress_prompt([cleaned], rate=0.4, force_tokens=['[', ']', '{', '}', '/', '\\', '.', '_'], chunk_end_tokens=['\n', '.', ';'], return_word_label=False)
         result = results.get('compressed_prompt', cleaned)
         set_cache(cache_key, result)
         latency = (time.time() - start_t) * 1000
@@ -382,46 +357,20 @@ async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
 
 @mcp.tool()
 async def sift_extraction(content: str, source_type: str = "markdown") -> str:
-    """
-    Specifically designed to refine outputs from Docling or LiteParse.
-    Removes extraction-specific noise (debris) and prunes dense technical docs
-    for high-quality RAG indexing.
-    """
+    """Refines outputs from Docling or LiteParse."""
     start_t = time.time()
     cache_key = get_cache_key("sift_extraction", content, source_type=source_type)
     cached_result = check_cache(cache_key)
     if cached_result:
         log_telemetry("sift_extraction", len(content), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
         return cached_result
-
-    # 1. Targeted Document Debris Removal (Heuristic)
-    debris_patterns = [
-        r'Page \d+ of \d+',
-        r'© .*? All rights reserved',
-        r'---+\s*$', # Empty separator lines
-        r'^\s*·\s*$', # Single bullets on lines
-    ]
-    
     refined = content
-    for pattern in debris_patterns:
+    for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']:
         refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
-
-    # 2. Semantic Sift (Keep important signal)
     try:
         from llmlingua import PromptCompressor
-        compressor = PromptCompressor(
-            model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
-            use_llmlingua2=True,
-            device_map=DEVICE
-        )
-        
-        results = compressor.compress_prompt(
-            [refined],
-            rate=0.7, # Keep 70% (gentle sift for indexing)
-            force_tokens=['\n', '|', '-', ':', '#'], # Protect Markdown structure
-            chunk_end_tokens=['\n', '.'],
-            return_word_label=False
-        )
+        compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
+        results = compressor.compress_prompt([refined], rate=0.7, force_tokens=['\n', '|', '-', ':', '#'], chunk_end_tokens=['\n', '.'], return_word_label=False)
         result = results.get('compressed_prompt', refined)
         set_cache(cache_key, result)
         latency = (time.time() - start_t) * 1000
@@ -432,166 +381,54 @@ async def sift_extraction(content: str, source_type: str = "markdown") -> str:
 
 @mcp.tool()
 async def get_sift_stats(scope: str = "current") -> str:
-    """
-    Returns telemetry stats for the sifting process.
-    'scope' can be 'current' (active session) or 'all' (historical).
-    """
+    """Returns telemetry stats for the sifting process."""
     if not os.path.exists(TELEMETRY_FILE):
         return "No telemetry data found."
-    
     try:
         with open(TELEMETRY_FILE, "r") as f:
             data = json.load(f)
-        
-        target_sessions = []
-        if scope == "current":
-            if SESSION_ID in data:
-                target_sessions.append(data[SESSION_ID])
-        else:
-            target_sessions = list(data.values())
-        
+        target_sessions = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
         if not target_sessions:
-            return "No data found for the specified scope."
-        
-        total_calls = 0
-        total_orig = 0
-        total_final = 0
-        total_latency = 0
-        total_cache_hits = 0
+            return "No data found."
+        total_calls = total_orig = total_final = total_latency = total_cache_hits = 0
         tool_breakdown = {}
-        
         for session in target_sessions:
             for tool, stats in session.get("tools", {}).items():
-                total_calls += stats["calls"]
-                total_orig += stats["original_chars"]
-                total_final += stats["final_chars"]
-                total_latency += stats["total_latency_ms"]
-                total_cache_hits += stats.get("cache_hits", 0)
-                
-                if tool not in tool_breakdown:
-                    tool_breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
-                tool_breakdown[tool]["calls"] += stats["calls"]
-                tool_breakdown[tool]["saved"] += (stats["original_chars"] - stats["final_chars"])
-                tool_breakdown[tool]["cache_hits"] += stats.get("cache_hits", 0)
-
+                total_calls += stats["calls"]; total_orig += stats["original_chars"]; total_final += stats["final_chars"]; total_latency += stats["total_latency_ms"]; total_cache_hits += stats.get("cache_hits", 0)
+                if tool not in tool_breakdown: tool_breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
+                tool_breakdown[tool]["calls"] += stats["calls"]; tool_breakdown[tool]["saved"] += (stats["original_chars"] - stats["final_chars"]); tool_breakdown[tool]["cache_hits"] += stats.get("cache_hits", 0)
         saved = total_orig - total_final
-        ratio = (saved / total_orig * 100) if total_orig > 0 else 0
-        avg_latency = (total_latency / total_calls) if total_calls > 0 else 0
-        cache_hit_rate = (total_cache_hits / total_calls * 100) if total_calls > 0 else 0
-        
-        output = [
-            f"--- Semantic-Sift Telemetry ({scope.capitalize()}) ---",
-            f"Total Sift Calls: {total_calls}",
-            f"Characters Processed: {total_orig:,}",
-            f"Characters Pruned: {saved:,} ({ratio:.1f}% reduction)",
-            f"Avg Latency: {avg_latency:.1f}ms",
-            f"Cache Hit Rate: {cache_hit_rate:.1f}% ({total_cache_hits} hits)",
-            "\nBreakdown by Tool:"
-        ]
-        
-        for tool, stats in tool_breakdown.items():
-            output.append(f"- {tool}: {stats['calls']} calls, {stats['saved']:,} chars saved ({stats['cache_hits']} cache hits)")
-            
+        output = [f"--- Semantic-Sift Telemetry ({scope.capitalize()}) ---", f"Total Sift Calls: {total_calls}", f"Characters Processed: {total_orig:,}", f"Characters Pruned: {saved:,} ({(saved / total_orig * 100) if total_orig > 0 else 0:.1f}% reduction)", f"Avg Latency: {(total_latency / total_calls) if total_calls > 0 else 0:.1f}ms", f"Cache Hit Rate: {(total_cache_hits / total_calls * 100) if total_calls > 0 else 0:.1f}% ({total_cache_hits} hits)", "\nBreakdown by Tool:"]
+        for tool, stats in tool_breakdown.items(): output.append(f"- {tool}: {stats['calls']} calls, {stats['saved']:,} chars saved ({stats['cache_hits']} cache hits)")
         return "\n".join(output)
     except Exception as e:
         return f"Error reading telemetry: {str(e)}"
 
 @mcp.tool()
 async def sift_onboard() -> str:
-    """
-    Automates the installation of Semantic-Sift guidelines into project instruction files.
-    Returns a diagnostic report of the environment and setup status.
-    """
-    report = ["# 🔍 Semantic-Sift Onboarding Report\n"]
-    
-    # 1. Environment Diagnostic
-    py_version = sys.version.split()[0]
-    cuda_active = torch.cuda.is_available()
-    cuda_version = torch.version.cuda if cuda_active else "N/A"
-    
-    report.append("## 💻 Environment")
-    report.append(f"- **Python**: {py_version}")
-    report.append(f"- **CUDA Active**: {cuda_active}")
-    report.append(f"- **CUDA Version**: {cuda_version}")
-    report.append(f"- **Device Map**: {DEVICE}")
-    report.append(f"- **Session ID**: {SESSION_ID}\n")
-
-    # 2. Instruction Injection
-    instruction_files = ["AGENTS.md", "GEMINI.md", ".clinerules", ".cursorrules"]
-    target_file = None
-    cwd = os.getcwd()
-    
-    for filename in instruction_files:
-        if os.path.exists(os.path.join(cwd, filename)):
-            target_file = filename
-            break
-    
-    if not target_file:
-        target_file = "AGENTS.md"
-        try:
-            with open(os.path.join(cwd, target_file), "w") as f:
-                f.write(f"# Project Instructions\n")
-            report.append(f"## 📝 Setup\n- Created new `{target_file}`.")
-        except Exception as e:
-            return f"Error creating instruction file: {str(e)}"
-    else:
-        report.append(f"## 📝 Setup\n- Detected existing `{target_file}`.")
-
-    # Check for SOPs
-    try:
-        with open(os.path.join(cwd, target_file), "r") as f:
-            content = f.read()
-        
-        if "Semantic-Sift — Standard Operating Procedures" in content:
-            report.append("- Semantic-Sift SOPs already present. No injection needed.")
-        else:
-            with open(os.path.join(cwd, target_file), "a") as f:
-                f.write(SOP_TEMPLATE)
-            report.append("- **Surgically injected Semantic-Sift SOPs into the file.**")
-    except Exception as e:
-        report.append(f"- Error updating `{target_file}`: {str(e)}")
-
-    report.append("\n**Semantic-Sift is now fully configured and ready for high-fidelity sifting.**")
-    
-    # 3. Collaborative Orchestration
-    orchestration_report = await sift_orchestrate()
-    report.append("\n" + orchestration_report)
-    
+    """Automates installation of guidelines into all project instruction files."""
+    report = ["# 🔍 Semantic-Sift Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA Active: {torch.cuda.is_available()}", f"- Device: {DEVICE}\n", "## 📝 Setup"]
+    for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — Standard Operating Procedures", SOP_TEMPLATE.strip()):
+        report.append(f"- {action}")
+    report.append("\n**Semantic-Sift is now fully configured.**\n")
+    report.append(await sift_orchestrate())
     return "\n".join(report)
 
 @mcp.tool()
 async def sift_orchestrate(custom_tools: list[str] = None, custom_paths: list[str] = None) -> str:
-    """
-    Analyzes available MCPs (local, global, & custom) and injects collaborative rules.
-    Agnostic discovery for VSCode, Zed, Continue, Copilot, Antigravity, and more.
-    """
+    """Analyzes available MCPs and injects collaborative rules."""
     discovered = set()
-    
-    # 1. Add manual custom tools
     if custom_tools:
-        for t in custom_tools:
-            discovered.add(t.lower())
-            
-    # 2. Local Auto-discovery (.gemini/settings.json)
+        for t in custom_tools: discovered.add(t.lower())
     local_settings = os.path.join(os.getcwd(), ".gemini", "settings.json")
     if os.path.exists(local_settings):
         try:
             with open(local_settings, "r") as f:
                 data = json.load(f)
-                for name in data.get("mcpServers", {}).keys():
-                    discovered.add(name.lower())
-        except Exception:
-            pass
-
-    # 3. Global Auto-discovery (Claude, Continue, Zed, etc.)
-    global_configs = get_global_mcp_configs()
-    for item in global_configs:
-        config_data = item["data"]
-        server_key = item["key"]
-        for name in config_data.get(server_key, {}).keys():
-            discovered.add(name.lower())
-            
-    # 4. Custom Path Discovery
+                for name in data.get("mcpServers", {}).keys(): discovered.add(name.lower())
+        except Exception: pass
+    for item in get_global_mcp_configs():
+        for name in item["data"].get(item["key"], {}).keys(): discovered.add(name.lower())
     if custom_paths:
         for path in custom_paths:
             full_path = os.path.expanduser(path)
@@ -599,150 +436,54 @@ async def sift_orchestrate(custom_tools: list[str] = None, custom_paths: list[st
                 try:
                     with open(full_path, "r") as f:
                         data = json.load(f)
-                        # Try common keys
                         for k in ["mcpServers", "context_servers", "servers"]:
                             if k in data:
-                                for name in data[k].keys():
-                                    discovered.add(name.lower())
-                except Exception:
-                    pass
-
+                                for name in data[k].keys(): discovered.add(name.lower())
+                except Exception: pass
     active_rules = set()
     for tool_name in discovered:
-        # 1. Check for exact match
-        if tool_name in COLLABORATION_MAP:
-            active_rules.add(COLLABORATION_MAP[tool_name]["rule"])
+        if tool_name in COLLABORATION_MAP: active_rules.add(COLLABORATION_MAP[tool_name]["rule"])
         else:
-            # 2. Heuristic Keyword Matching
             for key, config in COLLABORATION_MAP.items():
-                if key in tool_name:
-                    active_rules.add(config["rule"])
-
-    orchestration_header = "\n---\n\n# 🤝 Unified Context Orchestration\n\nTo optimize the workflow between multiple MCPs, follow these collaborative patterns:\n\n"
-    
+                if key in tool_name: active_rules.add(config["rule"])
+    header = "# 🤝 Unified Context Orchestration\n\nTo optimize the workflow between multiple MCPs, follow these collaborative patterns:\n"
     if not active_rules:
-        # Universal Fallback Rules (Agnostic Category-based)
-        orchestration_block = orchestration_header
-        orchestration_block += "- **Discovery Strategy**: If using any code discovery tool (e.g. Serena, Codebase-Investigator), always run `sift_chat` (rate: 0.7) on retrieved bodies > 100 lines to maintain logic density.\n"
-        orchestration_block += "- **Storage Strategy**: If using any context storage tool (e.g. Context-Mode, Memory), sift all tool outputs > 1,000 characters before indexing to ensure the search index remains high-signal.\n"
-        orchestration_block += "- **Search Strategy**: If using any search or web tool (e.g. Brave, GitHub, Fetch), run `sift_extraction` or `sift_logs` on results to remove technical debris and UI noise.\n"
-    else:
-        orchestration_block = orchestration_header
-        orchestration_block += "\n".join(sorted(list(active_rules)))
-        orchestration_block += "\n"
-
-    # Inject into instruction file
-    instruction_files = ["AGENTS.md", "GEMINI.md", ".clinerules", ".cursorrules"]
-    target_file = None
-    cwd = os.getcwd()
-    for filename in instruction_files:
-        if os.path.exists(os.path.join(cwd, filename)):
-            target_file = filename
-            break
-
-    if target_file:
-        try:
-            with open(os.path.join(cwd, target_file), "r") as f:
-                content = f.read()
-            
-            if "# 🤝 Unified Context Orchestration" in content:
-                # Update existing block
-                new_content = re.sub(r'# 🤝 Unified Context Orchestration.*?(?=\n---|\n#|$)', orchestration_block.strip(), content, flags=re.DOTALL)
-                with open(os.path.join(cwd, target_file), "w") as f:
-                    f.write(new_content)
-                return f"Updated existing orchestration rules in `{target_file}` for tools: {', '.join(discovered)}."
-            else:
-                # Append new block
-                with open(os.path.join(cwd, target_file), "a") as f:
-                    f.write(orchestration_block)
-                return f"Injected new collaborative workflows into `{target_file}` for tools: {', '.join(discovered)}."
-        except Exception as e:
-            return f"Error updating `{target_file}`: {str(e)}"
-
-    return f"Proposing the following universal orchestration for {', '.join(discovered)}:\n{orchestration_block}"
+        content = "- **Discovery Strategy**: Use `sift_chat` (rate: 0.7) on retrieved bodies > 100 lines.\n- **Storage Strategy**: Sift outputs > 1,000 chars before indexing.\n- **Search Strategy**: Run `sift_extraction` on web/search results.\n"
+    else: content = "\n".join(sorted(list(active_rules)))
+    actions = update_instruction_files("ORCHESTRATION", header, content.strip())
+    summary = f"Analyzed tools: {', '.join(discovered)}. Actions:\n"
+    for action in actions: summary += f"- {action}\n"
+    return summary
 
 @mcp.tool()
 async def sift_analyze(text: str) -> str:
-    """
-    Evaluates context quality (SNR) and recommends appropriate sifting tools.
-    Returns a score and an actionable recommendation.
-    """
-    char_count = len(text)
-    line_count = len(text.splitlines())
-    avg_line_len = char_count / line_count if line_count > 0 else 0
-    
-    # Noise Heuristics
-    # 1. Timestamps
+    """Evaluates context quality (SNR)."""
+    char_count = len(text); line_count = len(text.splitlines()); avg_line_len = char_count / line_count if line_count > 0 else 0
     timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text))
-    # 2. Hex/UUIDs
-    uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text))
-    # 3. Repetitive symbols (Progress bars, separators)
+    uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text))
     repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
-    
-    # Calculate Noise Score (Weighted heuristic)
-    noise_hits = (timestamps * 10) + (uuids * 5) + (repetition * 2)
-    noise_ratio = (noise_hits / char_count * 100) if char_count > 0 else 0
-    
-    # Cap ratio at 100%
-    noise_ratio = min(noise_ratio, 100.0)
-    
-    report = [
-        "## 📊 Context Analysis Report",
-        f"- **Length**: {char_count:,} characters",
-        f"- **Density**: {line_count:,} lines ({avg_line_len:.1f} avg chars/line)",
-        f"- **Estimated Noise**: {noise_ratio:.1f}%",
-        "\n### 🎯 Recommendation"
-    ]
-    
-    if noise_ratio > 15.0:
-        report.append("- **Action**: Run `sift_logs`.")
-        report.append("- **Reason**: High structural noise detected (timestamps/patterns).")
-    elif char_count > 8000:
-        report.append("- **Action**: Run `sift_doc` or `sift_chat`.")
-        report.append("- **Reason**: Long-form context detected. Semantic pruning recommended to improve SNR.")
-    elif char_count < 2000:
-        report.append("- **Action**: No sifting required.")
-        report.append("- **Reason**: Context is already concise and likely high-signal.")
-    else:
-        report.append("- **Action**: Optional `sift_chat`.")
-        report.append("- **Reason**: Moderate length. Sift if precise focus is needed.")
-        
+    noise_ratio = min((((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0)
+    report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
+    if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
+    elif char_count > 8000: report.extend(["- **Action**: Run `sift_doc` or `sift_chat`.", "- Reason: Long-form context."])
+    elif char_count < 2000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is concise."])
+    else: report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
     return "\n".join(report)
 
 @mcp.tool()
 async def sift_rank(query: str, documents: list[str], top_n: int = 3) -> str:
-    """
-    Ranks multiple text chunks by relevance to a query using BGE-Reranker.
-    Returns the top_n most relevant chunks.
-    """
+    """Ranks multiple text chunks by relevance."""
     try:
         from sentence_transformers import CrossEncoder
-        
-        # Load lightweight reranker model
-        # BAAI/bge-reranker-base is ~200MB, good for local use
         model = CrossEncoder('BAAI/bge-reranker-base', device=DEVICE)
-        
-        # Format pairs for reranking
-        pairs = [[query, doc] for doc in documents]
-        
-        # Predict scores
-        scores = model.predict(pairs)
-        
-        # Sort documents by score
-        scored_docs = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)
-        
-        # Select top_n
-        selected = scored_docs[:top_n]
-        
+        scores = model.predict([[query, doc] for doc in documents])
+        scored_docs = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)[:top_n]
         report = [f"## 🎯 Reranking Results (Top {top_n})\n"]
-        for i, (score, doc) in enumerate(selected):
-            report.append(f"### Rank {i+1} (Score: {score:.4f})")
-            report.append(f"{doc[:500]}..." if len(doc) > 500 else doc)
+        for i, (score, doc) in enumerate(scored_docs):
+            report.append(f"### Rank {i+1} (Score: {score:.4f})\n{doc[:500]}..." if len(doc) > 500 else f"### Rank {i+1} (Score: {score:.4f})\n{doc}")
             report.append("\n---\n")
-            
         return "\n".join(report)
-    except Exception as e:
-        return f"Error during reranking: {str(e)}"
+    except Exception as e: return f"Error during reranking: {str(e)}"
 
 if __name__ == "__main__":
     mcp.run()
