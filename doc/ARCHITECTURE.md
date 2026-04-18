@@ -100,6 +100,22 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Heuristic Matching**: Uses a **Keyword-based Heuristic Engine** to identify tool categories (e.g., Slack, AWS, SQL) and injects specific "Chain of Context" rules.
 - **Benefit**: Transforms a fragmented toolset into a unified, high-SNR intelligence system.
 
+## 🤝 Collaboration Blueprints
+
+The orchestrator maps discovered tools to specific high-fidelity workflows. Below are the primary blueprints currently active in the engine:
+
+| Category | Targeted Tools | Orchestration Pattern |
+| :--- | :--- | :--- |
+| **Discovery** | Serena, Investigator | **Discovery -> Sifting**: Prunes boilerplate from code bodies immediately after retrieval. |
+| **Storage** | Context-Mode, Memory | **Sifting -> Storage**: Ensures context databases are only indexed with high-signal "lean" data. |
+| **Cloud Infra** | AWS, GCP, Azure | **Metadata Distillation**: Strips redundant JSON fields (ETags, IDs) from cloud resource snapshots. |
+| **Communication** | Slack, Discord | **History Compaction**: Filters out conversational filler and system events from chat logs. |
+| **Data** | Postgres, SQL, SQLite | **Sample Pruning**: Keeps the schema and relevant rows while pruning massive result sets. |
+| **Browsing** | Puppeteer, Playwright | **Web Cleaning**: Removes navigation, footers, and tracking noise from raw HTML extractions. |
+
+### Universal Fallback Strategy
+If no specific tools are recognized, the engine injects a set of **Category-Based Agnostic Rules**. These teach the agent how to categorize its own tools (e.g., "If you find a tool that fetches the web, run `sift_extraction` first") ensuring that even proprietary or niche MCPs benefit from the sifting pipeline.
+
 ---
 
 ## 🛠️ Technical Stack
