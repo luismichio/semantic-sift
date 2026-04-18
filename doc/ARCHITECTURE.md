@@ -96,19 +96,21 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 ### `sift_orchestrate(custom_tools, custom_paths)`
 - **Category**: Universal Orchestration
 - **Best For**: Cross-IDE and multi-agent collaboration.
-- **Operation**: Performs deep discovery across local and global config files (Claude, Zed, Continue, etc.). Injects tool-specific or category-based "Chain of Context" rules.
+- **Operation**: Performs deep discovery across local (`.gemini`) and global config files (**Claude, Zed, Continue, Copilot, Antigravity, OpenCode**). 
+- **Heuristic Matching**: Uses a **Keyword-based Heuristic Engine** to identify tool categories (e.g., Slack, AWS, SQL) and injects specific "Chain of Context" rules.
 - **Benefit**: Transforms a fragmented toolset into a unified, high-SNR intelligence system.
 
 ---
 
 ## 🛠️ Technical Stack
 
-- **Kernel**: Python 3.13 (Native performance for AI libraries).
+- **Kernel**: Python 3.12 (Optimized for CUDA stability).
 - **Communication**: FastMCP (Standardized I/O for AI Agents).
 - **AI Core**: PyTorch + Hugging Face Transformers.
 - **Models**: 
     - **LLMLingua-2**: Semantic Compression.
     - **BGE-Reranker**: Relevance ranking.
+- **Orchestration**: Agnostic Path Discovery + Heuristic Keyword Synergy.
 - **Caching**: Local SHA-256 persistent disk cache for instantaneous repeat sifts.
 
 ---

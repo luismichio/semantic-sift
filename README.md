@@ -60,10 +60,10 @@ Prioritizes and optimizes sifting operations for speed and accuracy.
 
 ### 7. Super-Agnostic Orchestration
 **One Sifter to Rule Them All.**
-Automatically detects and collaborates with virtually any AI development tool.
+Automatically detects and collaborates with virtually any AI development tool or technical stack.
 - **Auto-Discovery**: Scans for **Continue**, **Zed**, **Copilot**, **OpenCode**, and **Antigravity**.
-- **Universal Strategy**: Category-based rules for Discovery, Storage, and Search.
-- **Custom Mode**: Support for `custom_tools` and `custom_paths`.
+- **Heuristic Synergy**: Intelligently identifies tool categories (Slack, AWS, SQL, etc.) and injects specific high-fidelity rules.
+- **Unified Context**: Injects a `# 🤝 Unified Context Orchestration` section into your agent instructions.
 - **Tool**: `sift_orchestrate`
 
 ---
@@ -71,8 +71,8 @@ Automatically detects and collaborates with virtually any AI development tool.
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.10+
-- PyTorch (Installed automatically via `requirements.txt`)
+- Python 3.12+ (Recommended for CUDA support)
+- PyTorch with CUDA (if using GPU)
 
 ### Installation & Setup
 
@@ -80,8 +80,9 @@ Automatically detects and collaborates with virtually any AI development tool.
    ```bash
    git clone https://github.com/luismichio/semantic-sift.git
    cd semantic-sift
-   python -m venv venv
-   source venv/bin/activate  # Windows: venv\\Scripts\\activate
+   py -3.12 -m venv venv312
+   .\venv312\Scripts\activate
+   pip install torch --index-url https://download.pytorch.org/whl/cu121
    pip install -r requirements.txt
    ```
 
@@ -89,6 +90,10 @@ Automatically detects and collaborates with virtually any AI development tool.
    ```bash
    python server.py
    ```
+
+3. **Onboard Your Project**
+   Run the following tool once connected to automatically configure your workspace:
+   `semantic-sift.sift_onboard()`
 
 ### Registering in MCP Config
 Add this to your `claude_desktop_config.json` or equivalent:
