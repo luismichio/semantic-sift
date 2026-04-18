@@ -58,12 +58,16 @@ Using a local **BGE-Reranker**, Sift can prioritize information *before* it is p
 
 ## 🤝 Universal Orchestration: The "Chain of Context"
 
-Semantic-Sift is designed to be the **intelligent glue** between all your other MCPs. It automatically detects your environment and injects collaborative synergies:
+Semantic-Sift is designed to be the **intelligent glue** between all your specialist MCPs. When you run `sift_onboard()`, it automatically detects your active tools and injects high-fidelity collaborative rules into your instruction files.
 
-*   **Serena Synergy**: Always sift code bodies > 100 lines after retrieval.
-*   **Context-Mode Synergy**: Sift tool outputs before they are indexed into the searchable database.
-*   **Knowledge Synergy**: Automatically clean Slack/Notion data to focus on decisions.
-*   **Cloud Synergy**: Strip low-value metadata (ETags, Request IDs) from **AWS/Azure** JSON snapshots.
+### Orchestration Blueprints:
+*   **Discovery (Serena, Investigator)**: Always pipe code bodies > 100 lines through `sift_chat` after retrieval to prune docstring and comment bloat while preserving logic.
+*   **Storage (Context-Mode, Memory)**: Sift all tool outputs > 1,000 characters **before** they are indexed into a searchable database to ensure search results remain high-signal.
+*   **Knowledge (Slack, Notion, Discord, Confluence)**: Distill chat history and wiki pages to isolate decisions and action items, ignoring UI noise, block IDs, and system events.
+*   **Infrastructure (AWS, Azure, GCP, Kubernetes)**: Apply `sift_logs` to massive cloud resource snapshots (JSON) to strip redundant fields (ETags, Request IDs, Timestamps).
+*   **Data (Postgres, SQL, SQLite)**: If a query returns a massive result set, Sift keeps the schema and edge rows while pruning the middle to maintain a lean context.
+*   **Browsing (Puppeteer, Playwright, Browser)**: Automatically clean up raw HTML fetches by removing navigation menus, footers, and tracking scripts before analysis.
+*   **Workflow (Jira, Linear)**: Sift ticket descriptions and comment chains to focus on the 'State Change' and 'Resolution' logic, ignoring boilerplate status updates.
 
 ---
 
