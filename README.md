@@ -73,10 +73,13 @@ Automatically detects and collaborates with virtually any AI development tool or
 Semantic-Sift doesn't just compress text; it **teaches your agent** how to use all its tools collaboratively. When you run `sift_onboard()`, it identifies your active MCPs and injects specific "Synergy Rules" into your `@AGENTS.md`.
 
 ### Examples of Injected Synergies:
-*   **Serena + Sift**: *"Always sift code bodies > 100 lines after retrieval via Serena to prune docstring/comment bloat."*
-*   **Context-Mode + Sift**: *"Sift all tool outputs > 1,000 chars BEFORE indexing into the Context-Mode database to keep search results high-signal."*
-*   **Slack + Sift**: *"Distill Slack history to keep only decisions and action items, ignoring linguistic filler and emoji reactions."*
-*   **AWS + Sift**: *"Apply `sift_logs` to cloud resource descriptions to strip low-entropy metadata (ETags, Request IDs)."*
+*   **Discovery (Serena, Investigator)**: Always sift code bodies > 100 lines after retrieval to prune docstring/comment bloat.
+*   **Storage (Context-Mode, Memory)**: Sift all tool outputs > 1,000 chars *before* indexing to keep search results high-signal.
+*   **Knowledge (Slack, Notion, Discord)**: Distill chat history and wiki pages to keep only decisions, ignoring metadata and UI noise.
+*   **Infrastructure (AWS, Azure, GCP)**: Apply `sift_logs` to cloud resource descriptions to strip redundant JSON fields (ETags, IDs).
+*   **Data (Postgres, SQL, SQLite)**: Keep the schema and edge rows while pruning the middle of massive result sets.
+*   **Browsing (Puppeteer, Playwright)**: Clean up raw HTML fetches by removing navigation menus and tracking scripts.
+*   **Workflow (Jira, Linear)**: Sift ticket comments to focus on the 'State Change' and 'Resolution' logic.
 
 ---
 
