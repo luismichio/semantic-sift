@@ -50,6 +50,30 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **NEVER** sift security-sensitive configuration files (`.env`, secrets).
 """
 
+# Collaboration Blueprint for known MCPs
+COLLABORATION_MAP = {
+    "serena": {
+        "workflow": "Discovery -> Sifting",
+        "rule": "- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval to prune docstring/comment bloat while keeping logic."
+    },
+    "context-mode": {
+        "workflow": "Sifting -> Storage",
+        "rule": "- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` on all tool outputs > 1,000 characters BEFORE calling `context-mode_ctx_index`. This ensures the FTS5 search index remains high-signal."
+    },
+    "github": {
+        "workflow": "Search -> Distillation",
+        "rule": "- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or repository search results to focus on actionable code changes."
+    },
+    "brave-search": {
+        "workflow": "Fetch -> Cleaning",
+        "rule": "- **Brave Synergy**: When fetching long web pages, run `sift_extraction` to remove navigation menus, footers, and ads before processing the prose."
+    },
+    "fetch": {
+        "workflow": "Fetch -> Cleaning",
+        "rule": "- **Fetch Synergy**: Always sift raw HTML/Markdown fetched from URLs to maintain context density."
+    }
+}
+
 # Create the MCP server
 mcp = FastMCP("Semantic-Sift")
 
@@ -402,7 +426,77 @@ async def sift_onboard() -> str:
         report.append(f"- Error updating `{target_file}`: {str(e)}")
 
     report.append("\n**Semantic-Sift is now fully configured and ready for high-fidelity sifting.**")
+    
+    # 3. Collaborative Orchestration
+    orchestration_report = await sift_orchestrate()
+    report.append("\n" + orchestration_report)
+    
     return "\n".join(report)
+
+@mcp.tool()
+async def sift_orchestrate(manual_tools: list[str] = None) -> str:
+    """
+    Analyzes available MCPs and injects collaborative "Chain of Context" rules.
+    Scans .gemini/settings.json or accepts a manual list of tool names.
+    """
+    discovered = []
+    if manual_tools:
+        discovered = [t.lower() for t in manual_tools]
+    else:
+        # Auto-discovery via .gemini/settings.json
+        settings_path = os.path.join(os.getcwd(), ".gemini", "settings.json")
+        if os.path.exists(settings_path):
+            try:
+                with open(settings_path, "r") as f:
+                    settings = json.load(f)
+                    discovered = [name.lower() for name in settings.get("mcpServers", {}).keys()]
+            except Exception:
+                pass
+
+    if not discovered:
+        return "No other MCPs discovered for orchestration."
+
+    active_rules = []
+    for tool in discovered:
+        if tool in COLLABORATION_MAP:
+            active_rules.append(COLLABORATION_MAP[tool]["rule"])
+
+    if not active_rules:
+        return f"Discovered MCPs ({', '.join(discovered)}) have no specific collaboration blueprints."
+
+    orchestration_block = "\n---\n\n# 🤝 Unified Context Orchestration\n\nTo optimize the workflow between multiple MCPs, follow these collaborative patterns:\n\n"
+    orchestration_block += "\n".join(active_rules)
+    orchestration_block += "\n"
+
+    # Inject into instruction file
+    instruction_files = ["AGENTS.md", "GEMINI.md", ".clinerules", ".cursorrules"]
+    target_file = None
+    cwd = os.getcwd()
+    for filename in instruction_files:
+        if os.path.exists(os.path.join(cwd, filename)):
+            target_file = filename
+            break
+
+    if target_file:
+        try:
+            with open(os.path.join(cwd, target_file), "r") as f:
+                content = f.read()
+            
+            if "# 🤝 Unified Context Orchestration" in content:
+                # Update existing block
+                new_content = re.sub(r'# 🤝 Unified Context Orchestration.*?(?=\n---|\n#|$)', orchestration_block.strip(), content, flags=re.DOTALL)
+                with open(os.path.join(cwd, target_file), "w") as f:
+                    f.write(new_content)
+                return f"Updated existing orchestration rules in `{target_file}` based on discovered MCPs: {', '.join(discovered)}."
+            else:
+                # Append new block
+                with open(os.path.join(cwd, target_file), "a") as f:
+                    f.write(orchestration_block)
+                return f"Injected new collaborative workflows into `{target_file}` for: {', '.join(discovered)}."
+        except Exception as e:
+            return f"Error updating `{target_file}`: {str(e)}"
+
+    return f"Proposing the following orchestration for {', '.join(discovered)}:\n{orchestration_block}"
 
 @mcp.tool()
 async def sift_analyze(text: str) -> str:
