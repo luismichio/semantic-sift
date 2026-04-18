@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Super-Agnostic Orchestration**: Upgraded `sift_orchestrate` to automatically discover tools from **Continue**, **Zed**, **GitHub Copilot**, **OpenCode**, and **Antigravity** across Windows and macOS.
+- **Custom Configuration**: `sift_orchestrate` now accepts `custom_tools` and `custom_paths` for tailored environment discovery.
 - **Intelligence Tier**: New `sift_rank` tool using **BGE-Reranker** (`BAAI/bge-reranker-base`) to prioritize the most relevant text chunks from multiple documents before sifting.
 - **Persistent Semantic Cache**: Implemented a local disk cache (`.sift_cache/`) that stores sifting results. Repeat calls for the same text and parameters now have near-zero latency (~1ms).
 - **Context Advisory**: New `sift_analyze` tool that evaluates context quality (SNR) and recommends appropriate sifting actions based on noise heuristics and document length.

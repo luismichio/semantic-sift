@@ -93,6 +93,12 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Operation**: Uses a local BGE-Reranker model (`BAAI/bge-reranker-base`) to score documents against a query. Returns top-N results.
 - **Benefit**: Ensures the most relevant information is prioritized before the sifting/compression stage.
 
+### `sift_orchestrate(custom_tools, custom_paths)`
+- **Category**: Universal Orchestration
+- **Best For**: Cross-IDE and multi-agent collaboration.
+- **Operation**: Performs deep discovery across local and global config files (Claude, Zed, Continue, etc.). Injects tool-specific or category-based "Chain of Context" rules.
+- **Benefit**: Transforms a fragmented toolset into a unified, high-SNR intelligence system.
+
 ---
 
 ## 🛠️ Technical Stack

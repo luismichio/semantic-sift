@@ -64,6 +64,26 @@ COLLABORATION_MAP = {
         "workflow": "Search -> Distillation",
         "rule": "- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or repository search results to focus on actionable code changes."
     },
+    "github-copilot": {
+        "workflow": "Context -> Precision",
+        "rule": "- **Copilot Synergy**: Always sift large context windows (multi-file reads) before presenting to Copilot to reduce 'hallucination' and improve suggestion accuracy."
+    },
+    "continue": {
+        "workflow": "Chat -> Density",
+        "rule": "- **Continue Synergy**: Use `sift_chat` on conversation history if Continue's 'Context Providers' are returning high-volume data."
+    },
+    "zed": {
+        "workflow": "Agent -> Snappiness",
+        "rule": "- **Zed Synergy**: Sift the output of Zed's 'Agent Panel' tools to keep the interaction snappy and cost-effective."
+    },
+    "opencode": {
+        "workflow": "Protocol -> Hygiene",
+        "rule": "- **OpenCode Synergy**: Apply `sift_analyze` to results from OpenCode tools to determine if sifting is needed before reading."
+    },
+    "antigravity": {
+        "workflow": "Gemini -> Signal",
+        "rule": "- **Antigravity Synergy**: Use `sift_doc` on large files retrieved via Antigravity's filesystem tools to keep Gemini's attention on core facts."
+    },
     "brave-search": {
         "workflow": "Fetch -> Cleaning",
         "rule": "- **Brave Synergy**: When fetching long web pages, run `sift_extraction` to remove navigation menus, footers, and ads before processing the prose."
@@ -133,24 +153,50 @@ def set_cache(key: str, result: str):
     with open(cache_path, "w", encoding="utf-8") as f:
         f.write(result)
 
-def get_global_mcp_config() -> dict:
-    """Attempts to find and parse system-wide MCP configurations (Claude Desktop)."""
-    paths = []
-    if sys.platform == "win32":
-        appdata = os.environ.get("APPDATA")
-        if appdata:
-            paths.append(os.path.join(appdata, "Claude", "claude_desktop_config.json"))
-    elif sys.platform == "darwin":
-        paths.append(os.path.expanduser("~/Library/Application Support/Claude/claude_desktop_config.json"))
+def get_global_mcp_configs() -> list[dict]:
+    """Attempts to find and parse multiple system-wide MCP configurations."""
+    configs = []
     
-    for path in paths:
-        if os.path.exists(path):
+    # Define potential paths and their specific JSON keys for MCP servers
+    discovery_grid = [
+        # Claude Desktop (Standard)
+        {"path": "~/AppData/Roaming/Claude/claude_desktop_config.json", "key": "mcpServers", "os": "win32"},
+        {"path": "~/Library/Application Support/Claude/claude_desktop_config.json", "key": "mcpServers", "os": "darwin"},
+        
+        # Continue
+        {"path": "~/.continue/config.json", "key": "mcpServers"},
+        
+        # Zed IDE
+        {"path": "~/.config/zed/settings.json", "key": "context_servers"},
+        {"path": ".zed/settings.json", "key": "context_servers"},
+        
+        # GitHub Copilot
+        {"path": "~/.copilot/mcp-config.json", "key": "mcpServers"},
+        {"path": ".copilot/mcp-config.json", "key": "mcpServers"},
+        {"path": "~/.mcp.json", "key": "mcpServers"},
+        
+        # OpenCode
+        {"path": "~/.opencode.json", "key": "mcpServers"},
+        {"path": ".opencode.json", "key": "mcpServers"},
+        
+        # Antigravity (Google)
+        {"path": "~/.gemini/antigravity/mcp_config.json", "key": "mcpServers"},
+    ]
+    
+    for item in discovery_grid:
+        # Check OS if specified
+        if "os" in item and sys.platform != item["os"]:
+            continue
+            
+        full_path = os.path.expanduser(item["path"])
+        if os.path.exists(full_path):
             try:
-                with open(path, "r") as f:
-                    return json.load(f)
+                with open(full_path, "r") as f:
+                    data = json.load(f)
+                    configs.append({"data": data, "key": item["key"]})
             except Exception:
                 pass
-    return {}
+    return configs
 
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
@@ -453,31 +499,52 @@ async def sift_onboard() -> str:
     return "\n".join(report)
 
 @mcp.tool()
-async def sift_orchestrate(manual_tools: list[str] = None) -> str:
+async def sift_orchestrate(custom_tools: list[str] = None, custom_paths: list[str] = None) -> str:
     """
-    Analyzes available MCPs (local & global) and injects collaborative rules.
-    Agnostic discovery for Claude Desktop, Gemini CLI, and other IDEs.
+    Analyzes available MCPs (local, global, & custom) and injects collaborative rules.
+    Agnostic discovery for VSCode, Zed, Continue, Copilot, Antigravity, and more.
     """
     discovered = set()
-    if manual_tools:
-        for t in manual_tools:
+    
+    # 1. Add manual custom tools
+    if custom_tools:
+        for t in custom_tools:
             discovered.add(t.lower())
-    else:
-        # 1. Local Auto-discovery (.gemini/settings.json)
-        settings_path = os.path.join(os.getcwd(), ".gemini", "settings.json")
-        if os.path.exists(settings_path):
-            try:
-                with open(settings_path, "r") as f:
-                    settings = json.load(f)
-                    for name in settings.get("mcpServers", {}).keys():
-                        discovered.add(name.lower())
-            except Exception:
-                pass
-        
-        # 2. Global Auto-discovery (Claude Desktop)
-        global_config = get_global_mcp_config()
-        for name in global_config.get("mcpServers", {}).keys():
+            
+    # 2. Local Auto-discovery (.gemini/settings.json)
+    local_settings = os.path.join(os.getcwd(), ".gemini", "settings.json")
+    if os.path.exists(local_settings):
+        try:
+            with open(local_settings, "r") as f:
+                data = json.load(f)
+                for name in data.get("mcpServers", {}).keys():
+                    discovered.add(name.lower())
+        except Exception:
+            pass
+
+    # 3. Global Auto-discovery (Claude, Continue, Zed, etc.)
+    global_configs = get_global_mcp_configs()
+    for item in global_configs:
+        config_data = item["data"]
+        server_key = item["key"]
+        for name in config_data.get(server_key, {}).keys():
             discovered.add(name.lower())
+            
+    # 4. Custom Path Discovery
+    if custom_paths:
+        for path in custom_paths:
+            full_path = os.path.expanduser(path)
+            if os.path.exists(full_path):
+                try:
+                    with open(full_path, "r") as f:
+                        data = json.load(f)
+                        # Try common keys
+                        for k in ["mcpServers", "context_servers", "servers"]:
+                            if k in data:
+                                for name in data[k].keys():
+                                    discovered.add(name.lower())
+                except Exception:
+                    pass
 
     active_rules = []
     for tool in discovered:
@@ -487,7 +554,7 @@ async def sift_orchestrate(manual_tools: list[str] = None) -> str:
     orchestration_header = "\n---\n\n# 🤝 Unified Context Orchestration\n\nTo optimize the workflow between multiple MCPs, follow these collaborative patterns:\n\n"
     
     if not active_rules:
-        # Universal Fallback Rules (Agnostic)
+        # Universal Fallback Rules (Agnostic Category-based)
         orchestration_block = orchestration_header
         orchestration_block += "- **Discovery Strategy**: If using any code discovery tool (e.g. Serena, Codebase-Investigator), always run `sift_chat` (rate: 0.7) on retrieved bodies > 100 lines to maintain logic density.\n"
         orchestration_block += "- **Storage Strategy**: If using any context storage tool (e.g. Context-Mode, Memory), sift all tool outputs > 1,000 characters before indexing to ensure the search index remains high-signal.\n"
@@ -516,16 +583,16 @@ async def sift_orchestrate(manual_tools: list[str] = None) -> str:
                 new_content = re.sub(r'# 🤝 Unified Context Orchestration.*?(?=\n---|\n#|$)', orchestration_block.strip(), content, flags=re.DOTALL)
                 with open(os.path.join(cwd, target_file), "w") as f:
                     f.write(new_content)
-                return f"Updated existing orchestration rules in `{target_file}`."
+                return f"Updated existing orchestration rules in `{target_file}` for tools: {', '.join(discovered)}."
             else:
                 # Append new block
                 with open(os.path.join(cwd, target_file), "a") as f:
                     f.write(orchestration_block)
-                return f"Injected new collaborative workflows into `{target_file}`."
+                return f"Injected new collaborative workflows into `{target_file}` for tools: {', '.join(discovered)}."
         except Exception as e:
             return f"Error updating `{target_file}`: {str(e)}"
 
-    return f"Proposing the following universal orchestration:\n{orchestration_block}"
+    return f"Proposing the following universal orchestration for {', '.join(discovered)}:\n{orchestration_block}"
 
 @mcp.tool()
 async def sift_analyze(text: str) -> str:

@@ -58,6 +58,14 @@ Prioritizes and optimizes sifting operations for speed and accuracy.
 - **Semantic Caching**: Automatically stores results to make repeat sifts instantaneous.
 - **Tool**: `sift_rank`
 
+### 7. Super-Agnostic Orchestration
+**One Sifter to Rule Them All.**
+Automatically detects and collaborates with virtually any AI development tool.
+- **Auto-Discovery**: Scans for **Continue**, **Zed**, **Copilot**, **OpenCode**, and **Antigravity**.
+- **Universal Strategy**: Category-based rules for Discovery, Storage, and Search.
+- **Custom Mode**: Support for `custom_tools` and `custom_paths`.
+- **Tool**: `sift_orchestrate`
+
 ---
 
 ## 🚀 Quick Start
