@@ -50,16 +50,92 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **NEVER** sift security-sensitive configuration files (`.env`, secrets).
 """
 
-# Collaboration Blueprint for known MCPs
+# Collaboration Blueprint for known MCPs (Heuristic Matching)
 COLLABORATION_MAP = {
+    # Discovery & Development
     "serena": {
         "workflow": "Discovery -> Sifting",
         "rule": "- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval to prune docstring/comment bloat while keeping logic."
     },
+    "investigator": {
+        "workflow": "Research -> Distillation",
+        "rule": "- **Investigator Synergy**: Run `sift_doc` on comprehensive architectural reports or file-system scans to identify core patterns quickly."
+    },
+    # Storage & Memory
     "context-mode": {
         "workflow": "Sifting -> Storage",
         "rule": "- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` on all tool outputs > 1,000 characters BEFORE calling `context-mode_ctx_index`. This ensures the FTS5 search index remains high-signal."
     },
+    "memory": {
+        "workflow": "Recall -> Compaction",
+        "rule": "- **Memory Synergy**: Periodically call `sift_chat` on retrieved long-term memories to condense historical facts into high-signal summaries."
+    },
+    # Knowledge & Communication
+    "slack": {
+        "workflow": "Chat -> Decision",
+        "rule": "- **Slack Synergy**: Sift Slack history to keep only the decisions and action items, ignoring linguistic filler, emoji reactions, and system events."
+    },
+    "discord": {
+        "workflow": "History -> Signal",
+        "rule": "- **Discord Synergy**: Use `sift_chat` on verbose Discord threads to isolate the technical thread of conversation."
+    },
+    "notion": {
+        "workflow": "Docs -> Cleaning",
+        "rule": "- **Notion Synergy**: Use `sift_extraction` on Notion pages to remove redundant block metadata and JSON artifacts, keeping only the documentation prose."
+    },
+    "confluence": {
+        "workflow": "Wiki -> Signal",
+        "rule": "- **Confluence Synergy**: Sift Confluence pages to remove enterprise header/footer noise and navigation elements."
+    },
+    # Infrastructure & Cloud
+    "aws": {
+        "workflow": "Infra -> Logic",
+        "rule": "- **AWS Synergy**: Apply `sift_logs` to cloud resource descriptions (JSON) to strip low-entropy metadata (ETags, Request IDs) and focus on configuration."
+    },
+    "gcp": {
+        "workflow": "Cloud -> Precision",
+        "rule": "- **GCP Synergy**: Sift verbose GCloud CLI outputs to isolate error states and resource properties."
+    },
+    "azure": {
+        "workflow": "Cloud -> Logic",
+        "rule": "- **Azure Synergy**: Use `sift_logs` on Azure resource snapshots to reduce token-load during environment analysis."
+    },
+    # Databases
+    "postgres": {
+        "workflow": "Data -> Sample",
+        "rule": "- **Postgres Synergy**: If a query returns > 50 rows, run `sift_logs` to preserve the schema and edge rows while pruning the middle to save tokens."
+    },
+    "sql": {
+        "workflow": "Query -> Signal",
+        "rule": "- **SQL Synergy**: Sift large SQL query results to focus on the schema and anomalous data points."
+    },
+    "sqlite": {
+        "workflow": "Local Data -> Density",
+        "rule": "- **SQLite Synergy**: Use `sift_logs` on database dumps to maintain a lean context during local data exploration."
+    },
+    # Execution & Browsing
+    "puppeteer": {
+        "workflow": "Browser -> Signal",
+        "rule": "- **Puppeteer Synergy**: Always run `sift_extraction` on browser text to remove ads, tracking scripts, and navigation menus before analysis."
+    },
+    "playwright": {
+        "workflow": "Browser -> Extraction",
+        "rule": "- **Playwright Synergy**: Run `sift_extraction` on raw HTML fetches to ensure the agent only sees high-density content."
+    },
+    "browser": {
+        "workflow": "Web -> Density",
+        "rule": "- **Browser Synergy**: Use `sift_extraction` to clean up web content retrieved from browser-based tools."
+    },
+    # Workflow & Management
+    "jira": {
+        "workflow": "Task -> Resolution",
+        "rule": "- **Jira Synergy**: Sift Jira ticket comments to focus on the 'State Change' and 'Resolution' logic, ignoring boilerplate status updates."
+    },
+    "linear": {
+        "workflow": "Issues -> Signal",
+        "rule": "- **Linear Synergy**: Use `sift_chat` on issue descriptions and comment chains to isolate requirements and technical blockers."
+    },
+    # Source Control
     "github": {
         "workflow": "Search -> Distillation",
         "rule": "- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or repository search results to focus on actionable code changes."
@@ -68,29 +144,14 @@ COLLABORATION_MAP = {
         "workflow": "Context -> Precision",
         "rule": "- **Copilot Synergy**: Always sift large context windows (multi-file reads) before presenting to Copilot to reduce 'hallucination' and improve suggestion accuracy."
     },
-    "continue": {
-        "workflow": "Chat -> Density",
-        "rule": "- **Continue Synergy**: Use `sift_chat` on conversation history if Continue's 'Context Providers' are returning high-volume data."
-    },
-    "zed": {
-        "workflow": "Agent -> Snappiness",
-        "rule": "- **Zed Synergy**: Sift the output of Zed's 'Agent Panel' tools to keep the interaction snappy and cost-effective."
-    },
-    "opencode": {
-        "workflow": "Protocol -> Hygiene",
-        "rule": "- **OpenCode Synergy**: Apply `sift_analyze` to results from OpenCode tools to determine if sifting is needed before reading."
-    },
-    "antigravity": {
-        "workflow": "Gemini -> Signal",
-        "rule": "- **Antigravity Synergy**: Use `sift_doc` on large files retrieved via Antigravity's filesystem tools to keep Gemini's attention on core facts."
-    },
-    "brave-search": {
-        "workflow": "Fetch -> Cleaning",
-        "rule": "- **Brave Synergy**: When fetching long web pages, run `sift_extraction` to remove navigation menus, footers, and ads before processing the prose."
-    },
+    # Generic Utilities
     "fetch": {
         "workflow": "Fetch -> Cleaning",
         "rule": "- **Fetch Synergy**: Always sift raw HTML/Markdown fetched from URLs to maintain context density."
+    },
+    "brave-search": {
+        "workflow": "Search -> Signal",
+        "rule": "- **Brave Synergy**: When fetching long web pages, run `sift_extraction` to remove technical debris and UI noise."
     }
 }
 
@@ -546,10 +607,16 @@ async def sift_orchestrate(custom_tools: list[str] = None, custom_paths: list[st
                 except Exception:
                     pass
 
-    active_rules = []
-    for tool in discovered:
-        if tool in COLLABORATION_MAP:
-            active_rules.append(COLLABORATION_MAP[tool]["rule"])
+    active_rules = set()
+    for tool_name in discovered:
+        # 1. Check for exact match
+        if tool_name in COLLABORATION_MAP:
+            active_rules.add(COLLABORATION_MAP[tool_name]["rule"])
+        else:
+            # 2. Heuristic Keyword Matching
+            for key, config in COLLABORATION_MAP.items():
+                if key in tool_name:
+                    active_rules.add(config["rule"])
 
     orchestration_header = "\n---\n\n# 🤝 Unified Context Orchestration\n\nTo optimize the workflow between multiple MCPs, follow these collaborative patterns:\n\n"
     
@@ -561,7 +628,7 @@ async def sift_orchestrate(custom_tools: list[str] = None, custom_paths: list[st
         orchestration_block += "- **Search Strategy**: If using any search or web tool (e.g. Brave, GitHub, Fetch), run `sift_extraction` or `sift_logs` on results to remove technical debris and UI noise.\n"
     else:
         orchestration_block = orchestration_header
-        orchestration_block += "\n".join(active_rules)
+        orchestration_block += "\n".join(sorted(list(active_rules)))
         orchestration_block += "\n"
 
     # Inject into instruction file

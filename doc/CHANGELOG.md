@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Heuristic Orchestration**: Refactored `sift_orchestrate` to use keyword-based heuristic matching, allowing it to identify tool categories (e.g., `mcp-server-postgres` matches `postgres`).
+- **Expanded Synergies**: Added 15+ new specialized collaboration rules for **Slack**, **Notion**, **AWS**, **Postgres**, **Puppeteer**, **Jira**, **Linear**, and more.
 - **Super-Agnostic Orchestration**: Upgraded `sift_orchestrate` to automatically discover tools from **Continue**, **Zed**, **GitHub Copilot**, **OpenCode**, and **Antigravity** across Windows and macOS.
 - **Custom Configuration**: `sift_orchestrate` now accepts `custom_tools` and `custom_paths` for tailored environment discovery.
 - **Intelligence Tier**: New `sift_rank` tool using **BGE-Reranker** (`BAAI/bge-reranker-base`) to prioritize the most relevant text chunks from multiple documents before sifting.
