@@ -119,3 +119,43 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
 - **NEVER** sift small, surgical code snippets (symbol-level).
 - **NEVER** sift security-sensitive configuration files (`.env`, secrets).
+
+<!-- SIFT_SECTION_START:SOP -->
+---
+
+# 🔍 Semantic-Sift — Standard Operating Procedures
+---
+
+# 🔍 Semantic-Sift — Standard Operating Procedures
+
+To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follow these usage guidelines.
+
+## 🛠️ Tool Selection & Thresholds
+
+| Tool | Trigger Condition | Goal |
+| :--- | :--- | :--- |
+| `sift_logs` | Any log/terminal output > 50 lines or containing progress bars. | Heuristic removal of timestamps/noise. |
+| `sift_chat` | Previous conversation history exceeding 5,000 characters. | Prune linguistic filler (default rate: 0.5). |
+| `sift_doc` | Reading documentation files > 10,000 characters. | Hybrid distillation (Heuristic + Semantic). |
+| `sift_extraction` | Processing raw OCR or Docling extractions. | Preserve Markdown structure while cleaning debris. |
+| `sift_rank` | Selecting best chunks from multiple retrieved documents. | Filter by semantic relevance before sifting. |
+
+## 📐 Rate Guidelines
+- **Aggressive (0.3)**: Use for "lost in the middle" scenarios or massive histories.
+- **Balanced (0.5)**: Default. Best for general conversation and instructions.
+- **Gentle (0.7)**: Use for technical documentation where every keyword matters.
+
+## 🚫 Sifting Forbidden
+- **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
+- **NEVER** sift small, surgical code snippets (symbol-level).
+- **NEVER** sift security-sensitive configuration files (`.env`, secrets).
+<!-- SIFT_SECTION_END:SOP -->
+
+<!-- SIFT_SECTION_START:ORCHESTRATION -->
+---
+
+# 🤝 Unified Context Orchestration
+- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` on all tool outputs > 1,000 characters BEFORE calling `context-mode_ctx_index`. This ensures the FTS5 search index remains high-signal.
+- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or repository search results to focus on actionable code changes.
+- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval to prune docstring/comment bloat while keeping logic.
+<!-- SIFT_SECTION_END:ORCHESTRATION -->

@@ -54,6 +54,10 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **Balanced (0.5)**: Default. Best for general conversation and instructions.
 - **Gentle (0.7)**: Use for technical documentation where every keyword matters.
 
+## 🤖 Auto-Sift Mandate
+- **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **2,000 characters**.
+- **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
+
 ## 🚫 Sifting Forbidden
 - **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
 - **NEVER** sift small, surgical code snippets (symbol-level).
