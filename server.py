@@ -133,6 +133,25 @@ def set_cache(key: str, result: str):
     with open(cache_path, "w", encoding="utf-8") as f:
         f.write(result)
 
+def get_global_mcp_config() -> dict:
+    """Attempts to find and parse system-wide MCP configurations (Claude Desktop)."""
+    paths = []
+    if sys.platform == "win32":
+        appdata = os.environ.get("APPDATA")
+        if appdata:
+            paths.append(os.path.join(appdata, "Claude", "claude_desktop_config.json"))
+    elif sys.platform == "darwin":
+        paths.append(os.path.expanduser("~/Library/Application Support/Claude/claude_desktop_config.json"))
+    
+    for path in paths:
+        if os.path.exists(path):
+            try:
+                with open(path, "r") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    return {}
+
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
     """
@@ -436,37 +455,47 @@ async def sift_onboard() -> str:
 @mcp.tool()
 async def sift_orchestrate(manual_tools: list[str] = None) -> str:
     """
-    Analyzes available MCPs and injects collaborative "Chain of Context" rules.
-    Scans .gemini/settings.json or accepts a manual list of tool names.
+    Analyzes available MCPs (local & global) and injects collaborative rules.
+    Agnostic discovery for Claude Desktop, Gemini CLI, and other IDEs.
     """
-    discovered = []
+    discovered = set()
     if manual_tools:
-        discovered = [t.lower() for t in manual_tools]
+        for t in manual_tools:
+            discovered.add(t.lower())
     else:
-        # Auto-discovery via .gemini/settings.json
+        # 1. Local Auto-discovery (.gemini/settings.json)
         settings_path = os.path.join(os.getcwd(), ".gemini", "settings.json")
         if os.path.exists(settings_path):
             try:
                 with open(settings_path, "r") as f:
                     settings = json.load(f)
-                    discovered = [name.lower() for name in settings.get("mcpServers", {}).keys()]
+                    for name in settings.get("mcpServers", {}).keys():
+                        discovered.add(name.lower())
             except Exception:
                 pass
-
-    if not discovered:
-        return "No other MCPs discovered for orchestration."
+        
+        # 2. Global Auto-discovery (Claude Desktop)
+        global_config = get_global_mcp_config()
+        for name in global_config.get("mcpServers", {}).keys():
+            discovered.add(name.lower())
 
     active_rules = []
     for tool in discovered:
         if tool in COLLABORATION_MAP:
             active_rules.append(COLLABORATION_MAP[tool]["rule"])
 
+    orchestration_header = "\n---\n\n# 🤝 Unified Context Orchestration\n\nTo optimize the workflow between multiple MCPs, follow these collaborative patterns:\n\n"
+    
     if not active_rules:
-        return f"Discovered MCPs ({', '.join(discovered)}) have no specific collaboration blueprints."
-
-    orchestration_block = "\n---\n\n# 🤝 Unified Context Orchestration\n\nTo optimize the workflow between multiple MCPs, follow these collaborative patterns:\n\n"
-    orchestration_block += "\n".join(active_rules)
-    orchestration_block += "\n"
+        # Universal Fallback Rules (Agnostic)
+        orchestration_block = orchestration_header
+        orchestration_block += "- **Discovery Strategy**: If using any code discovery tool (e.g. Serena, Codebase-Investigator), always run `sift_chat` (rate: 0.7) on retrieved bodies > 100 lines to maintain logic density.\n"
+        orchestration_block += "- **Storage Strategy**: If using any context storage tool (e.g. Context-Mode, Memory), sift all tool outputs > 1,000 characters before indexing to ensure the search index remains high-signal.\n"
+        orchestration_block += "- **Search Strategy**: If using any search or web tool (e.g. Brave, GitHub, Fetch), run `sift_extraction` or `sift_logs` on results to remove technical debris and UI noise.\n"
+    else:
+        orchestration_block = orchestration_header
+        orchestration_block += "\n".join(active_rules)
+        orchestration_block += "\n"
 
     # Inject into instruction file
     instruction_files = ["AGENTS.md", "GEMINI.md", ".clinerules", ".cursorrules"]
@@ -487,16 +516,16 @@ async def sift_orchestrate(manual_tools: list[str] = None) -> str:
                 new_content = re.sub(r'# 🤝 Unified Context Orchestration.*?(?=\n---|\n#|$)', orchestration_block.strip(), content, flags=re.DOTALL)
                 with open(os.path.join(cwd, target_file), "w") as f:
                     f.write(new_content)
-                return f"Updated existing orchestration rules in `{target_file}` based on discovered MCPs: {', '.join(discovered)}."
+                return f"Updated existing orchestration rules in `{target_file}`."
             else:
                 # Append new block
                 with open(os.path.join(cwd, target_file), "a") as f:
                     f.write(orchestration_block)
-                return f"Injected new collaborative workflows into `{target_file}` for: {', '.join(discovered)}."
+                return f"Injected new collaborative workflows into `{target_file}`."
         except Exception as e:
             return f"Error updating `{target_file}`: {str(e)}"
 
-    return f"Proposing the following orchestration for {', '.join(discovered)}:\n{orchestration_block}"
+    return f"Proposing the following universal orchestration:\n{orchestration_block}"
 
 @mcp.tool()
 async def sift_analyze(text: str) -> str:
