@@ -16,6 +16,21 @@ In the era of 128k+ token windows, the bottleneck is no longer capacity—it is 
 
 ---
 
+## 💰 Beyond Cost Savings: Why Sift?
+
+Whether your AI tools charge **per token** or **per request**, Semantic-Sift provides critical operational value:
+
+### 1. Per-Token Billing (Direct ROI)
+- **Wallet Benefit**: Every character pruned is money saved. Sift typically reduces token overhead by 30-70%.
+
+### 2. Per-Request Billing (Quality ROI)
+- **Attention Precision**: Models don't get "Lost in the Middle." By removing noise, you ensure the LLM's full reasoning power is focused on the signal.
+- **Latency reduction**: Smaller, cleaner prompts result in faster "Time to First Token" (TTFT) and snappier interactions.
+- **Context Insurance**: Prevents "Context length exceeded" errors on paid requests by ensuring your data always fits the model's hard limits.
+- **Tier Optimization**: Stay within "Small/Unlimited" request tiers by compacting "Large" data down to high-density signal.
+
+---
+
 ## 🛠️ Core Capabilities
 
 ### 1. The Structural Sieve (`sift_logs`)
