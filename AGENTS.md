@@ -95,35 +95,7 @@ Use `grep_search` with conservative `total_max_matches`.
 - Keep responses concise and direct.
 - Write artifacts (code, configs) to FILES — never return them as inline text.
 
----
-
-# 🔍 Semantic-Sift — Standard Operating Procedures
-
-To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follow these usage guidelines.
-
-## 🛠️ Tool Selection & Thresholds
-
-| Tool | Trigger Condition | Goal |
-| :--- | :--- | :--- |
-| `sift_logs` | Any log/terminal output > 50 lines or containing progress bars. | Heuristic removal of timestamps/noise. |
-| `sift_chat` | Previous conversation history exceeding 5,000 characters. | Prune linguistic filler (default rate: 0.5). |
-| `sift_doc` | Reading documentation files > 10,000 characters. | Hybrid distillation (Heuristic + Semantic). |
-| `sift_extraction` | Processing raw OCR or Docling extractions. | Preserve Markdown structure while cleaning debris. |
-
-## 📐 Rate Guidelines
-- **Aggressive (0.3)**: Use for "lost in the middle" scenarios or massive histories.
-- **Balanced (0.5)**: Default. Best for general conversation and instructions.
-- **Gentle (0.7)**: Use for technical documentation where every keyword matters.
-
-## 🚫 Sifting Forbidden
-- **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
-- **NEVER** sift small, surgical code snippets (symbol-level).
-- **NEVER** sift security-sensitive configuration files (`.env`, secrets).
-
 <!-- SIFT_SECTION_START:SOP -->
----
-
-# 🔍 Semantic-Sift — Standard Operating Procedures
 ---
 
 # 🔍 Semantic-Sift — Standard Operating Procedures
@@ -144,6 +116,10 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **Aggressive (0.3)**: Use for "lost in the middle" scenarios or massive histories.
 - **Balanced (0.5)**: Default. Best for general conversation and instructions.
 - **Gentle (0.7)**: Use for technical documentation where every keyword matters.
+
+## 🤖 Auto-Sift Mandate
+- **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **2,000 characters**.
+- **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
 
 ## 🚫 Sifting Forbidden
 - **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
