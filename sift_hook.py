@@ -4,17 +4,18 @@ import os
 import re
 import time
 
-# Ensure the script's directory is in the path so we can import server.py
-script_dir = os.path.dirname(os.path.abspath(__file__))
-if script_dir not in sys.path:
-    sys.path.append(script_dir)
+# Import Telemetry Core
+import telemetry_core
 
-# Import telemetry from server
-try:
-    from server import log_telemetry
-except ImportError:
-    # Fallback if server.py is not in path
-    def log_telemetry(*args, **kwargs):
+# Logging configuration
+LOG_FILE = os.path.join(os.getcwd(), ".gemini", "sift_debug.log")
+
+def log(message):
+    try:
+        timestamp = time.ctime()
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] {message}\n")
+    except:
         pass
 
 # Masters of the Sieve: Heuristic logic imported/copied for zero-latency hooks
@@ -32,71 +33,75 @@ def apply_heuristic_sieve(text: str) -> str:
     return "\n".join(sifted)
 
 def main():
-    # GOLDEN RULE: Use stderr for heartbeat/logging
-    sys.stderr.write(f"Hook triggered at {time.ctime()}\n")
-    
+    log("Hook script triggered")
     raw_input = ""
     try:
         # 1. Read JSON from stdin
         raw_input = sys.stdin.read()
         if not raw_input:
+            log("Warning: Received empty input on stdin")
             return
         
         data = json.loads(raw_input)
         start_t = time.time()
         
+        # Identity placeholder (Hook doesn't have a persistent session ID, uses "Background-Hook")
+        HOOK_SESSION = "Background-Hook"
+        START_TIME = time.ctime()
+
         # 2. Identify Platform and Extract Content
-        # Platform: Gemini CLI
+        sifted = None
+        raw_len = 0
+        
+        # Platform: Gemini CLI (AfterTool)
         if data.get("hook_event_name") == "AfterTool":
+            tool_name = data.get("tool_name", "unknown")
             tool_response = data.get("tool_response", {})
             raw_content = tool_response.get("llmContent", "")
+            raw_len = len(raw_content)
             
-            # Threshold: 1,000 characters
-            if len(raw_content) > 1000:
-                sifted_content = apply_heuristic_sieve(raw_content)
-                if len(sifted_content) < len(raw_content):
-                    # Telemetry
-                    latency = (time.time() - start_t) * 1000
-                    log_telemetry("hook_sift_logs", len(raw_content), len(sifted_content), latency)
-                    
-                    # Inject Sifted Content into JSON structure
-                    if "hookSpecificOutput" not in data:
-                        data["hookSpecificOutput"] = {}
-                    data["hookSpecificOutput"]["additionalContext"] = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted_content)} chars of noise.]"
-                    
-                    # Move signature inside the JSON content (Subconscious)
-                    data["tool_response"]["llmContent"] = sift_notification + sifted_content
-        
-        # Platform: Claude Code
-        elif "toolUse" in data and "result" in data:
+            if raw_len > 1000:
+                sifted = apply_heuristic_sieve(raw_content)
+                if len(sifted) < raw_len:
+                    log(f"Sift successful: pruned {raw_len - len(sifted)} chars")
+                    if "hookSpecificOutput" not in data: data["hookSpecificOutput"] = {}
+                    data["hookSpecificOutput"]["additionalContext"] = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {raw_len - len(sifted)} chars of noise.]"
+                    data["tool_response"]["llmContent"] = sift_notification + sifted
+                else:
+                    sifted = None
+
+        # Platform: VS Code Copilot (PostToolUse)
+        elif "tool_response" in data and "llmContent" in data["tool_response"]:
+             raw_content = data["tool_response"]["llmContent"]
+             raw_len = len(raw_content)
+             if raw_len > 1000:
+                 sifted = apply_heuristic_sieve(raw_content)
+                 if len(sifted) < raw_len:
+                     data["tool_response"]["llmContent"] = sift_notification + sifted
+                 else:
+                     sifted = None
+
+        # Platform: Cursor (postToolUse)
+        elif "result" in data and isinstance(data["result"], str):
             raw_content = data["result"]
-            if isinstance(raw_content, str) and len(raw_content) > 1000:
-                sifted_content = apply_heuristic_sieve(raw_content)
-                if len(sifted_content) < len(raw_content):
-                    # Telemetry
-                    latency = (time.time() - start_t) * 1000
-                    log_telemetry("hook_sift_logs", len(raw_content), len(sifted_content), latency)
-                    data["result"] = f"[Sifted] {sifted_content}"
+            raw_len = len(raw_content)
+            if raw_len > 1000:
+                sifted = apply_heuristic_sieve(raw_content)
+                if len(sifted) < raw_len:
+                    data["result"] = f"[Sifted] {sifted}"
+                else:
+                    sifted = None
 
-        # Platform: OpenCode
-        elif "output" in data and "args" in data.get("output", {}):
-            args = data["output"]["args"]
-            for key in ["content", "text", "output", "stdout"]:
-                if key in args and isinstance(args[key], str) and len(args[key]) > 1000:
-                    raw_content = args[key]
-                    sifted = apply_heuristic_sieve(raw_content)
-                    if len(sifted) < len(raw_content):
-                        # Telemetry
-                        latency = (time.time() - start_t) * 1000
-                        log_telemetry("hook_sift_logs", len(raw_content), len(sifted), latency)
-                        args[key] = sifted
+        # 3. Handle Telemetry (Blocking call to ensure it finishes before hook exits)
+        if sifted:
+            latency = (time.time() - start_t) * 1000
+            telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, "hook_sift_logs", raw_len, len(sifted), latency)
 
-        # 3. Output modified JSON - STRICTLY JSON TO STDOUT
+        # 4. Output modified JSON
         sys.stdout.write(json.dumps(data))
         
     except Exception as e:
-        sys.stderr.write(f"Error in hook: {str(e)}\n")
-        # On error, return original input to avoid breaking the tool chain
+        log(f"ERROR: {str(e)}")
         sys.stdout.write(raw_input)
 
 sift_notification = "--- [Distilled by Semantic-Sift] ---\n"

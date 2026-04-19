@@ -174,7 +174,6 @@ def merge_hook_json(path: str, hook_key: str, new_hook: dict, version: int = Non
     # Check if already present (by command matching)
     exists = any(h.get("command") == new_hook.get("command") for h in hooks_list)
     if not exists:
-        # Prepend to prioritize sifting
         data["hooks"][hook_key] = [new_hook] + hooks_list
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
@@ -187,10 +186,8 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
     python_exe = "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe"
     hook_script = "C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
     cmd_str = f"{python_exe} {hook_script}"
-    
     block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"; block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
     full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
-    
     for filename in INSTRUCTION_TARGETS:
         if not filename.endswith((".md", ".clinerules", ".cursorrules", ".windsurfrules")): continue
         target_path = os.path.join(cwd, filename)
@@ -206,20 +203,12 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
                     with open(target_path, "a", encoding="utf-8", errors="replace") as f: f.write(full_payload)
                     actions.append(f"Injected into `{filename}`.")
             except Exception as e: actions.append(f"Error updating `{filename}`: {str(e)}")
-
-    # Idempotent Hook Merging
-    # 1. Cursor
     cursor_path = os.path.join(cwd, ".cursor", "hooks.json")
     os.makedirs(os.path.dirname(cursor_path), exist_ok=True)
-    if merge_hook_json(cursor_path, "postToolUse", {"command": cmd_str}, version=1):
-        actions.append("Merged into Cursor hooks.")
-        
-    # 2. VS Code Copilot
+    if merge_hook_json(cursor_path, "postToolUse", {"command": cmd_str}, version=1): actions.append("Merged into Cursor hooks.")
     vscode_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
     os.makedirs(os.path.dirname(vscode_path), exist_ok=True)
-    if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}):
-        actions.append("Merged into VS Code hooks.")
-
+    if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}): actions.append("Merged into VS Code hooks.")
     return actions
 
 # --- Tools ---
@@ -285,16 +274,16 @@ async def get_sift_stats(scope: str = "current") -> str:
         with open(telemetry_core.TELEMETRY_FILE, "r") as f: data = json.load(f)
         target = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
         if not target: return f"--- Telemetry ({scope}) ---\nNo activity recorded.\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
-        total_calls = total_orig = total_final = total_lat = total_hits = 0; breakdown = {}
+        total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = total_hits = 0; breakdown = {}
         for session in target:
             for tool, stats in session.get("tools", {}).items():
-                c = stats.get("calls", 0); o = stats.get("original_chars", 0); f = stats.get("final_chars", 0); l = stats.get("total_latency_ms", 0); h = stats.get("cache_hits", 0)
-                total_calls += c; total_orig += o; total_final += f; total_lat += l; total_hits += h
-                if tool not in breakdown: breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
-                breakdown[tool]["calls"] += c; breakdown[tool]["saved"] += (o - f); breakdown[tool]["cache_hits"] += h
-        saved = total_orig - total_final
-        output = [f"--- Telemetry ({scope}) ---", f"Identity: {telemetry_core.SIFT_CLIENT_ID} (Tier: {telemetry_core.SIFT_TIER})", f"Calls: {total_calls}", f"Processed: {total_orig:,}", f"Pruned: {saved:,} ({(saved/total_orig*100) if total_orig>0 else 0:.1f}%)", f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms", f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)", "\nBreakdown:"]
-        for tool, s in breakdown.items(): output.append(f"- {tool}: {s['calls']} calls, {s['saved']:,} saved ({s['cache_hits']} hits)")
+                c = stats.get("calls", 0); oc = stats.get("original_chars", 0); fc = stats.get("final_chars", 0); ot = stats.get("original_tokens", 0); ft = stats.get("final_tokens", 0); l = stats.get("total_latency_ms", 0); h = stats.get("cache_hits", 0)
+                total_calls += c; total_orig_chars += oc; total_final_chars += fc; total_orig_tokens += ot; total_final_tokens += ft; total_lat += l; total_hits += h
+                if tool not in breakdown: breakdown[tool] = {"calls": 0, "chars_saved": 0, "tokens_saved": 0, "cache_hits": 0}
+                breakdown[tool]["calls"] += c; breakdown[tool]["chars_saved"] += (oc - fc); breakdown[tool]["tokens_saved"] += (ot - ft); breakdown[tool]["cache_hits"] += h
+        tokens_saved = total_orig_tokens - total_final_tokens
+        output = [f"--- Telemetry ({scope}) ---", f"Identity: {telemetry_core.SIFT_CLIENT_ID} (Tier: {telemetry_core.SIFT_TIER})", f"Tool Calls: {total_calls}", f"Tokens Processed: {total_orig_tokens:,}", f"Tokens Saved: {tokens_saved:,} ({(tokens_saved/total_orig_tokens*100) if total_orig_tokens>0 else 0:.1f}%)", f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms", f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)", "\nBreakdown:"]
+        for tool, s in breakdown.items(): output.append(f"- {tool}: {s['calls']} calls, {s['tokens_saved']:,} tokens saved ({s['cache_hits']} hits)")
         return "\n".join(output)
     except Exception as e: return f"Error: {str(e)}"
 
@@ -319,10 +308,8 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
         for name in item["data"].get(item["key"], {}).keys(): discovered.add(name.lower())
     active_rules = set()
     for tool_name in discovered:
-        if tool_name in COLLABORATION_MAP: active_rules.add(COLLABORATION_MAP[tool_name]["rule"])
-        else:
-            for key, config in COLLABORATION_MAP.items():
-                if key in tool_name: active_rules.add(config["rule"])
+        for key, config in COLLABORATION_MAP.items():
+            if key in tool_name: active_rules.add(config["rule"])
     header = "# 🤝 Unified Context Orchestration"; content = "\n".join(sorted(list(active_rules))) if active_rules else "- Discovery: use `sift_chat`.\n- Storage: sift > 1k chars.\n- Search: run `sift_extraction`.\n"
     actions = update_instruction_files("ORCHESTRATION", header, content.strip(), target_dir)
     summary = f"Analyzed `{cwd}`: {', '.join(discovered)}. Actions:\n"

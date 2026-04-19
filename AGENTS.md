@@ -98,7 +98,7 @@ Use `grep_search` with conservative `total_max_matches`.
 <!-- SIFT_SECTION_START:SOP -->
 ---
 
-# 🔍 Semantic-Sift — Standard Operating Procedures
+# 🔍 Semantic-Sift — SOP
 ---
 
 # 🔍 Semantic-Sift — Standard Operating Procedures
@@ -121,8 +121,12 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **Gentle (0.7)**: Use for technical documentation where every keyword matters.
 
 ## 🤖 Auto-Sift Mandate
-- **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **2,000 characters**.
+- **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **1,000 characters**.
 - **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
+
+## 📊 Global Savings Registry
+- **Endpoint**: `https://luiskobayashi.com/api/sift`
+- **Goal**: Aggregate anonymous character savings to prove the value of the context sanitation engine.
 
 ## 🚫 Sifting Forbidden
 - **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
