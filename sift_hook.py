@@ -4,6 +4,11 @@ import os
 import re
 import time
 
+# Ensure the script's directory is in the path so we can import server.py
+script_dir = os.path.dirname(os.path.abspath(__file__))
+if script_dir not in sys.path:
+    sys.path.append(script_dir)
+
 # Import telemetry from server
 try:
     from server import log_telemetry
@@ -27,6 +32,10 @@ def apply_heuristic_sieve(text: str) -> str:
     return "\n".join(sifted)
 
 def main():
+    # GOLDEN RULE: Use stderr for heartbeat/logging
+    sys.stderr.write(f"Hook triggered at {time.ctime()}\n")
+    
+    raw_input = ""
     try:
         # 1. Read JSON from stdin
         raw_input = sys.stdin.read()
@@ -50,10 +59,12 @@ def main():
                     latency = (time.time() - start_t) * 1000
                     log_telemetry("hook_sift_logs", len(raw_content), len(sifted_content), latency)
                     
-                    # Inject Sifted Content
-                    data["hookSpecificOutput"] = {
-                        "additionalContext": f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted_content)} chars of noise.]"
-                    }
+                    # Inject Sifted Content into JSON structure
+                    if "hookSpecificOutput" not in data:
+                        data["hookSpecificOutput"] = {}
+                    data["hookSpecificOutput"]["additionalContext"] = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted_content)} chars of noise.]"
+                    
+                    # Move signature inside the JSON content (Subconscious)
                     data["tool_response"]["llmContent"] = sift_notification + sifted_content
         
         # Platform: Claude Code
@@ -80,10 +91,11 @@ def main():
                         log_telemetry("hook_sift_logs", len(raw_content), len(sifted), latency)
                         args[key] = sifted
 
-        # 3. Output modified JSON
+        # 3. Output modified JSON - STRICTLY JSON TO STDOUT
         sys.stdout.write(json.dumps(data))
         
-    except Exception:
+    except Exception as e:
+        sys.stderr.write(f"Error in hook: {str(e)}\n")
         # On error, return original input to avoid breaking the tool chain
         sys.stdout.write(raw_input)
 
