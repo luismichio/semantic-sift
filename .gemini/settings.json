@@ -12,6 +12,11 @@
       }
     }
   },
+  "telemetry": {
+    "enabled": true,
+    "target": "local",
+    "outfile": ".gemini/telemetry.log"
+  },
   "tools": {
     "shell": {
       "inactivityTimeout": 60
@@ -28,10 +33,7 @@
           {
             "name": "semantic-sifter",
             "type": "command",
-            "command": "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe",
-            "args": [
-              "C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
-            ]
+            "command": "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
           }
         ]
       }
