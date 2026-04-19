@@ -28,7 +28,9 @@ INSTRUCTION_TARGETS = [
     ".clinerules",                       # Cline / Roo Code
     ".cursorrules",                      # Cursor
     ".windsurfrules",                    # Windsurf
-    ".github/copilot-instructions.md"    # GitHub Copilot
+    ".github/copilot-instructions.md",   # GitHub Copilot (Docs)
+    ".cursor/hooks.json",                # Cursor (Hooks)
+    ".github/hooks/semantic-sift.json"   # VS Code Copilot (Hooks)
 ]
 
 # SOP Template for Onboarding
@@ -175,10 +177,7 @@ mcp = FastMCP("Semantic-Sift")
 # --- Sifting Logic (Heuristic/Structural) ---
 
 def apply_heuristic_sieve(text: str) -> str:
-    """
-    Sifts through raw technical logs (Vercel, GitHub, Console) 
-    to remove noise and keep only the instructional signal.
-    """
+    """Sifts through raw technical logs to remove noise."""
     lines = text.splitlines()
     sifted = []
     timestamp_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?\s*')
@@ -200,56 +199,30 @@ def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency
         if os.path.exists(TELEMETRY_FILE):
             with open(TELEMETRY_FILE, "r") as f:
                 data = json.load(f)
-        
         if SESSION_ID not in data:
-            data[SESSION_ID] = {
-                "start_time": START_TIME,
-                "tools": {}
-            }
-        
-        tool_stats = data[SESSION_ID]["tools"].get(tool_name, {
-            "calls": 0,
-            "original_chars": 0,
-            "final_chars": 0,
-            "total_latency_ms": 0,
-            "cache_hits": 0
-        })
-        
-        tool_stats["calls"] += 1
-        tool_stats["original_chars"] += original_chars
-        tool_stats["final_chars"] += final_chars
-        tool_stats["total_latency_ms"] += latency_ms
-        if cache_hit:
-            tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
-        
+            data[SESSION_ID] = {"start_time": START_TIME, "tools": {}}
+        tool_stats = data[SESSION_ID]["tools"].get(tool_name, {"calls": 0, "original_chars": 0, "final_chars": 0, "total_latency_ms": 0, "cache_hits": 0})
+        tool_stats["calls"] += 1; tool_stats["original_chars"] += original_chars; tool_stats["final_chars"] += final_chars; tool_stats["total_latency_ms"] += latency_ms
+        if cache_hit: tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
         data[SESSION_ID]["tools"][tool_name] = tool_stats
-        
-        with open(TELEMETRY_FILE, "w") as f:
-            json.dump(data, f, indent=2)
-    except Exception:
-        pass
+        with open(TELEMETRY_FILE, "w") as f: json.dump(data, f, indent=2)
+    except Exception: pass
 
 def get_cache_key(tool_name: str, text: str, **kwargs) -> str:
-    """Generates a unique SHA-256 hash for a sifting request."""
     payload = f"{tool_name}:{text}:{json.dumps(kwargs, sort_keys=True)}"
     return hashlib.sha256(payload.encode()).hexdigest()
 
 def check_cache(key: str) -> str | None:
-    """Retrieves result from local disk cache if it exists."""
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
     if os.path.exists(cache_path):
-        with open(cache_path, "r", encoding="utf-8", errors="replace") as f:
-            return f.read()
+        with open(cache_path, "r", encoding="utf-8", errors="replace") as f: return f.read()
     return None
 
 def set_cache(key: str, result: str):
-    """Saves a sifting result to local disk cache."""
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
-    with open(cache_path, "w", encoding="utf-8", errors="replace") as f:
-        f.write(result)
+    with open(cache_path, "w", encoding="utf-8", errors="replace") as f: f.write(result)
 
 def get_global_mcp_configs() -> list[dict]:
-    """Attempts to find and parse multiple system-wide MCP configurations."""
     configs = []
     discovery_grid = [
         {"path": "~/AppData/Roaming/Claude/claude_desktop_config.json", "key": "mcpServers", "os": "win32"},
@@ -265,236 +238,175 @@ def get_global_mcp_configs() -> list[dict]:
         {"path": "~/.gemini/antigravity/mcp_config.json", "key": "mcpServers"},
     ]
     for item in discovery_grid:
-        if "os" in item and sys.platform != item["os"]:
-            continue
+        if "os" in item and sys.platform != item["os"]: continue
         full_path = os.path.expanduser(item["path"])
         if os.path.exists(full_path):
             try:
-                with open(full_path, "r") as f:
-                    data = json.load(f)
-                    configs.append({"data": data, "key": item["key"]})
-            except Exception:
-                pass
+                with open(full_path, "r", encoding="utf-8", errors="replace") as f:
+                    configs.append({"data": json.load(f), "key": item["key"]})
+            except Exception: pass
     return configs
 
 def update_instruction_files(section_id: str, header: str, content: str, target_dir: str = None) -> list[str]:
-    """Surgically injects or updates a section in all detected instruction files."""
     actions = []
     cwd = target_dir if target_dir else os.getcwd()
-    found_any = False
+    python_exe = "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe"
+    hook_script = "C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
+    
+    # 1. Update Standard Instruction Files (Markdown)
     block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"
     block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
     full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
+    
     for filename in INSTRUCTION_TARGETS:
+        if not filename.endswith(".md") and not filename.endswith(".clinerules") and not filename.endswith(".cursorrules") and not filename.endswith(".windsurfrules"):
+            continue
         target_path = os.path.join(cwd, filename)
         if os.path.exists(target_path):
-            found_any = True
             try:
-                with open(target_path, "r", encoding="utf-8", errors="replace") as f:
-                    file_content = f.read()
+                with open(target_path, "r", encoding="utf-8", errors="replace") as f: file_content = f.read()
                 pattern = re.compile(rf'{re.escape(block_id)}.*?{re.escape(block_end)}', re.DOTALL)
                 if pattern.search(file_content):
                     new_content = pattern.sub(full_payload.strip(), file_content)
-                    with open(target_path, "w", encoding="utf-8", errors="replace") as f:
-                        f.write(new_content)
+                    with open(target_path, "w", encoding="utf-8", errors="replace") as f: f.write(new_content)
                     actions.append(f"Updated `{filename}`.")
                 else:
-                    with open(target_path, "a", encoding="utf-8", errors="replace") as f:
-                        f.write(full_payload)
+                    with open(target_path, "a", encoding="utf-8", errors="replace") as f: f.write(full_payload)
                     actions.append(f"Injected into `{filename}`.")
-            except Exception as e:
-                actions.append(f"Error updating `{filename}`: {str(e)}")
-    if not found_any:
-        fallback = "AGENTS.md"
-        try:
-            os.makedirs(cwd, exist_ok=True)
-            with open(os.path.join(cwd, fallback), "w", encoding="utf-8", errors="replace") as f:
-                f.write(f"# Project Instructions\n{full_payload}")
-            actions.append(f"Created new `{fallback}` in `{cwd}`.")
-        except Exception as e:
-            actions.append(f"Error creating `{fallback}`: {str(e)}")
+            except Exception as e: actions.append(f"Error updating `{filename}`: {str(e)}")
+
+    # 2. Update IDE Hook JSON Files
+    # 2.1 Cursor (.cursor/hooks.json)
+    cursor_hook_path = os.path.join(cwd, ".cursor", "hooks.json")
+    os.makedirs(os.path.dirname(cursor_hook_path), exist_ok=True)
+    cursor_hook_data = {
+        "version": 1,
+        "hooks": {
+            "postToolUse": [{"command": f"{python_exe} {hook_script}"}]
+        }
+    }
+    try:
+        with open(cursor_hook_path, "w", encoding="utf-8") as f: json.dump(cursor_hook_data, f, indent=2)
+        actions.append("Configured Cursor hooks.")
+    except Exception as e: actions.append(f"Error configuring Cursor hooks: {str(e)}")
+
+    # 2.2 VS Code Copilot (.github/hooks/semantic-sift.json)
+    vscode_hook_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
+    os.makedirs(os.path.dirname(vscode_hook_path), exist_ok=True)
+    vscode_hook_data = {
+        "hooks": {
+            "PostToolUse": [{"type": "command", "command": f"{python_exe} {hook_script}"}]
+        }
+    }
+    try:
+        with open(vscode_hook_path, "w", encoding="utf-8") as f: json.dump(vscode_hook_data, f, indent=2)
+        actions.append("Configured VS Code Copilot hooks.")
+    except Exception as e: actions.append(f"Error configuring VS Code hooks: {str(e)}")
+
     return actions
 
 # --- Tools ---
 
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
-    """Sifts through raw technical logs to remove noise."""
-    start_t = time.time()
-    result = apply_heuristic_sieve(raw_text)
-    latency = (time.time() - start_t) * 1000
-    log_telemetry("sift_logs", len(raw_text), len(result), latency)
-    return result
+    start_t = time.time(); result = apply_heuristic_sieve(raw_text); latency = (time.time() - start_t) * 1000
+    log_telemetry("sift_logs", len(raw_text), len(result), latency); return result
 
 @mcp.tool()
 async def sift_chat(text: str, rate: float = 0.5) -> str:
-    """Semantically prunes conversation history using LLMLingua-2."""
-    start_t = time.time()
-    cache_key = get_cache_key("sift_chat", text, rate=rate)
-    cached_result = check_cache(cache_key)
-    if cached_result:
-        log_telemetry("sift_chat", len(text), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
-        return cached_result
+    start_t = time.time(); cache_key = get_cache_key("sift_chat", text, rate=rate)
+    if cached := check_cache(cache_key): log_telemetry("sift_chat", len(text), len(cached), (time.time() - start_t) * 1000, True); return cached
     try:
         from llmlingua import PromptCompressor
         compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
         results = compressor.compress_prompt([text], rate=rate, force_tokens=['\n', '?'], chunk_end_tokens=['.', '\n'], return_word_label=False)
-        result = results.get('compressed_prompt', text)
-        set_cache(cache_key, result)
-        latency = (time.time() - start_t) * 1000
-        log_telemetry("sift_chat", len(text), len(result), latency)
-        return result
-    except Exception as e:
-        return f"Error during semantic sifting: {str(e)}"
+        result = results.get('compressed_prompt', text); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
+        log_telemetry("sift_chat", len(text), len(result), latency); return result
+    except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
 async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
-    """Condenses long documents using a multi-stage approach."""
-    start_t = time.time()
-    cache_key = get_cache_key("sift_doc", text, budget_tokens=budget_tokens)
-    cached_result = check_cache(cache_key)
-    if cached_result:
-        log_telemetry("sift_doc", len(text), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
-        return cached_result
+    start_t = time.time(); cache_key = get_cache_key("sift_doc", text, budget_tokens=budget_tokens)
+    if cached := check_cache(cache_key): log_telemetry("sift_doc", len(text), len(cached), (time.time() - start_t) * 1000, True); return cached
     cleaned = apply_heuristic_sieve(text)
     try:
         from llmlingua import PromptCompressor
         compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
         results = compressor.compress_prompt([cleaned], rate=0.4, force_tokens=['[', ']', '{', '}', '/', '\\', '.', '_'], chunk_end_tokens=['\n', '.', ';'], return_word_label=False)
-        result = results.get('compressed_prompt', cleaned)
-        set_cache(cache_key, result)
-        latency = (time.time() - start_t) * 1000
-        log_telemetry("sift_doc", len(text), len(result), latency)
-        return result
-    except Exception as e:
-        return f"Error during document sifting: {str(e)}"
+        result = results.get('compressed_prompt', cleaned); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
+        log_telemetry("sift_doc", len(text), len(result), latency); return result
+    except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
 async def sift_extraction(content: str, source_type: str = "markdown") -> str:
-    """Refines outputs from Docling or LiteParse."""
-    start_t = time.time()
-    cache_key = get_cache_key("sift_extraction", content, source_type=source_type)
-    cached_result = check_cache(cache_key)
-    if cached_result:
-        log_telemetry("sift_extraction", len(content), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
-        return cached_result
+    start_t = time.time(); cache_key = get_cache_key("sift_extraction", content, source_type=source_type)
+    if cached := check_cache(cache_key): log_telemetry("sift_extraction", len(content), len(cached), (time.time() - start_t) * 1000, True); return cached
     refined = content
-    for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']:
-        refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
+    for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']: refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
     try:
         from llmlingua import PromptCompressor
         compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
         results = compressor.compress_prompt([refined], rate=0.7, force_tokens=['\n', '|', '-', ':', '#'], chunk_end_tokens=['\n', '.'], return_word_label=False)
-        result = results.get('compressed_prompt', refined)
-        set_cache(cache_key, result)
-        latency = (time.time() - start_t) * 1000
-        log_telemetry("sift_extraction", len(content), len(result), latency)
-        return result
-    except Exception as e:
-        return f"Error during extraction sifting: {str(e)}"
+        result = results.get('compressed_prompt', refined); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
+        log_telemetry("sift_extraction", len(content), len(result), latency); return result
+    except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
 async def get_sift_stats(scope: str = "current") -> str:
-    """Returns telemetry stats for the sifting process."""
-    if not os.path.exists(TELEMETRY_FILE):
-        return "No telemetry data found."
+    if not os.path.exists(TELEMETRY_FILE): return "No data."
     try:
-        with open(TELEMETRY_FILE, "r") as f:
-            data = json.load(f)
-        target_sessions = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
-        if not target_sessions:
-            return "No data found for specified scope."
-        total_calls = total_orig = total_final = total_latency = total_cache_hits = 0
-        tool_breakdown = {}
-        for session in target_sessions:
+        with open(TELEMETRY_FILE, "r") as f: data = json.load(f)
+        target = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
+        if not target: return "No data."
+        total_calls = total_orig = total_final = total_lat = total_hits = 0; breakdown = {}
+        for session in target:
             for tool, stats in session.get("tools", {}).items():
-                calls = stats.get("calls", 0); orig = stats.get("original_chars", 0); final = stats.get("final_chars", 0); latency = stats.get("total_latency_ms", 0); hits = stats.get("cache_hits", 0)
-                total_calls += calls; total_orig += orig; total_final += final; total_latency += latency; total_cache_hits += hits
-                if tool not in tool_breakdown: tool_breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
-                tool_breakdown[tool]["calls"] += calls; tool_breakdown[tool]["saved"] += (orig - final); tool_breakdown[tool]["cache_hits"] += hits
+                c = stats.get("calls", 0); o = stats.get("original_chars", 0); f = stats.get("final_chars", 0); l = stats.get("total_latency_ms", 0); h = stats.get("cache_hits", 0)
+                total_calls += c; total_orig += o; total_final += f; total_lat += l; total_hits += h
+                if tool not in breakdown: breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
+                breakdown[tool]["calls"] += c; breakdown[tool]["saved"] += (o - f); breakdown[tool]["cache_hits"] += h
         saved = total_orig - total_final
-        reduction = (saved / total_orig * 100) if total_orig > 0 else 0
-        avg_lat = (total_latency / total_calls) if total_calls > 0 else 0
-        hit_rate = (total_cache_hits / total_calls * 100) if total_calls > 0 else 0
-        report = [f"--- Semantic-Sift Telemetry ({scope.capitalize()}) ---", f"Total Sift Calls: {total_calls}", f"Characters Processed: {total_orig:,}", f"Characters Pruned: {saved:,} ({reduction:.1f}% reduction)", f"Avg Latency: {avg_lat:.1f}ms", f"Cache Hit Rate: {hit_rate:.1f}% ({total_cache_hits} hits)", "\nBreakdown by Tool:"]
-        for tool, stats in tool_breakdown.items(): report.append(f"- {tool}: {stats['calls']} calls, {stats['saved']:,} chars saved ({stats['cache_hits']} cache hits)")
-        return "\n".join(report)
-    except Exception as e:
-        return f"Error reading telemetry: {str(e)}"
+        output = [f"--- Telemetry ({scope}) ---", f"Calls: {total_calls}", f"Processed: {total_orig:,}", f"Pruned: {saved:,} ({(saved/total_orig*100) if total_orig>0 else 0:.1f}%)", f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms", f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)", "\nBreakdown:"]
+        for tool, s in breakdown.items(): output.append(f"- {tool}: {s['calls']} calls, {s['saved']:,} saved ({s['cache_hits']} hits)")
+        return "\n".join(output)
+    except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
 async def sift_onboard(target_dir: str = None) -> str:
-    """Automates installation of guidelines into all project instruction files."""
-    report = ["# 🔍 Semantic-Sift Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA Active: {torch.cuda.is_available()}", f"- Device: {DEVICE}\n", "## 📝 Setup"]
-    for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — Standard Operating Procedures", SOP_TEMPLATE.strip(), target_dir=target_dir):
-        report.append(f"- {action}")
-    report.append("\n**Semantic-Sift is now fully configured.**\n")
-    report.append(await sift_orchestrate(target_dir=target_dir))
-    return "\n".join(report)
+    report = ["# 🔍 Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA: {torch.cuda.is_available()}", f"- Device: {DEVICE}\n", "## 📝 Setup"]
+    for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — SOP", SOP_TEMPLATE.strip(), target_dir): report.append(f"- {action}")
+    report.append("\n**Fully configured.**\n"); report.append(await sift_orchestrate(target_dir=target_dir)); return "\n".join(report)
 
 @mcp.tool()
 async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[str] = None, target_dir: str = None) -> str:
-    """Analyzes available MCPs and injects collaborative rules."""
-    discovered = set()
-    cwd = target_dir if target_dir else os.getcwd()
-    if custom_tools := manual_tools:
-        for t in custom_tools: discovered.add(t.lower())
-    local_settings = os.path.join(cwd, ".gemini", "settings.json")
-    if os.path.exists(local_settings):
+    discovered = set(); cwd = target_dir if target_dir else os.getcwd()
+    if manual_tools: 
+        for t in manual_tools: discovered.add(t.lower())
+    local_s = os.path.join(cwd, ".gemini", "settings.json")
+    if os.path.exists(local_s):
         try:
-            with open(local_settings, "r") as f:
-                data = json.load(f)
-                for name in data.get("mcpServers", {}).keys(): discovered.add(name.lower())
-        except Exception: pass
+            with open(local_s, "r") as f:
+                for name in json.load(f).get("mcpServers", {}).keys(): discovered.add(name.lower())
+        except: pass
     for item in get_global_mcp_configs():
         for name in item["data"].get(item["key"], {}).keys(): discovered.add(name.lower())
-    if custom_paths:
-        for path in custom_paths:
-            full_path = os.path.expanduser(path)
-            if os.path.exists(full_path):
-                try:
-                    with open(full_path, "r") as f:
-                        data = json.load(f)
-                        for k in ["mcpServers", "context_servers", "servers"]:
-                            if k in data:
-                                for name in data[k].keys(): discovered.add(name.lower())
-                except Exception: pass
     active_rules = set()
     for tool_name in discovered:
         if tool_name in COLLABORATION_MAP: active_rules.add(COLLABORATION_MAP[tool_name]["rule"])
         else:
             for key, config in COLLABORATION_MAP.items():
                 if key in tool_name: active_rules.add(config["rule"])
-    header = "# 🤝 Unified Context Orchestration"
-    if not active_rules:
-        content = "- **Discovery Strategy**: Use `sift_chat` (rate: 0.7) on retrieved bodies > 100 lines.\n- **Storage Strategy**: Sift outputs > 1,000 chars before indexing.\n- **Search Strategy**: Run `sift_extraction` on web/search results.\n"
-    else:
-        content = "\n".join(sorted(list(active_rules)))
-    actions = update_instruction_files("ORCHESTRATION", header, content.strip(), target_dir=target_dir)
-    summary = f"Analyzed tools in `{cwd}`: {', '.join(discovered)}. Actions:\n"
+    header = "# 🤝 Unified Context Orchestration"; content = "\n".join(sorted(list(active_rules))) if active_rules else "- Discovery: use `sift_chat`.\n- Storage: sift > 1k chars.\n- Search: run `sift_extraction`.\n"
+    actions = update_instruction_files("ORCHESTRATION", header, content.strip(), target_dir)
+    summary = f"Analyzed `{cwd}`: {', '.join(discovered)}. Actions:\n"
     for action in actions: summary += f"- {action}\n"
     return summary
 
 @mcp.tool()
 async def sift_analyze(text: str) -> str:
-    """
-    Evaluates context quality (SNR) and recommends appropriate sifting tools.
-    Detects if the host environment (e.g. Gemini CLI) has already truncated the output.
-    """
-    char_count = len(text)
-    is_masked = "<tool_output_masked>" in text or "Output too large. Full output available at:" in text
-    if is_masked:
-        return (
-            "## 🛡️ Environment Alert: Host-Level Truncation Detected\n"
-            "- **Status**: The host environment (Gemini CLI) has already masked or truncated this output to protect your context.\n"
-            "- **Observation**: Because the data is already hidden, a local SNR analysis would be inaccurate.\n"
-            "- **Recommendation**: **MANDATORY SIFT**. Locate the raw file path provided by the host and run `sift_logs` or `sift_doc` "
-            "directly on that file before attempting to analyze its contents."
-        )
-    line_count = len(text.splitlines()); avg_line_len = char_count / line_count if line_count > 0 else 0
-    timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text))
-    uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text))
-    repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
+    char_count = len(text); is_masked = "<tool_output_masked>" in text or "Output too large." in text
+    if is_masked: return "## 🛡️ Host Truncation Detected\n- **Status**: Host already masked output.\n- **Recommendation**: **MANDATORY SIFT** raw file."
+    timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text)); uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text)); repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
     noise_ratio = min((((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0)
     report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
     if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
@@ -505,7 +417,6 @@ async def sift_analyze(text: str) -> str:
 
 @mcp.tool()
 async def sift_rank(query: str, documents: list[str], top_n: int = 3) -> str:
-    """Ranks multiple text chunks by relevance."""
     try:
         from sentence_transformers import CrossEncoder
         model = CrossEncoder('BAAI/bge-reranker-base', device=DEVICE)
@@ -516,7 +427,7 @@ async def sift_rank(query: str, documents: list[str], top_n: int = 3) -> str:
             report.append(f"### Rank {i+1} (Score: {score:.4f})\n{doc[:500]}..." if len(doc) > 500 else f"### Rank {i+1} (Score: {score:.4f})\n{doc}")
             report.append("\n---\n")
         return "\n".join(report)
-    except Exception as e: return f"Error during reranking: {str(e)}"
+    except Exception as e: return f"Error: {str(e)}"
 
 if __name__ == "__main__":
     mcp.run()
