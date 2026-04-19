@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Environment Awareness**: Upgraded `sift_analyze` to detect host-level truncation/masking (e.g. Gemini CLI's `<tool_output_masked>`) and recommend mandatory sifting of the raw source files.
+- **Adaptive Thresholds**: Lowered the Auto-Sift Mandate trigger to 1,000 characters (from 2,000) to more effectively capture dense technical noise.
+- **Multi-Target Injection**: Refactored the onboarding system to automatically sync rules across all detected IDE instruction files (`.cursorrules`, `.clinerules`, `.windsurfrules`, `.github/copilot-instructions.md`, etc.).
 - **Heuristic Orchestration**: Refactored `sift_orchestrate` to use keyword-based heuristic matching, allowing it to identify tool categories (e.g., `mcp-server-postgres` matches `postgres`).
 - **Expanded Synergies**: Added 15+ new specialized collaboration rules for **Slack**, **Notion**, **AWS**, **Postgres**, **Puppeteer**, **Jira**, **Linear**, and more.
 - **Super-Agnostic Orchestration**: Upgraded `sift_orchestrate` to automatically discover tools from **Continue**, **Zed**, **GitHub Copilot**, **OpenCode**, and **Antigravity** across Windows and macOS.
@@ -29,12 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Initial Release**: The birth of the "Sanitation Tier" for agentic workflows.
 - **Server Core**: Implemented as a standalone Python FastMCP server.
-- **sift_logs**: Heuristic tool for stripping structural noise from technical logs (Timestamps, UUIDs, verbose build output).
-- **sift_chat**: Semantic compression tool powered by **LLMLingua-2** (using the `microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank` model).
-- **sift_doc**: Hybrid tool for condensing long MDX/PDF text by combining log-sifting and chat-sifting logic. Enhanced with structural token protection.
-- **sift_extraction**: A dedicated refinery tool for Docling/LiteParse outputs. Strips document debris (headers/footers) while preserving Markdown structure for high-quality RAG indexing.
-- **The Refinery Loop**: Defined a new architectural pattern for piping data from Docling extraction through Semantic-Sift before landing in LlamaIndex.
-- **Documentation**: Initial `ARCHITECTURE.md` detailing the "Studio of Two" philosophy and the RAG synergy model.
+- **The Sieve**: Heuristic regex-based log distillation (`sift_logs`).
+- **The Sift**: Semantic BERT-based natural language pruning (`sift_chat`).
+- **Hybrid Sift**: Multi-stage distillation for long documentation (`sift_doc`).
+- **RAG Refinery**: OCR/PDF artifact cleaning for LlamaIndex synergy (`sift_extraction`).
 
 ### Fixed
 - Corrected Hugging Face model identifier for LLMLingua-2 from `-instruct` to `-meetingbank`.

@@ -99,6 +99,9 @@ Use `grep_search` with conservative `total_max_matches`.
 ---
 
 # 🔍 Semantic-Sift — Standard Operating Procedures
+---
+
+# 🔍 Semantic-Sift — Standard Operating Procedures
 
 To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follow these usage guidelines.
 

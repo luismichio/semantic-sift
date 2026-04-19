@@ -55,7 +55,7 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **Gentle (0.7)**: Use for technical documentation where every keyword matters.
 
 ## 🤖 Auto-Sift Mandate
-- **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **2,000 characters**.
+- **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **1,000 characters**.
 - **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
 
 ## 🚫 Sifting Forbidden
@@ -288,7 +288,6 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
     if not found_any:
         fallback = "AGENTS.md"
         try:
-            # Create directory if it doesn't exist (for nested targets if any)
             os.makedirs(cwd, exist_ok=True)
             with open(os.path.join(cwd, fallback), "w", encoding="utf-8") as f:
                 f.write(f"# Project Instructions\n{full_payload}")
@@ -400,11 +399,7 @@ async def get_sift_stats(scope: str = "current") -> str:
         tool_breakdown = {}
         for session in target_sessions:
             for tool, stats in session.get("tools", {}).items():
-                calls = stats.get("calls", 0)
-                orig = stats.get("original_chars", 0)
-                final = stats.get("final_chars", 0)
-                latency = stats.get("total_latency_ms", 0)
-                hits = stats.get("cache_hits", 0)
+                calls = stats.get("calls", 0); orig = stats.get("original_chars", 0); final = stats.get("final_chars", 0); latency = stats.get("total_latency_ms", 0); hits = stats.get("cache_hits", 0)
                 total_calls += calls; total_orig += orig; total_final += final; total_latency += latency; total_cache_hits += hits
                 if tool not in tool_breakdown: tool_breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
                 tool_breakdown[tool]["calls"] += calls; tool_breakdown[tool]["saved"] += (orig - final); tool_breakdown[tool]["cache_hits"] += hits
@@ -473,8 +468,21 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
 
 @mcp.tool()
 async def sift_analyze(text: str) -> str:
-    """Evaluates context quality (SNR)."""
-    char_count = len(text); line_count = len(text.splitlines()); avg_line_len = char_count / line_count if line_count > 0 else 0
+    """
+    Evaluates context quality (SNR) and recommends appropriate sifting tools.
+    Detects if the host environment (e.g. Gemini CLI) has already truncated the output.
+    """
+    char_count = len(text)
+    is_masked = "<tool_output_masked>" in text or "Output too large. Full output available at:" in text
+    if is_masked:
+        return (
+            "## 🛡️ Environment Alert: Host-Level Truncation Detected\n"
+            "- **Status**: The host environment (Gemini CLI) has already masked or truncated this output to protect your context.\n"
+            "- **Observation**: Because the data is already hidden, a local SNR analysis would be inaccurate.\n"
+            "- **Recommendation**: **MANDATORY SIFT**. Locate the raw file path provided by the host and run `sift_logs` or `sift_doc` "
+            "directly on that file before attempting to analyze its contents."
+        )
+    line_count = len(text.splitlines()); avg_line_len = char_count / line_count if line_count > 0 else 0
     timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text))
     uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text))
     repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
@@ -482,7 +490,7 @@ async def sift_analyze(text: str) -> str:
     report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
     if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
     elif char_count > 8000: report.extend(["- **Action**: Run `sift_doc` or `sift_chat`.", "- Reason: Long-form context."])
-    elif char_count < 2000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is concise."])
+    elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is concise."])
     else: report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
     return "\n".join(report)
 
