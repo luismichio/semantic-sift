@@ -21,12 +21,14 @@
     "modelSteering": true
   },
   "hooks": {
-    "AfterTool": {
-      "command": "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe",
-      "args": [
-        "C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
-      ]
-    }
+    "AfterTool": [
+      {
+        "command": "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe",
+        "args": [
+          "C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
+        ]
+      }
+    ]
   },
   "mcpServers": {
     "context-mode": {
