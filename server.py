@@ -6,42 +6,18 @@ import uuid
 import time
 import torch
 import hashlib
-import threading
-import urllib.request
-import urllib.parse
 from datetime import datetime
 from mcp.server.fastmcp import FastMCP
 
+# Import Telemetry Core
+import telemetry_core
+
 # Global Configuration
 SESSION_ID = str(uuid.uuid4())
-TELEMETRY_FILE = ".sift_telemetry.json"
-CACHE_DIR = ".sift_cache"
-IDENTITY_FILE = ".sift_identity"
 START_TIME = datetime.now().isoformat()
 
-# Environment-based Identity & Licensing
-SIFT_CLIENT_ID = os.environ.get("SIFT_CLIENT_ID", "Generic CLI")
-SIFT_LICENSE_KEY = os.environ.get("SIFT_LICENSE_KEY", None)
-SIFT_TELEMETRY_URL = os.environ.get("SIFT_TELEMETRY_URL", "https://luiskobayashi.com/api/sift")
-SIFT_TIER = "Commercial" if SIFT_LICENSE_KEY else "Community"
-
 # Ensure directories exist
-os.makedirs(CACHE_DIR, exist_ok=True)
-
-# Generate or load persistent anonymous Machine ID
-def get_machine_id() -> str:
-    path = os.path.join(os.getcwd(), IDENTITY_FILE)
-    if os.path.exists(path):
-        try:
-            with open(path, "r") as f: return f.read().strip()
-        except: pass
-    new_id = str(uuid.uuid4())
-    try:
-        with open(path, "w") as f: f.write(new_id)
-    except: pass
-    return new_id
-
-MACHINE_ID = get_machine_id()
+os.makedirs(telemetry_core.CACHE_DIR if hasattr(telemetry_core, 'CACHE_DIR') else ".sift_cache", exist_ok=True)
 
 # Device Detection
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -86,7 +62,7 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
 
 ## 📊 Global Savings Registry
-- **Endpoint**: `https://luiskobayashi.com/api/sift`
+- **Endpoint**: `https://www.luiskobayashi.com/api/sift`
 - **Goal**: Aggregate anonymous character savings to prove the value of the context sanitation engine.
 
 ## 🚫 Sifting Forbidden
@@ -221,56 +197,18 @@ def apply_heuristic_sieve(text: str) -> str:
 
 # --- Helpers ---
 
-def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float):
-    """Sends an anonymous, non-blocking telemetry pulse to the remote URL."""
-    if not SIFT_TELEMETRY_URL: return
-    payload = {
-        "machine_id": MACHINE_ID,
-        "client_id": SIFT_CLIENT_ID,
-        "tier": SIFT_TIER,
-        "tool_name": tool_name,
-        "original_chars": original,
-        "final_chars": final,
-        "latency_ms": latency,
-        "timestamp": datetime.now().isoformat()
-    }
-    def _fire():
-        try:
-            req = urllib.request.Request(SIFT_TELEMETRY_URL, data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'}, method='POST')
-            with urllib.request.urlopen(req, timeout=5) as r: pass
-        except: pass
-    threading.Thread(target=_fire, daemon=True).start()
-
-def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False):
-    """Logs tool performance metrics to local file and triggers global pulse."""
-    try:
-        data = {}
-        if os.path.exists(TELEMETRY_FILE):
-            with open(TELEMETRY_FILE, "r") as f:
-                data = json.load(f)
-        if SESSION_ID not in data:
-            data[SESSION_ID] = {"start_time": START_TIME, "tools": {}}
-        tool_stats = data[SESSION_ID]["tools"].get(tool_name, {"calls": 0, "original_chars": 0, "final_chars": 0, "total_latency_ms": 0, "cache_hits": 0})
-        tool_stats["calls"] += 1; tool_stats["original_chars"] += original_chars; tool_stats["final_chars"] += final_chars; tool_stats["total_latency_ms"] += latency_ms
-        if cache_hit: tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
-        data[SESSION_ID]["tools"][tool_name] = tool_stats
-        with open(TELEMETRY_FILE, "w") as f: json.dump(data, f, indent=2)
-        # Trigger Global Pulse
-        if not cache_hit: send_telemetry_pulse(tool_name, original_chars, final_chars, latency_ms)
-    except Exception: pass
-
 def get_cache_key(tool_name: str, text: str, **kwargs) -> str:
     payload = f"{tool_name}:{text}:{json.dumps(kwargs, sort_keys=True)}"
     return hashlib.sha256(payload.encode()).hexdigest()
 
 def check_cache(key: str) -> str | None:
-    cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
+    cache_path = os.path.join(".sift_cache", f"{key}.txt")
     if os.path.exists(cache_path):
         with open(cache_path, "r", encoding="utf-8", errors="replace") as f: return f.read()
     return None
 
 def set_cache(key: str, result: str):
-    cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
+    cache_path = os.path.join(".sift_cache", f"{key}.txt")
     with open(cache_path, "w", encoding="utf-8", errors="replace") as f: f.write(result)
 
 def get_global_mcp_configs() -> list[dict]:
@@ -339,37 +277,46 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
     start_t = time.time(); result = apply_heuristic_sieve(raw_text); latency = (time.time() - start_t) * 1000
-    log_telemetry("sift_logs", len(raw_text), len(result), latency); return result
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_logs", len(raw_text), len(result), latency)
+    return result
 
 @mcp.tool()
 async def sift_chat(text: str, rate: float = 0.5) -> str:
     start_t = time.time(); cache_key = get_cache_key("sift_chat", text, rate=rate)
-    if cached := check_cache(cache_key): log_telemetry("sift_chat", len(text), len(cached), (time.time() - start_t) * 1000, True); return cached
+    if cached := check_cache(cache_key): 
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(cached), (time.time() - start_t) * 1000, True)
+        return cached
     try:
         from llmlingua import PromptCompressor
         compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
         results = compressor.compress_prompt([text], rate=rate, force_tokens=['\n', '?'], chunk_end_tokens=['.', '\n'], return_word_label=False)
         result = results.get('compressed_prompt', text); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
-        log_telemetry("sift_chat", len(text), len(result), latency); return result
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency)
+        return result
     except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
 async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
     start_t = time.time(); cache_key = get_cache_key("sift_doc", text, budget_tokens=budget_tokens)
-    if cached := check_cache(cache_key): log_telemetry("sift_doc", len(text), len(cached), (time.time() - start_t) * 1000, True); return cached
+    if cached := check_cache(cache_key): 
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(cached), (time.time() - start_t) * 1000, True)
+        return cached
     cleaned = apply_heuristic_sieve(text)
     try:
         from llmlingua import PromptCompressor
         compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
         results = compressor.compress_prompt([cleaned], rate=0.4, force_tokens=['[', ']', '{', '}', '/', '\\', '.', '_'], chunk_end_tokens=['\n', '.', ';'], return_word_label=False)
         result = results.get('compressed_prompt', cleaned); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
-        log_telemetry("sift_doc", len(text), len(result), latency); return result
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(result), latency)
+        return result
     except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
 async def sift_extraction(content: str, source_type: str = "markdown") -> str:
     start_t = time.time(); cache_key = get_cache_key("sift_extraction", content, source_type=source_type)
-    if cached := check_cache(cache_key): log_telemetry("sift_extraction", len(content), len(cached), (time.time() - start_t) * 1000, True); return cached
+    if cached := check_cache(cache_key): 
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(cached), (time.time() - start_t) * 1000, True)
+        return cached
     refined = content
     for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']: refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
     try:
@@ -377,16 +324,17 @@ async def sift_extraction(content: str, source_type: str = "markdown") -> str:
         compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
         results = compressor.compress_prompt([refined], rate=0.7, force_tokens=['\n', '|', '-', ':', '#'], chunk_end_tokens=['\n', '.'], return_word_label=False)
         result = results.get('compressed_prompt', refined); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
-        log_telemetry("sift_extraction", len(content), len(result), latency); return result
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(result), latency)
+        return result
     except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
 async def get_sift_stats(scope: str = "current") -> str:
-    if not os.path.exists(TELEMETRY_FILE): return "No data."
+    if not os.path.exists(telemetry_core.TELEMETRY_FILE): return "No data."
     try:
-        with open(TELEMETRY_FILE, "r") as f: data = json.load(f)
+        with open(telemetry_core.TELEMETRY_FILE, "r") as f: data = json.load(f)
         target = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
-        if not target: return f"--- Telemetry ({scope}) ---\nNo activity recorded.\n\n[Identity: {SIFT_CLIENT_ID} | Tier: {SIFT_TIER}]"
+        if not target: return f"--- Telemetry ({scope}) ---\nNo activity recorded.\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
         total_calls = total_orig = total_final = total_lat = total_hits = 0; breakdown = {}
         for session in target:
             for tool, stats in session.get("tools", {}).items():
@@ -395,7 +343,7 @@ async def get_sift_stats(scope: str = "current") -> str:
                 if tool not in breakdown: breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
                 breakdown[tool]["calls"] += c; breakdown[tool]["saved"] += (o - f); breakdown[tool]["cache_hits"] += h
         saved = total_orig - total_final
-        output = [f"--- Telemetry ({scope}) ---", f"Identity: {SIFT_CLIENT_ID} (Tier: {SIFT_TIER})", f"Calls: {total_calls}", f"Processed: {total_orig:,}", f"Pruned: {saved:,} ({(saved/total_orig*100) if total_orig>0 else 0:.1f}%)", f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms", f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)", "\nBreakdown:"]
+        output = [f"--- Telemetry ({scope}) ---", f"Identity: {telemetry_core.SIFT_CLIENT_ID} (Tier: {telemetry_core.SIFT_TIER})", f"Calls: {total_calls}", f"Processed: {total_orig:,}", f"Pruned: {saved:,} ({(saved/total_orig*100) if total_orig>0 else 0:.1f}%)", f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms", f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)", "\nBreakdown:"]
         for tool, s in breakdown.items(): output.append(f"- {tool}: {s['calls']} calls, {s['saved']:,} saved ({s['cache_hits']} hits)")
         return "\n".join(output)
     except Exception as e: return f"Error: {str(e)}"
@@ -435,12 +383,12 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
 async def sift_analyze(text: str) -> str:
     char_count = len(text); is_masked = "<tool_output_masked>" in text or "Output too large." in text
     if is_masked: return "## 🛡️ Host Truncation Detected\n- **Status**: Host already masked output.\n- **Recommendation**: **MANDATORY SIFT** raw file."
-    timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text)); uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text)); repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
+    timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text)); uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text)); repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
     noise_ratio = min((((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0)
     report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
     if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
     elif char_count > 8000: report.extend(["- **Action**: Run `sift_doc` or `sift_chat`.", "- Reason: Long-form context."])
-    elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is already concise."])
+    elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is concise."])
     else: report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
     return "\n".join(report)
 
