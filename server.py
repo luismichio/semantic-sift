@@ -219,14 +219,14 @@ def check_cache(key: str) -> str | None:
     """Retrieves result from local disk cache if it exists."""
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
     if os.path.exists(cache_path):
-        with open(cache_path, "r", encoding="utf-8") as f:
+        with open(cache_path, "r", encoding="utf-8", errors="replace") as f:
             return f.read()
     return None
 
 def set_cache(key: str, result: str):
     """Saves a sifting result to local disk cache."""
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
-    with open(cache_path, "w", encoding="utf-8") as f:
+    with open(cache_path, "w", encoding="utf-8", errors="replace") as f:
         f.write(result)
 
 def get_global_mcp_configs() -> list[dict]:
@@ -251,7 +251,7 @@ def get_global_mcp_configs() -> list[dict]:
         full_path = os.path.expanduser(item["path"])
         if os.path.exists(full_path):
             try:
-                with open(full_path, "r") as f:
+                with open(full_path, "r", encoding="utf-8", errors="replace") as f:
                     data = json.load(f)
                     configs.append({"data": data, "key": item["key"]})
             except Exception:
@@ -271,16 +271,16 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
         if os.path.exists(target_path):
             found_any = True
             try:
-                with open(target_path, "r", encoding="utf-8") as f:
+                with open(target_path, "r", encoding="utf-8", errors="replace") as f:
                     file_content = f.read()
                 pattern = re.compile(rf'{re.escape(block_id)}.*?{re.escape(block_end)}', re.DOTALL)
                 if pattern.search(file_content):
                     new_content = pattern.sub(full_payload.strip(), file_content)
-                    with open(target_path, "w", encoding="utf-8") as f:
+                    with open(target_path, "w", encoding="utf-8", errors="replace") as f:
                         f.write(new_content)
                     actions.append(f"Updated `{filename}`.")
                 else:
-                    with open(target_path, "a", encoding="utf-8") as f:
+                    with open(target_path, "a", encoding="utf-8", errors="replace") as f:
                         f.write(full_payload)
                     actions.append(f"Injected into `{filename}`.")
             except Exception as e:
@@ -289,7 +289,7 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
         fallback = "AGENTS.md"
         try:
             os.makedirs(cwd, exist_ok=True)
-            with open(os.path.join(cwd, fallback), "w", encoding="utf-8") as f:
+            with open(os.path.join(cwd, fallback), "w", encoding="utf-8", errors="replace") as f:
                 f.write(f"# Project Instructions\n{full_payload}")
             actions.append(f"Created new `{fallback}` in `{cwd}`.")
         except Exception as e:
@@ -433,7 +433,7 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
     local_settings = os.path.join(cwd, ".gemini", "settings.json")
     if os.path.exists(local_settings):
         try:
-            with open(local_settings, "r") as f:
+            with open(local_settings, "r", encoding="utf-8", errors="replace") as f:
                 data = json.load(f)
                 for name in data.get("mcpServers", {}).keys(): discovered.add(name.lower())
         except Exception: pass
@@ -444,7 +444,7 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
             full_path = os.path.expanduser(path)
             if os.path.exists(full_path):
                 try:
-                    with open(full_path, "r") as f:
+                    with open(full_path, "r", encoding="utf-8", errors="replace") as f:
                         data = json.load(f)
                         for k in ["mcpServers", "context_servers", "servers"]:
                             if k in data:
