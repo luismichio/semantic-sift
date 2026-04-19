@@ -258,10 +258,10 @@ def get_global_mcp_configs() -> list[dict]:
                 pass
     return configs
 
-def update_instruction_files(section_id: str, header: str, content: str) -> list[str]:
+def update_instruction_files(section_id: str, header: str, content: str, target_dir: str = None) -> list[str]:
     """Surgically injects or updates a section in all detected instruction files."""
     actions = []
-    cwd = os.getcwd()
+    cwd = target_dir if target_dir else os.getcwd()
     found_any = False
     block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"
     block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
@@ -288,9 +288,11 @@ def update_instruction_files(section_id: str, header: str, content: str) -> list
     if not found_any:
         fallback = "AGENTS.md"
         try:
+            # Create directory if it doesn't exist (for nested targets if any)
+            os.makedirs(cwd, exist_ok=True)
             with open(os.path.join(cwd, fallback), "w", encoding="utf-8") as f:
                 f.write(f"# Project Instructions\n{full_payload}")
-            actions.append(f"Created new `{fallback}`.")
+            actions.append(f"Created new `{fallback}` in `{cwd}`.")
         except Exception as e:
             actions.append(f"Error creating `{fallback}`: {str(e)}")
     return actions
@@ -385,34 +387,17 @@ async def sift_extraction(content: str, source_type: str = "markdown") -> str:
 
 @mcp.tool()
 async def get_sift_stats(scope: str = "current") -> str:
-    """
-    Returns telemetry stats for the sifting process.
-    'scope' can be 'current' (active session) or 'all' (historical).
-    """
+    """Returns telemetry stats for the sifting process."""
     if not os.path.exists(TELEMETRY_FILE):
         return "No telemetry data found."
-    
     try:
         with open(TELEMETRY_FILE, "r") as f:
             data = json.load(f)
-        
-        target_sessions = []
-        if scope == "current":
-            if SESSION_ID in data:
-                target_sessions.append(data[SESSION_ID])
-        else:
-            target_sessions = list(data.values())
-        
+        target_sessions = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
         if not target_sessions:
-            return "No data found for the specified scope."
-        
-        total_calls = 0
-        total_orig = 0
-        total_final = 0
-        total_latency = 0
-        total_cache_hits = 0
+            return "No data found."
+        total_calls = total_orig = total_final = total_latency = total_cache_hits = 0
         tool_breakdown = {}
-        
         for session in target_sessions:
             for tool, stats in session.get("tools", {}).items():
                 calls = stats.get("calls", 0)
@@ -420,59 +405,37 @@ async def get_sift_stats(scope: str = "current") -> str:
                 final = stats.get("final_chars", 0)
                 latency = stats.get("total_latency_ms", 0)
                 hits = stats.get("cache_hits", 0)
-
-                total_calls += calls
-                total_orig += orig
-                total_final += final
-                total_latency += latency
-                total_cache_hits += hits
-                
-                if tool not in tool_breakdown:
-                    tool_breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
-                
-                tool_breakdown[tool]["calls"] += calls
-                tool_breakdown[tool]["saved"] += (orig - final)
-                tool_breakdown[tool]["cache_hits"] += hits
-
+                total_calls += calls; total_orig += orig; total_final += final; total_latency += latency; total_cache_hits += hits
+                if tool not in tool_breakdown: tool_breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
+                tool_breakdown[tool]["calls"] += calls; tool_breakdown[tool]["saved"] += (orig - final); tool_breakdown[tool]["cache_hits"] += hits
         saved = total_orig - total_final
         reduction = (saved / total_orig * 100) if total_orig > 0 else 0
         avg_lat = (total_latency / total_calls) if total_calls > 0 else 0
         hit_rate = (total_cache_hits / total_calls * 100) if total_calls > 0 else 0
-        
-        report = [
-            f"--- Semantic-Sift Telemetry ({scope.capitalize()}) ---",
-            f"Total Sift Calls: {total_calls}",
-            f"Characters Processed: {total_orig:,}",
-            f"Characters Pruned: {saved:,} ({reduction:.1f}% reduction)",
-            f"Avg Latency: {avg_lat:.1f}ms",
-            f"Cache Hit Rate: {hit_rate:.1f}% ({total_cache_hits} hits)",
-            "\nBreakdown by Tool:"
-        ]
-        
-        for tool, stats in tool_breakdown.items():
-            report.append(f"- {tool}: {stats['calls']} calls, {stats['saved']:,} chars saved ({stats['cache_hits']} cache hits)")
-            
+        report = [f"--- Semantic-Sift Telemetry ({scope.capitalize()}) ---", f"Total Sift Calls: {total_calls}", f"Characters Processed: {total_orig:,}", f"Characters Pruned: {saved:,} ({reduction:.1f}% reduction)", f"Avg Latency: {avg_lat:.1f}ms", f"Cache Hit Rate: {hit_rate:.1f}% ({total_cache_hits} hits)", "\nBreakdown by Tool:"]
+        for tool, stats in tool_breakdown.items(): report.append(f"- {tool}: {stats['calls']} calls, {stats['saved']:,} chars saved ({stats['cache_hits']} cache hits)")
         return "\n".join(report)
     except Exception as e:
         return f"Error reading telemetry: {str(e)}"
 
 @mcp.tool()
-async def sift_onboard() -> str:
+async def sift_onboard(target_dir: str = None) -> str:
     """Automates installation of guidelines into all project instruction files."""
     report = ["# 🔍 Semantic-Sift Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA Active: {torch.cuda.is_available()}", f"- Device: {DEVICE}\n", "## 📝 Setup"]
-    for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — Standard Operating Procedures", SOP_TEMPLATE.strip()):
+    for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — Standard Operating Procedures", SOP_TEMPLATE.strip(), target_dir=target_dir):
         report.append(f"- {action}")
     report.append("\n**Semantic-Sift is now fully configured.**\n")
-    report.append(await sift_orchestrate())
+    report.append(await sift_orchestrate(target_dir=target_dir))
     return "\n".join(report)
 
 @mcp.tool()
-async def sift_orchestrate(custom_tools: list[str] = None, custom_paths: list[str] = None) -> str:
+async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[str] = None, target_dir: str = None) -> str:
     """Analyzes available MCPs and injects collaborative rules."""
     discovered = set()
-    if custom_tools:
+    cwd = target_dir if target_dir else os.getcwd()
+    if custom_tools := manual_tools:
         for t in custom_tools: discovered.add(t.lower())
-    local_settings = os.path.join(os.getcwd(), ".gemini", "settings.json")
+    local_settings = os.path.join(cwd, ".gemini", "settings.json")
     if os.path.exists(local_settings):
         try:
             with open(local_settings, "r") as f:
@@ -498,15 +461,13 @@ async def sift_orchestrate(custom_tools: list[str] = None, custom_paths: list[st
         else:
             for key, config in COLLABORATION_MAP.items():
                 if key in tool_name: active_rules.add(config["rule"])
-    
     header = "# 🤝 Unified Context Orchestration"
     if not active_rules:
         content = "- **Discovery Strategy**: Use `sift_chat` (rate: 0.7) on retrieved bodies > 100 lines.\n- **Storage Strategy**: Sift outputs > 1,000 chars before indexing.\n- **Search Strategy**: Run `sift_extraction` on web/search results.\n"
     else:
         content = "\n".join(sorted(list(active_rules)))
-        
-    actions = update_instruction_files("ORCHESTRATION", header, content.strip())
-    summary = f"Analyzed tools: {', '.join(discovered)}. Actions:\n"
+    actions = update_instruction_files("ORCHESTRATION", header, content.strip(), target_dir=target_dir)
+    summary = f"Analyzed tools in `{cwd}`: {', '.join(discovered)}. Actions:\n"
     for action in actions: summary += f"- {action}\n"
     return summary
 
@@ -515,13 +476,13 @@ async def sift_analyze(text: str) -> str:
     """Evaluates context quality (SNR)."""
     char_count = len(text); line_count = len(text.splitlines()); avg_line_len = char_count / line_count if line_count > 0 else 0
     timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text))
-    uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text))
+    uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text))
     repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
     noise_ratio = min((((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0)
     report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
     if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
     elif char_count > 8000: report.extend(["- **Action**: Run `sift_doc` or `sift_chat`.", "- Reason: Long-form context."])
-    elif char_count < 2000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is already concise."])
+    elif char_count < 2000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is concise."])
     else: report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
     return "\n".join(report)
 
