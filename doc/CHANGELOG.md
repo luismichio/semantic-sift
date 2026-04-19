@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Subconscious Telemetry**: Integrated the universal hook interceptor (`sift_hook.py`) with the telemetry tier, allowing background sifting events to be tracked as `hook_sift_logs`.
 - **Environment Awareness**: Upgraded `sift_analyze` to detect host-level truncation/masking (e.g. Gemini CLI's `<tool_output_masked>`) and recommend mandatory sifting of the raw source files.
 - **Adaptive Thresholds**: Lowered the Auto-Sift Mandate trigger to 1,000 characters (from 2,000) to more effectively capture dense technical noise.
 - **Multi-Target Injection**: Refactored the onboarding system to automatically sync rules across all detected IDE instruction files (`.cursorrules`, `.clinerules`, `.windsurfrules`, `.github/copilot-instructions.md`, etc.).
