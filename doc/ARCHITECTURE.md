@@ -26,6 +26,14 @@ Semantic-Sift is a standalone, protocol-compliant **MCP (Model Context Protocol)
 - **Logic**: Uses a lightweight BERT-based model (`microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank`) to calculate token importance. It removes linguistic filler while preserving instruction-carrying tokens and core semantic entities.
 - **Goal**: ~20-80% reduction (configurable) while maintaining the 95%+ fidelity of the original meaning.
 
+### 3. Subconscious Sifting (Interceptor Layer)
+- **Mechanism**: Universal JSON-based hook interceptor (`sift_hook.py`).
+- **Target**: Native tool streams from **Gemini CLI**, **Claude Code**, and **OpenCode**.
+- **Logic**: Intercepts tool outputs in the background and applies heuristic sifting *before* data enters the agent's context.
+- **Benefit**: Ensures zero-latency context hygiene without requiring explicit agent decision-making.
+
+---
+
 ## 🔄 The Refinery Loop (RAG Synergy)
 
 Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and **Grounding** (LlamaIndex/Meechi Core). This creates a high-density information loop:
@@ -72,19 +80,19 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 ### `get_sift_stats(scope)`
 - **Category**: Telemetry Tier
 - **Best For**: Monitoring efficiency and quantifying token savings.
-- **Operation**: Aggregates metrics from `.sift_telemetry.json` for either the `current` session or `all` historical sessions.
+- **Operation**: Aggregates metrics from `.sift_telemetry.json` for either the `current` session or `all` historical sessions. Tracks both manual calls and background hooks (`hook_sift_logs`).
 - **Benefit**: Provides transparency into the "incineration" rate of noise and tracks processing overhead.
 
-### `sift_onboard()`
+### `sift_onboard(target_dir)`
 - **Category**: Automation & Setup
-- **Best For**: Initial installation and environment verification.
+- **Best For**: Initial installation and environment verification across multiple repositories.
 - **Operation**: Scans for agent instruction files and injects the Semantic-Sift SOPs. Provides a diagnostic report of Python/CUDA/GPU status.
 - **Benefit**: Ensures every repository is "Sift-Aware" with zero manual effort.
 
 ### `sift_analyze(text)`
 - **Category**: Context Advisory
 - **Best For**: Deciding whether or not a body of text needs sifting.
-- **Operation**: Uses heuristic regex to detect timestamps, UUIDs, and repetition. Formulates a recommendation based on noise density and length.
+- **Operation**: Uses heuristic regex to detect timestamps, UUIDs, and host-level truncation (Gemini CLI). Formulates a recommendation based on noise density and environment awareness.
 - **Benefit**: Prevents redundant sifting and helps the agent manage its own context window autonomously.
 
 ### `sift_rank(query, documents)`
@@ -93,11 +101,10 @@ Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and 
 - **Operation**: Uses a local BGE-Reranker model (`BAAI/bge-reranker-base`) to score documents against a query. Returns top-N results.
 - **Benefit**: Ensures the most relevant information is prioritized before the sifting/compression stage.
 
-### `sift_orchestrate(custom_tools, custom_paths)`
+### `sift_orchestrate(custom_tools, custom_paths, target_dir)`
 - **Category**: Universal Orchestration
 - **Best For**: Cross-IDE and multi-agent collaboration.
-- **Operation**: Performs deep discovery across local (`.gemini`) and global config files (**Claude, Zed, Continue, Copilot, Antigravity, OpenCode**). 
-- **Heuristic Matching**: Uses a **Keyword-based Heuristic Engine** to identify tool categories (e.g., Slack, AWS, SQL) and injects specific "Chain of Context" rules.
+- **Operation**: Performs deep discovery across local and global config files (Claude, Zed, Continue, etc.). Injects tool-specific or category-based "Chain of Context" rules.
 - **Benefit**: Transforms a fragmented toolset into a unified, high-SNR intelligence system.
 
 ## 🤝 Collaboration Blueprints
@@ -131,6 +138,21 @@ If no specific tools are recognized, the engine injects a set of **Category-Base
 
 ---
 
+## 💰 Economic & Operational Impact
+
+Semantic-Sift is designed to be "Agnostic to the Bill." Its value scales regardless of the provider's pricing model:
+
+### 1. Token-Based Efficiency
+For providers like OpenAI or Google (Gemini API), the ROI is linear. By maintaining a high compression ratio, Sift directly reduces the monthly spend on agentic workflows.
+
+### 2. Request-Based Reliability
+For tools with flat-fee per-request billing, Sift shifts the focus from **Cost** to **Quality**:
+- **Focus Guard**: Prevents "Signal Dilution" where models ignore crucial data due to surrounding noise.
+- **Fail-Safe Capacity**: Ensures that complex contexts (History + RAG + Logs) stay within the model's hard window limit, preventing wasted requests.
+- **Latency Optimization**: Compressing data locally before transmission reduces server-side pre-fill time, resulting in a faster perceived UX.
+
+---
+
 ## 🚀 Deployment Models
 
 ### 1. Developer Mode (Current)
@@ -147,21 +169,6 @@ Frozen into a standalone binary via **PyInstaller/Nuitka** and bundled inside th
 ## 🔒 Security & Privacy
 - **Local Sovereignty**: All sifting occurs on the local machine. No data is sent to external APIs for compression.
 - **Local Model weights**: Models are cached locally in the user's home directory.
-
----
-
-## 💰 Economic & Operational Impact
-
-Semantic-Sift is designed to be "Agnostic to the Bill." Its value scales regardless of the provider's pricing model:
-
-### 1. Token-Based Efficiency
-For providers like OpenAI or Google (Gemini API), the ROI is linear. By maintaining a high compression ratio, Sift directly reduces the monthly spend on agentic workflows.
-
-### 2. Request-Based Reliability
-For tools with flat-fee per-request billing, Sift shifts the focus from **Cost** to **Quality**:
-- **Focus Guard**: Prevents "Signal Dilution" where models ignore crucial data due to surrounding noise.
-- **Fail-Safe Capacity**: Ensures that complex contexts (History + RAG + Logs) stay within the model's hard window limit, preventing wasted requests.
-- **Latency Optimization**: Compressing data locally before transmission reduces server-side pre-fill time, resulting in a faster perceived UX.
 
 ---
 

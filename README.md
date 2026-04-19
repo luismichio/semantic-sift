@@ -54,6 +54,13 @@ A multi-stage pipeline designed for long-form documentation and messy OCR extrac
 - **The Magic**: First, it performs a structural sieve to remove footers, page numbers, and copyright notices. Then, it applies a semantic sift to condense the prose into a high-density "Knowledge Map."
 - **Result**: Allows an agent to "see" a 50-page document in a single, high-signal context window.
 
+### 4. Subconscious Sifting (Background Hooks)
+**Silent Context Sanitation.**
+Intercepts data streams *before* they enter the context window for zero-latency reasoning.
+- **Deep Integration**: Deeply hooks into **Gemini CLI**, **Claude Code**, and **OpenCode**.
+- **Heuristic Interception**: Automatically cleans logs and verbose tool outputs in the background using the high-speed sieve engine.
+- **Visibility**: Every background sift is logged as `hook_sift_logs` in your telemetry report.
+
 ---
 
 ## 🎯 The Intelligence Tier
@@ -61,7 +68,7 @@ A multi-stage pipeline designed for long-form documentation and messy OCR extrac
 ### Smart Context Advisory (`sift_analyze`)
 Semantic-Sift is self-aware. The `sift_analyze` tool acts as a "Context Consultant" for the agent.
 - **Function**: Analyzes a string and calculates an **Estimated Noise %**.
-- **Action**: If a log is 90% noise, it tells the agent: *"Recommendation: Run `sift_logs` before reading."*
+- **Environment Aware**: Detects host-level truncation (Gemini CLI) and recommends mandatory sifting of the raw source files.
 - **Benefit**: Prevents the agent from wasting time sifting data that is already lean.
 
 ### Relevance-First Ranking (`sift_rank`)
@@ -90,6 +97,7 @@ Semantic-Sift is designed to be the **intelligent glue** between all your specia
 
 - **GPU Accelerated**: Optimized for **Python 3.12** and **CUDA 12.1** (Runs sub-second on an RTX 2070+).
 - **Persistent Cache**: Repeat sifts are **instantaneous (~1ms)** thanks to a local SHA-256 disk cache.
+- **Unified Telemetry**: Tracks characters saved across both manual tools and automatic background hooks (`hook_sift_logs`).
 - **Local Sovereignty**: No data ever leaves your machine. All models (BERT, BGE) run locally to protect your privacy and wallet.
 
 ---
