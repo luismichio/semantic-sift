@@ -172,6 +172,25 @@ COLLABORATION_MAP = {
 # Create the MCP server
 mcp = FastMCP("Semantic-Sift")
 
+# --- Sifting Logic (Heuristic/Structural) ---
+
+def apply_heuristic_sieve(text: str) -> str:
+    """
+    Sifts through raw technical logs (Vercel, GitHub, Console) 
+    to remove noise and keep only the instructional signal.
+    """
+    lines = text.splitlines()
+    sifted = []
+    timestamp_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?\s*')
+    progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
+    module_pattern = re.compile(r'^\s*[\d\.]+\s+[\w\-\.\/]+\s+\d+\s+bytes.*$')
+    for line in lines:
+        clean_line = timestamp_pattern.sub('', line).strip()
+        if not clean_line or progress_pattern.search(clean_line) or module_pattern.match(clean_line):
+            continue
+        sifted.append(clean_line)
+    return "\n".join(sifted)
+
 # --- Helpers ---
 
 def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False):
@@ -251,7 +270,7 @@ def get_global_mcp_configs() -> list[dict]:
         full_path = os.path.expanduser(item["path"])
         if os.path.exists(full_path):
             try:
-                with open(full_path, "r", encoding="utf-8", errors="replace") as f:
+                with open(full_path, "r") as f:
                     data = json.load(f)
                     configs.append({"data": data, "key": item["key"]})
             except Exception:
@@ -302,17 +321,7 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
 async def sift_logs(raw_text: str) -> str:
     """Sifts through raw technical logs to remove noise."""
     start_t = time.time()
-    lines = raw_text.splitlines()
-    sifted = []
-    timestamp_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?\s*')
-    progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
-    module_pattern = re.compile(r'^\s*[\d\.]+\s+[\w\-\.\/]+\s+\d+\s+bytes.*$')
-    for line in lines:
-        clean_line = timestamp_pattern.sub('', line).strip()
-        if not clean_line or progress_pattern.search(clean_line) or module_pattern.match(clean_line):
-            continue
-        sifted.append(clean_line)
-    result = "\n".join(sifted)
+    result = apply_heuristic_sieve(raw_text)
     latency = (time.time() - start_t) * 1000
     log_telemetry("sift_logs", len(raw_text), len(result), latency)
     return result
@@ -347,7 +356,7 @@ async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
     if cached_result:
         log_telemetry("sift_doc", len(text), len(cached_result), (time.time() - start_t) * 1000, cache_hit=True)
         return cached_result
-    cleaned = await sift_logs(text)
+    cleaned = apply_heuristic_sieve(text)
     try:
         from llmlingua import PromptCompressor
         compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
@@ -394,7 +403,7 @@ async def get_sift_stats(scope: str = "current") -> str:
             data = json.load(f)
         target_sessions = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
         if not target_sessions:
-            return "No data found."
+            return "No data found for specified scope."
         total_calls = total_orig = total_final = total_latency = total_cache_hits = 0
         tool_breakdown = {}
         for session in target_sessions:
@@ -433,7 +442,7 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
     local_settings = os.path.join(cwd, ".gemini", "settings.json")
     if os.path.exists(local_settings):
         try:
-            with open(local_settings, "r", encoding="utf-8", errors="replace") as f:
+            with open(local_settings, "r") as f:
                 data = json.load(f)
                 for name in data.get("mcpServers", {}).keys(): discovered.add(name.lower())
         except Exception: pass
@@ -444,7 +453,7 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
             full_path = os.path.expanduser(path)
             if os.path.exists(full_path):
                 try:
-                    with open(full_path, "r", encoding="utf-8", errors="replace") as f:
+                    with open(full_path, "r") as f:
                         data = json.load(f)
                         for k in ["mcpServers", "context_servers", "servers"]:
                             if k in data:
