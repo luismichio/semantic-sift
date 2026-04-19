@@ -17,7 +17,7 @@ SESSION_ID = str(uuid.uuid4())
 START_TIME = datetime.now().isoformat()
 
 # Ensure directories exist
-os.makedirs(telemetry_core.CACHE_DIR if hasattr(telemetry_core, 'CACHE_DIR') else ".sift_cache", exist_ok=True)
+os.makedirs(".sift_cache", exist_ok=True)
 
 # Device Detection
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -73,107 +73,29 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 
 # Collaboration Blueprint for known MCPs (Heuristic Matching)
 COLLABORATION_MAP = {
-    # Discovery & Development
-    "serena": {
-        "workflow": "Discovery -> Sifting",
-        "rule": "- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval to prune docstring/comment bloat while keeping logic."
-    },
-    "investigator": {
-        "workflow": "Research -> Distillation",
-        "rule": "- **Investigator Synergy**: Run `sift_doc` on comprehensive architectural reports or file-system scans to identify core patterns quickly."
-    },
-    # Storage & Memory
-    "context-mode": {
-        "workflow": "Sifting -> Storage",
-        "rule": "- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` on all tool outputs > 1,000 characters BEFORE calling `context-mode_ctx_index`. This ensures the FTS5 search index remains high-signal."
-    },
-    "memory": {
-        "workflow": "Recall -> Compaction",
-        "rule": "- **Memory Synergy**: Periodically call `sift_chat` on retrieved long-term memories to condense historical facts into high-signal summaries."
-    },
-    # Knowledge & Communication
-    "slack": {
-        "workflow": "Chat -> Decision",
-        "rule": "- **Slack Synergy**: Sift Slack history to keep only the decisions and action items, ignoring linguistic filler, emoji reactions, and system events."
-    },
-    "discord": {
-        "workflow": "History -> Signal",
-        "rule": "- **Discord Synergy**: Use `sift_chat` on verbose Discord threads to isolate the technical thread of conversation."
-    },
-    "notion": {
-        "workflow": "Docs -> Cleaning",
-        "rule": "- **Notion Synergy**: Use `sift_extraction` on Notion pages to remove redundant block metadata and JSON artifacts, keeping only the documentation prose."
-    },
-    "confluence": {
-        "workflow": "Wiki -> Signal",
-        "rule": "- **Confluence Synergy**: Sift Confluence pages to remove enterprise header/footer noise and navigation elements."
-    },
-    # Infrastructure & Cloud
-    "aws": {
-        "workflow": "Infra -> Logic",
-        "rule": "- **AWS Synergy**: Apply `sift_logs` to cloud resource descriptions (JSON) to strip low-entropy metadata (ETags, Request IDs) and focus on configuration."
-    },
-    "gcp": {
-        "workflow": "Cloud -> Precision",
-        "rule": "- **GCP Synergy**: Sift verbose GCloud CLI outputs to isolate error states and resource properties."
-    },
-    "azure": {
-        "workflow": "Cloud -> Logic",
-        "rule": "- **Azure Synergy**: Use `sift_logs` on Azure resource snapshots to reduce token-load during environment analysis."
-    },
-    # Databases
-    "postgres": {
-        "workflow": "Data -> Sample",
-        "rule": "- **Postgres Synergy**: If a query returns > 50 rows, run `sift_logs` to preserve the schema and edge rows while pruning the middle to save tokens."
-    },
-    "sql": {
-        "workflow": "Query -> Signal",
-        "rule": "- **SQL Synergy**: Sift large SQL query results to focus on the schema and anomalous data points."
-    },
-    "sqlite": {
-        "workflow": "Local Data -> Density",
-        "rule": "- **SQLite Synergy**: Use `sift_logs` on database dumps to maintain a lean context during local data exploration."
-    },
-    # Execution & Browsing
-    "puppeteer": {
-        "workflow": "Browser -> Signal",
-        "rule": "- **Puppeteer Synergy**: Always run `sift_extraction` on browser text to remove ads, tracking scripts, and navigation menus before analysis."
-    },
-    "playwright": {
-        "workflow": "Browser -> Extraction",
-        "rule": "- **Playwright Synergy**: Run `sift_extraction` on raw HTML fetches to ensure the agent only sees high-density content."
-    },
-    "browser": {
-        "workflow": "Web -> Density",
-        "rule": "- **Browser Synergy**: Use `sift_extraction` to clean up web content retrieved from browser-based tools."
-    },
-    # Workflow & Management
-    "jira": {
-        "workflow": "Task -> Resolution",
-        "rule": "- **Jira Synergy**: Sift Jira ticket comments to focus on the 'State Change' and 'Resolution' logic, ignoring boilerplate status updates."
-    },
-    "linear": {
-        "workflow": "Issues -> Signal",
-        "rule": "- **Linear Synergy**: Use `sift_chat` on issue descriptions and comment chains to isolate requirements and technical blockers."
-    },
-    # Source Control
-    "github": {
-        "workflow": "Search -> Distillation",
-        "rule": "- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or repository search results to focus on actionable code changes."
-    },
-    "github-copilot": {
-        "workflow": "Context -> Precision",
-        "rule": "- **Copilot Synergy**: Always sift large context windows (multi-file reads) before presenting to Copilot to reduce 'hallucination' and improve suggestion accuracy."
-    },
-    # Generic Utilities
-    "fetch": {
-        "workflow": "Fetch -> Cleaning",
-        "rule": "- **Fetch Synergy**: Always sift raw HTML/Markdown fetched from URLs to maintain context density."
-    },
-    "brave-search": {
-        "workflow": "Search -> Signal",
-        "rule": "- **Brave Synergy**: When fetching long web pages, run `sift_extraction` to remove technical debris and UI noise."
-    }
+    "serena": {"rule": "- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval."},
+    "investigator": {"rule": "- **Investigator Synergy**: Run `sift_doc` on comprehensive architectural reports."},
+    "context-mode": {"rule": "- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` BEFORE calling `context-mode_ctx_index`."},
+    "memory": {"rule": "- **Memory Synergy**: Periodically call `sift_chat` on retrieved long-term memories."},
+    "slack": {"rule": "- **Slack Synergy**: Sift Slack history to keep only the decisions and action items."},
+    "discord": {"rule": "- **Discord Synergy**: Use `sift_chat` on verbose Discord threads."},
+    "notion": {"rule": "- **Notion Synergy**: Use `sift_extraction` on Notion pages to remove redundant block metadata."},
+    "confluence": {"rule": "- **Confluence Synergy**: Sift Confluence pages to remove enterprise navigation elements."},
+    "aws": {"rule": "- **AWS Synergy**: Apply `sift_logs` to cloud resource descriptions to strip low-entropy metadata."},
+    "gcp": {"rule": "- **GCP Synergy**: Sift verbose GCloud CLI outputs to isolate error states."},
+    "azure": {"rule": "- **Azure Synergy**: Use `sift_logs` on Azure resource snapshots."},
+    "postgres": {"rule": "- **Postgres Synergy**: If a query returns > 50 rows, run `sift_logs`."},
+    "sql": {"rule": "- **SQL Synergy**: Sift large SQL query results to focus on the schema and anomalies."},
+    "sqlite": {"rule": "- **SQLite Synergy**: Use `sift_logs` on database dumps."},
+    "puppeteer": {"rule": "- **Puppeteer Synergy**: Always run `sift_extraction` on browser text."},
+    "playwright": {"rule": "- **Playwright Synergy**: Run `sift_extraction` on raw HTML fetches."},
+    "browser": {"rule": "- **Browser Synergy**: Use `sift_extraction` to clean up web content."},
+    "jira": {"rule": "- **Jira Synergy**: Sift Jira ticket comments to focus on the 'State Change' logic."},
+    "linear": {"rule": "- **Linear Synergy**: Use `sift_chat` on issue descriptions to isolate technical blockers."},
+    "github": {"rule": "- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or search results."},
+    "github-copilot": {"rule": "- **Copilot Synergy**: Always sift large context windows before presenting to Copilot."},
+    "fetch": {"rule": "- **Fetch Synergy**: Always sift raw HTML/Markdown fetched from URLs."},
+    "brave-search": {"rule": "- **Brave Synergy**: When fetching long web pages, run `sift_extraction`."}
 }
 
 # Create the MCP server
@@ -236,13 +158,39 @@ def get_global_mcp_configs() -> list[dict]:
             except Exception: pass
     return configs
 
+def merge_hook_json(path: str, hook_key: str, new_hook: dict, version: int = None):
+    """Safely merges a new hook into an existing JSON file without overwriting others."""
+    data = {"hooks": {}}
+    if version: data["version"] = version
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except: pass
+    
+    if "hooks" not in data: data["hooks"] = {}
+    hooks_list = data["hooks"].get(hook_key, [])
+    
+    # Check if already present (by command matching)
+    exists = any(h.get("command") == new_hook.get("command") for h in hooks_list)
+    if not exists:
+        # Prepend to prioritize sifting
+        data["hooks"][hook_key] = [new_hook] + hooks_list
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return True
+    return False
+
 def update_instruction_files(section_id: str, header: str, content: str, target_dir: str = None) -> list[str]:
     actions = []
     cwd = target_dir if target_dir else os.getcwd()
     python_exe = "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe"
     hook_script = "C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
+    cmd_str = f"{python_exe} {hook_script}"
+    
     block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"; block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
     full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
+    
     for filename in INSTRUCTION_TARGETS:
         if not filename.endswith((".md", ".clinerules", ".cursorrules", ".windsurfrules")): continue
         target_path = os.path.join(cwd, filename)
@@ -258,18 +206,20 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
                     with open(target_path, "a", encoding="utf-8", errors="replace") as f: f.write(full_payload)
                     actions.append(f"Injected into `{filename}`.")
             except Exception as e: actions.append(f"Error updating `{filename}`: {str(e)}")
-    cursor_hook_path = os.path.join(cwd, ".cursor", "hooks.json")
-    os.makedirs(os.path.dirname(cursor_hook_path), exist_ok=True)
-    try:
-        with open(cursor_hook_path, "w", encoding="utf-8") as f: json.dump({"version": 1, "hooks": {"postToolUse": [{"command": f"{python_exe} {hook_script}"}]}}, f, indent=2)
-        actions.append("Configured Cursor hooks.")
-    except Exception as e: actions.append(f"Error configuring Cursor hooks: {str(e)}")
-    vscode_hook_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
-    os.makedirs(os.path.dirname(vscode_hook_path), exist_ok=True)
-    try:
-        with open(vscode_hook_path, "w", encoding="utf-8") as f: json.dump({"hooks": {"PostToolUse": [{"type": "command", "command": f"{python_exe} {hook_script}"}]}}, f, indent=2)
-        actions.append("Configured VS Code Copilot hooks.")
-    except Exception as e: actions.append(f"Error configuring VS Code hooks: {str(e)}")
+
+    # Idempotent Hook Merging
+    # 1. Cursor
+    cursor_path = os.path.join(cwd, ".cursor", "hooks.json")
+    os.makedirs(os.path.dirname(cursor_path), exist_ok=True)
+    if merge_hook_json(cursor_path, "postToolUse", {"command": cmd_str}, version=1):
+        actions.append("Merged into Cursor hooks.")
+        
+    # 2. VS Code Copilot
+    vscode_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
+    os.makedirs(os.path.dirname(vscode_path), exist_ok=True)
+    if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}):
+        actions.append("Merged into VS Code hooks.")
+
     return actions
 
 # --- Tools ---
@@ -388,7 +338,7 @@ async def sift_analyze(text: str) -> str:
     report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
     if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
     elif char_count > 8000: report.extend(["- **Action**: Run `sift_doc` or `sift_chat`.", "- Reason: Long-form context."])
-    elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is concise."])
+    elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is already concise."])
     else: report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
     return "\n".join(report)
 
