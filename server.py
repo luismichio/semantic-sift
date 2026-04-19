@@ -6,6 +6,9 @@ import uuid
 import time
 import torch
 import hashlib
+import threading
+import urllib.request
+import urllib.parse
 from datetime import datetime
 from mcp.server.fastmcp import FastMCP
 
@@ -13,10 +16,32 @@ from mcp.server.fastmcp import FastMCP
 SESSION_ID = str(uuid.uuid4())
 TELEMETRY_FILE = ".sift_telemetry.json"
 CACHE_DIR = ".sift_cache"
+IDENTITY_FILE = ".sift_identity"
 START_TIME = datetime.now().isoformat()
+
+# Environment-based Identity & Licensing
+SIFT_CLIENT_ID = os.environ.get("SIFT_CLIENT_ID", "Generic CLI")
+SIFT_LICENSE_KEY = os.environ.get("SIFT_LICENSE_KEY", None)
+SIFT_TELEMETRY_URL = os.environ.get("SIFT_TELEMETRY_URL", "https://luiskobayashi.com/api/sift")
+SIFT_TIER = "Commercial" if SIFT_LICENSE_KEY else "Community"
 
 # Ensure directories exist
 os.makedirs(CACHE_DIR, exist_ok=True)
+
+# Generate or load persistent anonymous Machine ID
+def get_machine_id() -> str:
+    path = os.path.join(os.getcwd(), IDENTITY_FILE)
+    if os.path.exists(path):
+        try:
+            with open(path, "r") as f: return f.read().strip()
+        except: pass
+    new_id = str(uuid.uuid4())
+    try:
+        with open(path, "w") as f: f.write(new_id)
+    except: pass
+    return new_id
+
+MACHINE_ID = get_machine_id()
 
 # Device Detection
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -59,6 +84,10 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 ## 🤖 Auto-Sift Mandate
 - **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **1,000 characters**.
 - **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
+
+## 📊 Global Savings Registry
+- **Endpoint**: `https://luiskobayashi.com/api/sift`
+- **Goal**: Aggregate anonymous character savings to prove the value of the context sanitation engine.
 
 ## 🚫 Sifting Forbidden
 - **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
@@ -192,8 +221,28 @@ def apply_heuristic_sieve(text: str) -> str:
 
 # --- Helpers ---
 
+def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float):
+    """Sends an anonymous, non-blocking telemetry pulse to the remote URL."""
+    if not SIFT_TELEMETRY_URL: return
+    payload = {
+        "machine_id": MACHINE_ID,
+        "client_id": SIFT_CLIENT_ID,
+        "tier": SIFT_TIER,
+        "tool_name": tool_name,
+        "original_chars": original,
+        "final_chars": final,
+        "latency_ms": latency,
+        "timestamp": datetime.now().isoformat()
+    }
+    def _fire():
+        try:
+            req = urllib.request.Request(SIFT_TELEMETRY_URL, data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'}, method='POST')
+            with urllib.request.urlopen(req, timeout=5) as r: pass
+        except: pass
+    threading.Thread(target=_fire, daemon=True).start()
+
 def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False):
-    """Logs tool performance metrics to a persistent JSON file."""
+    """Logs tool performance metrics to local file and triggers global pulse."""
     try:
         data = {}
         if os.path.exists(TELEMETRY_FILE):
@@ -206,6 +255,8 @@ def log_telemetry(tool_name: str, original_chars: int, final_chars: int, latency
         if cache_hit: tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
         data[SESSION_ID]["tools"][tool_name] = tool_stats
         with open(TELEMETRY_FILE, "w") as f: json.dump(data, f, indent=2)
+        # Trigger Global Pulse
+        if not cache_hit: send_telemetry_pulse(tool_name, original_chars, final_chars, latency_ms)
     except Exception: pass
 
 def get_cache_key(tool_name: str, text: str, **kwargs) -> str:
@@ -252,15 +303,10 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
     cwd = target_dir if target_dir else os.getcwd()
     python_exe = "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe"
     hook_script = "C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
-    
-    # 1. Update Standard Instruction Files (Markdown)
-    block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"
-    block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
+    block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"; block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
     full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
-    
     for filename in INSTRUCTION_TARGETS:
-        if not filename.endswith(".md") and not filename.endswith(".clinerules") and not filename.endswith(".cursorrules") and not filename.endswith(".windsurfrules"):
-            continue
+        if not filename.endswith((".md", ".clinerules", ".cursorrules", ".windsurfrules")): continue
         target_path = os.path.join(cwd, filename)
         if os.path.exists(target_path):
             try:
@@ -274,35 +320,18 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
                     with open(target_path, "a", encoding="utf-8", errors="replace") as f: f.write(full_payload)
                     actions.append(f"Injected into `{filename}`.")
             except Exception as e: actions.append(f"Error updating `{filename}`: {str(e)}")
-
-    # 2. Update IDE Hook JSON Files
-    # 2.1 Cursor (.cursor/hooks.json)
     cursor_hook_path = os.path.join(cwd, ".cursor", "hooks.json")
     os.makedirs(os.path.dirname(cursor_hook_path), exist_ok=True)
-    cursor_hook_data = {
-        "version": 1,
-        "hooks": {
-            "postToolUse": [{"command": f"{python_exe} {hook_script}"}]
-        }
-    }
     try:
-        with open(cursor_hook_path, "w", encoding="utf-8") as f: json.dump(cursor_hook_data, f, indent=2)
+        with open(cursor_hook_path, "w", encoding="utf-8") as f: json.dump({"version": 1, "hooks": {"postToolUse": [{"command": f"{python_exe} {hook_script}"}]}}, f, indent=2)
         actions.append("Configured Cursor hooks.")
     except Exception as e: actions.append(f"Error configuring Cursor hooks: {str(e)}")
-
-    # 2.2 VS Code Copilot (.github/hooks/semantic-sift.json)
     vscode_hook_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
     os.makedirs(os.path.dirname(vscode_hook_path), exist_ok=True)
-    vscode_hook_data = {
-        "hooks": {
-            "PostToolUse": [{"type": "command", "command": f"{python_exe} {hook_script}"}]
-        }
-    }
     try:
-        with open(vscode_hook_path, "w", encoding="utf-8") as f: json.dump(vscode_hook_data, f, indent=2)
+        with open(vscode_hook_path, "w", encoding="utf-8") as f: json.dump({"hooks": {"PostToolUse": [{"type": "command", "command": f"{python_exe} {hook_script}"}]}}, f, indent=2)
         actions.append("Configured VS Code Copilot hooks.")
     except Exception as e: actions.append(f"Error configuring VS Code hooks: {str(e)}")
-
     return actions
 
 # --- Tools ---
@@ -357,7 +386,7 @@ async def get_sift_stats(scope: str = "current") -> str:
     try:
         with open(TELEMETRY_FILE, "r") as f: data = json.load(f)
         target = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
-        if not target: return "No data."
+        if not target: return f"--- Telemetry ({scope}) ---\nNo activity recorded.\n\n[Identity: {SIFT_CLIENT_ID} | Tier: {SIFT_TIER}]"
         total_calls = total_orig = total_final = total_lat = total_hits = 0; breakdown = {}
         for session in target:
             for tool, stats in session.get("tools", {}).items():
@@ -366,7 +395,7 @@ async def get_sift_stats(scope: str = "current") -> str:
                 if tool not in breakdown: breakdown[tool] = {"calls": 0, "saved": 0, "cache_hits": 0}
                 breakdown[tool]["calls"] += c; breakdown[tool]["saved"] += (o - f); breakdown[tool]["cache_hits"] += h
         saved = total_orig - total_final
-        output = [f"--- Telemetry ({scope}) ---", f"Calls: {total_calls}", f"Processed: {total_orig:,}", f"Pruned: {saved:,} ({(saved/total_orig*100) if total_orig>0 else 0:.1f}%)", f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms", f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)", "\nBreakdown:"]
+        output = [f"--- Telemetry ({scope}) ---", f"Identity: {SIFT_CLIENT_ID} (Tier: {SIFT_TIER})", f"Calls: {total_calls}", f"Processed: {total_orig:,}", f"Pruned: {saved:,} ({(saved/total_orig*100) if total_orig>0 else 0:.1f}%)", f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms", f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)", "\nBreakdown:"]
         for tool, s in breakdown.items(): output.append(f"- {tool}: {s['calls']} calls, {s['saved']:,} saved ({s['cache_hits']} hits)")
         return "\n".join(output)
     except Exception as e: return f"Error: {str(e)}"
@@ -411,7 +440,7 @@ async def sift_analyze(text: str) -> str:
     report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
     if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
     elif char_count > 8000: report.extend(["- **Action**: Run `sift_doc` or `sift_chat`.", "- Reason: Long-form context."])
-    elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is concise."])
+    elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is already concise."])
     else: report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
     return "\n".join(report)
 
