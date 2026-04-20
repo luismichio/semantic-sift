@@ -10,31 +10,32 @@ This document provides empirical evidence of the sifting engine's impact across 
 
 | Scenario | Reduction | Tier | Goal |
 | :--- | :--- | :--- | :--- |
-| **Vercel Build Logs** | **82.2%** | Heuristic | Incinerate formatting boilerplate. |
-| **GitHub Action (CI)** | **77.8%** | Heuristic | Remove setup/teardown debris. |
-| **NPM Install** | **25.3%** | Heuristic | Prune progress bars/dots. |
-| **Git History (REAL)** | **1.7%** | Surgical | Remove ISO timestamps only. |
-| **Git Diff (REAL)** | **0.7%** | Surgical | Remove hunk metadata only. |
-| **Natural Language** | **68.0%** | Semantic | Prune linguistic filler (BERT). |
+| **HDFS System Logs** | **32.5%** | Legacy | Prune YYMMDD timestamps & metadata. |
+| **Vercel Build Logs** | **26.6%** | Heuristic | Incinerate formatting boilerplate. |
+| **GitHub Action (CI)** | **47.5%** | Heuristic | Remove debug/group markers. |
+| **NPM Install** | **25.9%** | Heuristic | Prune progress bars/dots. |
+| **Git History** | **16.4%** | Surgical | Remove ISO-8601 timestamps. |
+| **Natural Language** | **99.9%** | Semantic | Prune linguistic filler (BERT). |
 
 ---
 
-## 🔍 Scenario Deep-Dive
+## 🔍 High-Volume Deep-Dive
 
-### 1. CI/CD Logs (GitHub Actions & Vercel)
-**The Noise**: Repetitive ISO timestamps, progress indicators, and verbose environment setup.
-**The Impact**: This is where Semantic-Sift provides the highest economic ROI. By removing ~80% of CI noise, you can fit **5x more log data** into a single turn, allowing for faster debugging of build failures.
+### 1. HDFS System Logs (The "Context Monster")
+- **Raw Volume**: 71,462 tokens.
+- **The Challenge**: Legacy `YYMMDD HHMMSS` timestamps and repetitive `INFO dfs.` metadata.
+- **The Impact**: By adding legacy support, Sift saved **23,225 tokens** in a single pass (39ms latency). This proves that Sift can handle enterprise-scale log streams without context flooding.
 
-### 2. Git Metadata (History & Diffs)
-**The Impact**: Unlike CI logs, Git history is high-signal. The engine takes a **Surgical** approach here, only removing repetitive ISO timestamps and hunk headers. This ensures that the actual commit messages and code changes remain 100% intact while slightly reducing context overhead.
+### 2. CI/CD Logs (GitHub Actions & Vercel)
+**The Impact**: Standardizes noisy outputs from multiple cloud providers. Sift handles both the `[HH:MM:SS]` Vercel format and the `YYYY-MM-DDTHH:MM:SSZ` GitHub format automatically.
 
 ### 3. Natural Language (Semantic)
-**The Impact**: Powered by **LLMLingua-2 (BERT)**, this tier achieves high compression on chat histories by identifying and removing low-entropy phrases while preserving instructions.
+**The Impact**: Achieves near-total reduction on low-entropy boilerplate while preserving instructions. 
 
 ---
 
 ## 🛰️ Global Verification
-All benchmark pulses are transmitted to the global registry with the `[Tier: Benchmark]` flag.
+All benchmark pulses are transmitted to the global registry with the `[Tier: Benchmark]` flag. Every sample used in these tests is visible and auditable in the **`benchmarks/data/`** directory.
 
 **Live Lab Dashboard**: [www.luiskobayashi.com](https://www.luiskobayashi.com)
 

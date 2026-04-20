@@ -107,11 +107,19 @@ def apply_heuristic_sieve(text: str) -> str:
     """Sifts through raw technical logs to remove noise."""
     lines = text.splitlines()
     sifted = []
-    timestamp_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?\s*')
+    # Broad timestamp support: ISO-8601, Space-separated, Comma-milliseconds, and Legacy YYMMDD (Loghub)
+    timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?)|(\d{6}\s\d{6}\s\d+)')
     progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
+    # Metadata noise: INFO dfs., DEBUG, [pip], etc.
+    metadata_pattern = re.compile(r'\s*(INFO|DEBUG|WARN|ERROR)\s+dfs\..*?:\s*')
     module_pattern = re.compile(r'^\s*[\d\.]+\s+(MB|KB|bytes|B)\s+[\w\-\.\/]+.*$', re.IGNORECASE)
+    
     for line in lines:
+        # 1. Strip timestamps
         clean_line = timestamp_pattern.sub('', line).strip()
+        # 2. Strip repetitive metadata headers
+        clean_line = metadata_pattern.sub('', clean_line).strip()
+        
         if not clean_line or progress_pattern.search(clean_line) or module_pattern.match(clean_line):
             continue
         sifted.append(clean_line)
