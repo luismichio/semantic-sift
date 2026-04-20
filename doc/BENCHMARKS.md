@@ -8,34 +8,33 @@ This document provides empirical evidence of the sifting engine's impact across 
 
 ## 🚀 Key Results Summary
 
-| Scenario | Reduction | Tier | Latency |
+| Scenario | Reduction | Tier | Goal |
 | :--- | :--- | :--- | :--- |
-| **Vercel Build Logs** | **90.5%** | Heuristic | 0.91ms |
-| **Natural Language** | **68.0%** | Semantic | 1200ms |
-| **NPM Install Progress** | **25.3%** | Heuristic | 0.82ms |
-| **GitHub History** | **12.2%** | Real Data | 0.05ms |
-| **Combined Average** | **53.8%** | Hybrid | -- |
+| **Vercel Build Logs** | **82.2%** | Heuristic | Incinerate formatting boilerplate. |
+| **GitHub Action (CI)** | **77.8%** | Heuristic | Remove setup/teardown debris. |
+| **NPM Install** | **25.3%** | Heuristic | Prune progress bars/dots. |
+| **Git History (REAL)** | **1.7%** | Surgical | Remove ISO timestamps only. |
+| **Git Diff (REAL)** | **0.7%** | Surgical | Remove hunk metadata only. |
+| **Natural Language** | **68.0%** | Semantic | Prune linguistic filler (BERT). |
 
 ---
 
 ## 🔍 Scenario Deep-Dive
 
-### 1. Vercel Build Logs
-**The Noise**: Repetitive ISO timestamps, progress indicators ([1/534]), and verbose module listings.
-**The Impact**: The engine's strongest area. By "incinerating" repetitive formatting noise, we pack **10x more signal** into the same context window.
+### 1. CI/CD Logs (GitHub Actions & Vercel)
+**The Noise**: Repetitive ISO timestamps, progress indicators, and verbose environment setup.
+**The Impact**: This is where Semantic-Sift provides the highest economic ROI. By removing ~80% of CI noise, you can fit **5x more log data** into a single turn, allowing for faster debugging of build failures.
 
-### 2. Natural Language (Semantic)
-**The Noise**: Linguistic filler, redundant greetings, and low-entropy phrases.
-**The Impact**: Powered by **LLMLingua-2 (BERT)**, this tier achieves high compression while maintaining 95%+ fidelity to the original meaning.
+### 2. Git Metadata (History & Diffs)
+**The Impact**: Unlike CI logs, Git history is high-signal. The engine takes a **Surgical** approach here, only removing repetitive ISO timestamps and hunk headers. This ensures that the actual commit messages and code changes remain 100% intact while slightly reducing context overhead.
 
-### 3. GitHub History (REAL DATA)
-**The Noise**: Commit hashes, author metadata, and ISO timestamps.
-**The Impact**: Even on real-world, high-value data, the engine consistently removes overhead without human intervention.
+### 3. Natural Language (Semantic)
+**The Impact**: Powered by **LLMLingua-2 (BERT)**, this tier achieves high compression on chat histories by identifying and removing low-entropy phrases while preserving instructions.
 
 ---
 
 ## 🛰️ Global Verification
-All benchmark pulses are transmitted to the global registry with the `[Tier: Benchmark]` flag. This allows us to track the evolution of our sifting heuristics in a controlled "Lab Environment" without skewing real-world user metrics.
+All benchmark pulses are transmitted to the global registry with the `[Tier: Benchmark]` flag.
 
 **Live Lab Dashboard**: [www.luiskobayashi.com](https://www.luiskobayashi.com)
 
