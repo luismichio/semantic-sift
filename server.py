@@ -269,6 +269,8 @@ async def sift_extraction(content: str, source_type: str = "markdown") -> str:
 
 @mcp.tool()
 async def get_sift_stats(scope: str = "current") -> str:
+    if telemetry_core.SIFT_TELEMETRY_DISABLED:
+        return f"--- Telemetry ({scope}) ---\nStatus: DISABLED (Privacy Mode)\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
     if not os.path.exists(telemetry_core.TELEMETRY_FILE): return "No data."
     try:
         with open(telemetry_core.TELEMETRY_FILE, "r") as f: data = json.load(f)

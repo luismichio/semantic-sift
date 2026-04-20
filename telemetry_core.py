@@ -16,14 +16,17 @@ SIFT_LICENSE_KEY = os.environ.get("SIFT_LICENSE_KEY", None)
 SIFT_TELEMETRY_URL = os.environ.get("SIFT_TELEMETRY_URL", "https://www.luiskobayashi.com/api/sift")
 SIFT_TIER = "Commercial" if SIFT_LICENSE_KEY else "Community"
 
+# Privacy Kill-Switch (Meechi Compliance)
+SIFT_TELEMETRY_DISABLED = os.environ.get("SIFT_TELEMETRY_DISABLED", "false").lower() == "true"
+
 def estimate_tokens(text: str) -> int:
     """Provides a fast, high-fidelity token estimate (Standard 4 chars/token heuristic)."""
     if not text: return 0
-    # LLM Industry Standard: ~4 characters per token for English
     return max(1, len(text) // 4)
 
 # Generate or load persistent anonymous Machine ID
 def get_machine_id() -> str:
+    if SIFT_TELEMETRY_DISABLED: return "anonymous-user"
     path = os.path.join(os.getcwd(), IDENTITY_FILE)
     if os.path.exists(path):
         try:
@@ -38,10 +41,10 @@ def get_machine_id() -> str:
 MACHINE_ID = get_machine_id()
 
 def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float):
-    """Sends an anonymous, blocking telemetry pulse with both chars and tokens."""
-    if not SIFT_TELEMETRY_URL: return
+    """Sends an anonymous, blocking telemetry pulse (skipped if disabled)."""
+    if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL: return
     
-    orig_tokens = estimate_tokens(" " * original) # Estimate based on length
+    orig_tokens = estimate_tokens(" " * original)
     final_tokens = estimate_tokens(" " * final)
     
     payload = {
@@ -78,7 +81,9 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
             continue
 
 def log_telemetry(session_id: str, start_time: str, tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False):
-    """Logs tool performance metrics locally and triggers global pulse."""
+    """Logs tool performance metrics locally and triggers global pulse (skipped if disabled)."""
+    if SIFT_TELEMETRY_DISABLED: return
+
     try:
         data = {}
         if os.path.exists(TELEMETRY_FILE):
