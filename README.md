@@ -120,8 +120,38 @@ Semantic-Sift is designed to be the **intelligent glue** between all your specia
 
 ---
 
+## 🛰️ Global Telemetry & Proof of Value
+
+Semantic-Sift includes a **"Solid Pulse"** telemetry system that securely and anonymously tracks the value provided by the engine.
+
+- **The Goal**: To aggregate total character and token savings across the entire community to prove the ROI of context sanitation.
+- **Privacy First**: The engine **never** transmits raw text or code. It only sends metadata (character counts, tool names, and anonymous machine IDs).
+- **The Counter**: See the live impact of the community at [luiskobayashi.com/api/sift](https://www.luiskobayashi.com).
+
+### 🛡️ Privacy Override (Meechi Compliance)
+For sensitive environments or projects with a strict non-tracking policy, you can completely disable all telemetry by setting:
+`SIFT_TELEMETRY_DISABLED=true`
+
+---
+
+## ⚖️ Dual-License Model
+
+Semantic-Sift is provided under a **Source-Available Dual License**.
+
+1. **Personal Use (FREE)**: Free for individuals, researchers, and non-commercial development.
+2. **Commercial Use (PAID)**: A license is required for use in corporate environments, paid client work, or when embedding Sift into commercial software.
+
+### **Commercial Benefits**:
+- Legal right to use for profit.
+- Access to high-performance **frozen binaries** (no Python required).
+- Advanced **Multi-IDE synchronization** and organizational policies.
+
+Obtain a license at [luiskobayashi.com/sift](https://www.luiskobayashi.com/sift).
+
+---
+
 ## 📖 Philosophy: The Studio of Two
 Semantic-Sift is a product of the **Studio of Two** philosophy: *We build Systems, not Patches.* It is a "Sovereign Sidecar" designed to empower the human-AI partnership.
 
 ## 📄 License
-MIT. See `LICENSE` for details.
+Source-Available. See `LICENSE.md` for details.

@@ -28,9 +28,36 @@ Semantic-Sift is a standalone, protocol-compliant **MCP (Model Context Protocol)
 
 ### 3. Subconscious Sifting (Interceptor Layer)
 - **Mechanism**: Universal JSON-based hook interceptor (`sift_hook.py`).
-- **Target**: Native tool streams from **Gemini CLI**, **Claude Code**, and **OpenCode**.
+- **Protocol Detection**: Identifies JSON schemas from Gemini CLI (`AfterTool`), Cursor (`postToolUse`), and VS Code (`PostToolUse`).
 - **Logic**: Intercepts tool outputs in the background and applies heuristic sifting *before* data enters the agent's context.
 - **Benefit**: Ensures zero-latency context hygiene without requiring explicit agent decision-making.
+
+### 4. The "Solid Pulse" Telemetry System
+Designed for high-reliability "Proof of Value" tracking across distributed installations.
+
+- **Lightweight Core**: `telemetry_core.py` provides zero-dependency metrics tracking.
+- **High-Fidelity Metrics**: Tracks both characters and **Estimated Tokens** (4:1 heuristic) to provide accurate ROI analytics.
+- **Redirect Resilience**: Automatically detects and retries canonical URLs (handling HTTP 308 redirects to `www.`).
+- **Short-Lived Execution**: In CLI/Hook environments, telemetry pulses are blocking to ensure data delivery before process termination, while maintaining sub-50ms latency.
+- **Global Transparency**: Aggregates anonymous savings into a centralized registry for community "Proof of Value."
+
+---
+
+## 🛡️ Privacy & Sovereignty Architecture
+
+Semantic-Sift is built on a **"Local-First, Metadata-Only"** philosophy.
+
+### 1. Data Isolation
+No raw text, code, or prompts are ever transmitted outside the local machine. All sifting (BERT, Regex) happens on the local CPU/GPU.
+
+### 2. Anonymous Identity
+Each installation generates a persistent, anonymous UUID in `.sift_identity`. This ID is used only for aggregate "Saved Token" counters and contains zero personal information.
+
+### 3. The Privacy Kill-Switch
+For users with absolute non-tracking requirements (e.g., **Meechi** users), the engine supports the `SIFT_TELEMETRY_DISABLED=true` flag.
+- **Total Silence**: When active, the telemetry module returns immediately.
+- **Zero Disk I/O**: No local `.sift_telemetry.json` is created.
+- **Zero Network Pulse**: No HTTP requests are attempted.
 
 ---
 
@@ -163,14 +190,6 @@ Running as a standalone process on the developer machine.
 Frozen into a standalone binary via **PyInstaller/Nuitka** and bundled inside the **Meechi (Tauri) App**.
 - **Path**: `src-tauri/binaries/semantic-sift-[platform]`
 - **Activation**: Auto-boot on application start via the Tauri Command API.
-
----
-
-## 🔒 Security & Privacy
-- **Local Sovereignty**: All sifting occurs on the local machine. No data is sent to external APIs for compression.
-- **Local Model weights**: Models are cached locally in the user's home directory.
-
----
 
 ## 🌟 Future Roadmap
 - **WebGPU Port**: Transitioning from PyTorch to `llmlingua-2-js` (ONNX) for browser-native execution.
