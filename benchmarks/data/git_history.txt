@@ -1,0 +1,11 @@
+commit ee748feedb95a0971b248758ef254ae8c1f3d2cc (HEAD -> main, origin/main)
+Author: luismichio <lmkobayashi@gmail.com>
+Date:   2026-04-20 22:53:08 +0200
+
+    feat: implement separate Benchmark tier and performance whitepaper
+
+commit 2dac34a82f27cd9aa9adef742f8ee4dfaef748a7
+Author: luismichio <lmkobayashi@gmail.com>
+Date:   2026-04-20 22:25:30 +0200
+
+    docs: fix broken URLs and point to verified contact and license pages
