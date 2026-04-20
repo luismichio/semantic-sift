@@ -13,7 +13,7 @@ Our codebase and dependencies are automatically audited using the following "Cyb
 If you discover a potential security issue or secret-exposure risk, please do not open a public issue. Instead, please report it via the following channel:
 
 - **Security Lead**: Luis Kobayashi
-- **Channel**: [https://luiskobayashi.com/sift/security](https://www.luiskobayashi.com/sift/security)
+- **Channel**: [https://www.luiskobayashi.com/contact](https://www.luiskobayashi.com/contact)
 - **Response Time**: We aim to acknowledge reports within 48 hours and provide a patch within 7 days for critical issues.
 
 ## 3. 🔒 Core Security Mandates

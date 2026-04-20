@@ -142,7 +142,7 @@ Semantic-Sift includes a **"Solid Pulse"** telemetry system that securely and an
 
 - **The Goal**: To aggregate total character and token savings across the entire community to prove the ROI of context sanitation.
 - **Privacy First**: The engine **never** transmits raw text or code. It only sends metadata (character counts, tool names, and anonymous machine IDs).
-- **The Counter**: See the live impact of the community at [luiskobayashi.com/api/sift](https://www.luiskobayashi.com).
+- **The Counter**: See the live impact of the community at [www.luiskobayashi.com](https://www.luiskobayashi.com).
 
 ### 🛡️ Privacy Override (Meechi Compliance)
 For sensitive environments or projects with a strict non-tracking policy, you can completely disable all telemetry by setting:
@@ -162,7 +162,7 @@ Semantic-Sift is provided under a **Source-Available Dual License**.
 - Access to high-performance **frozen binaries** (no Python required).
 - Advanced **Multi-IDE synchronization** and organizational policies.
 
-Obtain a license at [luiskobayashi.com/sift](https://www.luiskobayashi.com/sift).
+Obtain a license at [www.luiskobayashi.com](https://www.luiskobayashi.com).
 
 ---
 
