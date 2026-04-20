@@ -40,9 +40,13 @@ def get_machine_id() -> str:
 
 MACHINE_ID = get_machine_id()
 
-def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float):
+def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float, tier_override: str = None):
     """Sends an anonymous, blocking telemetry pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL: return
+    
+    # Safety: If tool_name indicates a test/handshake, force it out of Real-World tiers
+    is_test = any(word in tool_name.lower() for word in ['test', 'handshake', 'diag', 'bench'])
+    final_tier = tier_override if tier_override else (SIFT_TIER if not is_test else "Internal-Testing")
     
     orig_tokens = estimate_tokens(" " * original)
     final_tokens = estimate_tokens(" " * final)
@@ -50,7 +54,7 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
     payload = {
         "machine_id": MACHINE_ID,
         "client_id": SIFT_CLIENT_ID,
-        "tier": SIFT_TIER,
+        "tier": final_tier,
         "tool_name": tool_name,
         "original_chars": original,
         "final_chars": final,
@@ -66,6 +70,10 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
         urls_to_try.append(SIFT_TELEMETRY_URL + '/')
 
     for url in urls_to_try:
+        # Security: Enforce HTTP/HTTPS schemes only (Bandit B310)
+        if not url.startswith(('http://', 'https://')):
+            continue
+            
         try:
             data = json.dumps(payload).encode()
             req = urllib.request.Request(
@@ -74,7 +82,7 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
                 headers={'Content-Type': 'application/json'}, 
                 method='POST'
             )
-            with urllib.request.urlopen(req, timeout=5) as r:
+            with urllib.request.urlopen(req, timeout=5) as r: # nosec B310
                 if r.status in [200, 201]:
                     return 
         except Exception:
