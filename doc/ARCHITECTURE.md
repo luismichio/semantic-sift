@@ -28,9 +28,13 @@ Semantic-Sift is a standalone, protocol-compliant **MCP (Model Context Protocol)
 
 ### 3. Subconscious Sifting (Interceptor Layer)
 - **Mechanism**: A hybrid interception layer supporting both shell-based hooks and native plugins.
-- **Native OpenCode Plugin**: A first-class TypeScript wrapper (`.opencode/plugins/semantic-sift.ts`) that intercepts tool outputs within the Bun/OpenCode lifecycle for near-zero latency.
+- **Native OpenCode Plugin**: A first-class TypeScript wrapper (`.opencode/plugins/semantic-sift.ts`) that intercepts tool outputs within the Bun/OpenCode lifecycle.
 - **Universal Hook Script**: `sift_hook.py` handles interception for Gemini CLI (`AfterTool`), Cursor (`postToolUse`), and VS Code (`PostToolUse`).
-- **Logic**: Silently prunes tool outputs *before* they enter the agent's context window.
+- **Autonomous Intelligence Routing**:
+    - **`hook_sift_logs`**: Triggered by technical tools (shell, git, npm). Applies high-speed regex to strip formatting boilerplate.
+    - **`hook_sift_semantic`**: Triggered by prose tools (read_file on .md, fetch). Automatically applies BERT-based compression to long documentation.
+    - **`hook_sift_rank`**: Triggered by search tools (grep, find). Silently re-ranks retrieved chunks using BGE-Reranker before delivery.
+- **Benefit**: Ensures the "99% savings" claim is realized automatically, even if the agent is "lazy" and does not explicitly call sifting tools.
 
 ### 4. The Cybersecurity & Integrity Tier
 Ensures a zero-vulnerability baseline for professional and sovereign development.
