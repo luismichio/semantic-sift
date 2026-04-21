@@ -4,8 +4,9 @@ import os
 import re
 import time
 
-# Import Telemetry Core
+# Import Core Logic & Telemetry
 import telemetry_core
+import sift_kernel
 
 # Logging configuration
 LOG_FILE = os.path.join(os.getcwd(), ".gemini", "sift_debug.log")
@@ -18,98 +19,103 @@ def log(message):
     except:
         pass
 
-# Masters of the Sieve: Heuristic logic imported/copied for zero-latency hooks
-def apply_heuristic_sieve(text: str) -> str:
-    lines = text.splitlines()
-    sifted = []
-    # Broad timestamp support: ISO-8601, Space-separated, Comma-milliseconds, and Legacy YYMMDD (Loghub)
-    timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?)|(\d{6}\s\d{6}\s\d+)')
-    progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
-    # Metadata noise: INFO dfs., DEBUG, [pip], etc.
-    metadata_pattern = re.compile(r'\s*(INFO|DEBUG|WARN|ERROR)\s+dfs\..*?:\s*')
-    module_pattern = re.compile(r'^\s*[\d\.]+\s+(MB|KB|bytes|B)\s+[\w\-\.\/]+.*$', re.IGNORECASE)
-    
-    for line in lines:
-        # 1. Strip timestamps
-        clean_line = timestamp_pattern.sub('', line).strip()
-        # 2. Strip repetitive metadata headers
-        clean_line = metadata_pattern.sub('', clean_line).strip()
-        
-        if not clean_line or progress_pattern.search(clean_line) or module_pattern.match(clean_line):
-            continue
-        sifted.append(clean_line)
-    return "\n".join(sifted)
-
 def main():
-    log("Hook script triggered")
     raw_input = ""
     try:
         # 1. Read JSON from stdin
         raw_input = sys.stdin.read()
-        if not raw_input:
-            log("Warning: Received empty input on stdin")
-            return
+        if not raw_input: return
         
         data = json.loads(raw_input)
         start_t = time.time()
         
-        # Identity placeholder (Hook doesn't have a persistent session ID, uses "Background-Hook")
-        HOOK_SESSION = "Background-Hook"
+        # Identity
+        HOOK_SESSION = "Subconscious-Brain"
         START_TIME = time.ctime()
 
-        # 2. Identify Platform and Extract Content
-        sifted = None
-        raw_len = 0
-        
-        # Platform: Gemini CLI (AfterTool)
+        # 2. Extract Context
+        tool_name = "unknown"
+        raw_content = ""
+        platform = "unknown"
+
+        # Platform Detection
         if data.get("hook_event_name") == "AfterTool":
+            platform = "Gemini"
             tool_name = data.get("tool_name", "unknown")
-            tool_response = data.get("tool_response", {})
-            raw_content = tool_response.get("llmContent", "")
-            raw_len = len(raw_content)
-            
-            if raw_len > 1000:
-                sifted = apply_heuristic_sieve(raw_content)
-                if len(sifted) < raw_len:
-                    log(f"Sift successful: pruned {raw_len - len(sifted)} chars")
-                    if "hookSpecificOutput" not in data: data["hookSpecificOutput"] = {}
-                    data["hookSpecificOutput"]["additionalContext"] = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {raw_len - len(sifted)} chars of noise.]"
-                    data["tool_response"]["llmContent"] = sift_notification + sifted
-                else:
-                    sifted = None
-
-        # Platform: VS Code Copilot (PostToolUse)
+            raw_content = data.get("tool_response", {}).get("llmContent", "")
         elif "tool_response" in data and "llmContent" in data["tool_response"]:
-             raw_content = data["tool_response"]["llmContent"]
-             raw_len = len(raw_content)
-             if raw_len > 1000:
-                 sifted = apply_heuristic_sieve(raw_content)
-                 if len(sifted) < raw_len:
-                     data["tool_response"]["llmContent"] = sift_notification + sifted
-                 else:
-                     sifted = None
-
-        # Platform: Cursor (postToolUse)
+            platform = "VSCode"
+            tool_name = data.get("tool_name", "unknown")
+            raw_content = data["tool_response"]["llmContent"]
         elif "result" in data and isinstance(data["result"], str):
+            platform = "Cursor"
             raw_content = data["result"]
-            raw_len = len(raw_content)
-            if raw_len > 1000:
-                sifted = apply_heuristic_sieve(raw_content)
-                if len(sifted) < raw_len:
-                    data["result"] = f"[Sifted] {sifted}"
-                else:
-                    sifted = None
 
-        # 3. Handle Telemetry (Blocking call to ensure it finishes before hook exits)
-        if sifted:
+        if not raw_content or len(raw_content) < 500:
+            sys.stdout.write(raw_input)
+            return
+
+        # 3. Subconscious Routing Intelligence
+        sifted = None
+        sift_type = "none"
+        
+        # --- A. Auto-Ranking (Search Tools) ---
+        if any(x in tool_name.lower() for x in ['search', 'grep', 'find']):
+            # If we have query info (Gemini AfterTool includes args)
+            args = data.get("tool_args", {})
+            query = args.get("pattern") or args.get("query") or args.get("substring_pattern")
+            if query and isinstance(raw_content, str):
+                # Try to split by common chunk delimiters if it looks like multi-file output
+                chunks = re.split(r'\n(?=File: |Path: |---)', raw_content)
+                if len(chunks) > 2:
+                    log(f"Auto-Ranking {len(chunks)} search results for query: {query}")
+                    scored = sift_kernel.perform_ranking(query, chunks, top_n=5)
+                    if scored:
+                        sifted = "\n---\n".join([doc for _, doc in scored])
+                        sift_type = "hook_sift_rank"
+
+        # --- B. Auto-Semantic (Prose/Docs) ---
+        if not sifted:
+            is_prose = any(x in tool_name.lower() for x in ['read', 'fetch', 'extraction', 'chat'])
+            has_md_ext = any(x in raw_content[:200].lower() for x in ['.md', '# ', '---'])
+            
+            if (is_prose or has_md_ext) and len(raw_content) > 3000:
+                log(f"Auto-Semantic sifting prose from {tool_name}")
+                sifted = sift_kernel.perform_semantic_sift(raw_content, rate=0.6)
+                sift_type = "hook_sift_semantic"
+
+        # --- C. Auto-Heuristic (Default / Logs) ---
+        if not sifted:
+            sifted = sift_kernel.apply_heuristic_sieve(raw_content)
+            if len(sifted) < len(raw_content):
+                sift_type = "hook_sift_logs"
+            else:
+                sifted = None
+
+        # 4. Handle Injection & Telemetry
+        if sifted and len(sifted) < len(raw_content):
             latency = (time.time() - start_t) * 1000
-            telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, "hook_sift_logs", raw_len, len(sifted), latency)
+            log(f"Subconscious {sift_type} successful: saved {len(raw_content) - len(sifted)} chars")
+            
+            # Record accurate telemetry
+            telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, sift_type, len(raw_content), len(sifted), latency)
 
-        # 4. Output modified JSON
+            # Inject back to platform
+            msg = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted)} chars of noise.]"
+            if platform == "Gemini":
+                if "hookSpecificOutput" not in data: data["hookSpecificOutput"] = {}
+                data["hookSpecificOutput"]["additionalContext"] = msg
+                data["tool_response"]["llmContent"] = sift_notification + sifted
+            elif platform == "VSCode":
+                data["tool_response"]["llmContent"] = sift_notification + sifted
+            elif platform == "Cursor":
+                data["result"] = f"[Sifted] {sifted}"
+
+        # 5. Output modified JSON
         sys.stdout.write(json.dumps(data))
         
     except Exception as e:
-        log(f"ERROR: {str(e)}")
+        log(f"ERROR in Subconscious Brain: {str(e)}")
         sys.stdout.write(raw_input)
 
 sift_notification = "--- [Distilled by Semantic-Sift] ---\n"

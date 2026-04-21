@@ -5,22 +5,16 @@ import json
 import uuid
 import time
 import torch
-import hashlib
 from datetime import datetime
 from mcp.server.fastmcp import FastMCP
 
-# Import Telemetry Core
+# Import Core Logic & Telemetry
 import telemetry_core
+import sift_kernel
 
 # Global Configuration
 SESSION_ID = str(uuid.uuid4())
 START_TIME = datetime.now().isoformat()
-
-# Ensure directories exist
-os.makedirs(".sift_cache", exist_ok=True)
-
-# Device Detection
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Master list of instruction files for various IDEs and tools
 INSTRUCTION_TARGETS = [
@@ -101,45 +95,7 @@ COLLABORATION_MAP = {
 # Create the MCP server
 mcp = FastMCP("Semantic-Sift")
 
-# --- Sifting Logic (Heuristic/Structural) ---
-
-def apply_heuristic_sieve(text: str) -> str:
-    """Sifts through raw technical logs to remove noise."""
-    lines = text.splitlines()
-    sifted = []
-    # Broad timestamp support: ISO-8601, Space-separated, Comma-milliseconds, and Legacy YYMMDD (Loghub)
-    timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?)|(\d{6}\s\d{6}\s\d+)')
-    progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
-    # Metadata noise: INFO dfs., DEBUG, [pip], etc.
-    metadata_pattern = re.compile(r'\s*(INFO|DEBUG|WARN|ERROR)\s+dfs\..*?:\s*')
-    module_pattern = re.compile(r'^\s*[\d\.]+\s+(MB|KB|bytes|B)\s+[\w\-\.\/]+.*$', re.IGNORECASE)
-    
-    for line in lines:
-        # 1. Strip timestamps
-        clean_line = timestamp_pattern.sub('', line).strip()
-        # 2. Strip repetitive metadata headers
-        clean_line = metadata_pattern.sub('', clean_line).strip()
-        
-        if not clean_line or progress_pattern.search(clean_line) or module_pattern.match(clean_line):
-            continue
-        sifted.append(clean_line)
-    return "\n".join(sifted)
-
 # --- Helpers ---
-
-def get_cache_key(tool_name: str, text: str, **kwargs) -> str:
-    payload = f"{tool_name}:{text}:{json.dumps(kwargs, sort_keys=True)}"
-    return hashlib.sha256(payload.encode()).hexdigest()
-
-def check_cache(key: str) -> str | None:
-    cache_path = os.path.join(".sift_cache", f"{key}.txt")
-    if os.path.exists(cache_path):
-        with open(cache_path, "r", encoding="utf-8", errors="replace") as f: return f.read()
-    return None
-
-def set_cache(key: str, result: str):
-    cache_path = os.path.join(".sift_cache", f"{key}.txt")
-    with open(cache_path, "w", encoding="utf-8", errors="replace") as f: f.write(result)
 
 def get_global_mcp_configs() -> list[dict]:
     configs = []
@@ -224,16 +180,19 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
     opencode_plugin_path = os.path.join(cwd, ".opencode", "plugins", "semantic-sift.ts")
     os.makedirs(os.path.dirname(opencode_plugin_path), exist_ok=True)
     plugin_content = f"""/**
-    * Semantic-Sift Native OpenCode Plugin
-    * 
-    * Intercepts tool outputs and applies heuristic sifting before they reach the LLM.
-    */
+ * Semantic-Sift Native OpenCode Plugin
+ * 
+ * Intercepts tool outputs and applies heuristic or semantic sifting 
+ * based on content type and tool intent.
+ */
 
-    export const SemanticSiftPlugin = async ({{ $ }}) => {{
-    return {{
+export const SemanticSiftPlugin = async ({{ $ }}) => {{
+  return {{
     hooks: {{
       "tool.execute.after": async (input, output) => {{
-        if (typeof output.result !== 'string' || output.result.length < 1000) return;
+        const rawContent = output.result;
+        
+        if (typeof rawContent !== 'string' || rawContent.length < 500) return;
 
         try {{
           const pythonExe = "{python_exe}";
@@ -241,7 +200,8 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
           const payload = {{
             hook_event_name: "AfterTool",
             tool_name: input.tool,
-            tool_response: {{ llmContent: output.result }}
+            tool_args: input.args,
+            tool_response: {{ llmContent: rawContent }}
           }};
           const response = await $`${{pythonExe}} ${{siftScript}}`.input(JSON.stringify(payload)).text();
           const siftedData = JSON.parse(response);
@@ -249,15 +209,15 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
             output.result = siftedData.tool_response.llmContent;
           }}
         }} catch (error) {{
-          console.error("[Semantic-Sift Plugin] Sifting failed:", error);
+          console.error("[Semantic-Sift Plugin] Subconscious Routing failed:", error);
         }}
       }}
     }}
-    }};
-    }};
+  }};
+}};
 
-    export default SemanticSiftPlugin;
-    """
+export default SemanticSiftPlugin;
+"""
     try:
         if not os.path.exists(opencode_plugin_path):
             with open(opencode_plugin_path, "w", encoding="utf-8") as f:
@@ -267,59 +227,40 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
         actions.append(f"Error configuring OpenCode plugin: {str(e)}")
 
     return actions
+
+# --- Tools ---
+
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
-    start_t = time.time(); result = apply_heuristic_sieve(raw_text); latency = (time.time() - start_t) * 1000
+    start_t = time.time()
+    result = sift_kernel.apply_heuristic_sieve(raw_text)
+    latency = (time.time() - start_t) * 1000
     telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_logs", len(raw_text), len(result), latency)
     return result
 
 @mcp.tool()
 async def sift_chat(text: str, rate: float = 0.5) -> str:
-    start_t = time.time(); cache_key = get_cache_key("sift_chat", text, rate=rate)
-    if cached := check_cache(cache_key): 
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(cached), (time.time() - start_t) * 1000, True)
-        return cached
-    try:
-        from llmlingua import PromptCompressor
-        compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
-        results = compressor.compress_prompt([text], rate=rate, force_tokens=['\n', '?'], chunk_end_tokens=['.', '\n'], return_word_label=False)
-        result = results.get('compressed_prompt', text); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency)
-        return result
-    except Exception as e: return f"Error: {str(e)}"
+    start_t = time.time()
+    result = sift_kernel.perform_semantic_sift(text, rate=rate)
+    latency = (time.time() - start_t) * 1000
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency)
+    return result
 
 @mcp.tool()
 async def sift_doc(text: str, budget_tokens: int = 1000) -> str:
-    start_t = time.time(); cache_key = get_cache_key("sift_doc", text, budget_tokens=budget_tokens)
-    if cached := check_cache(cache_key): 
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(cached), (time.time() - start_t) * 1000, True)
-        return cached
-    cleaned = apply_heuristic_sieve(text)
-    try:
-        from llmlingua import PromptCompressor
-        compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
-        results = compressor.compress_prompt([cleaned], rate=0.4, force_tokens=['[', ']', '{', '}', '/', '\\', '.', '_'], chunk_end_tokens=['\n', '.', ';'], return_word_label=False)
-        result = results.get('compressed_prompt', cleaned); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(result), latency)
-        return result
-    except Exception as e: return f"Error: {str(e)}"
+    start_t = time.time()
+    result = sift_kernel.perform_doc_sift(text)
+    latency = (time.time() - start_t) * 1000
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(result), latency)
+    return result
 
 @mcp.tool()
 async def sift_extraction(content: str, source_type: str = "markdown") -> str:
-    start_t = time.time(); cache_key = get_cache_key("sift_extraction", content, source_type=source_type)
-    if cached := check_cache(cache_key): 
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(cached), (time.time() - start_t) * 1000, True)
-        return cached
-    refined = content
-    for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']: refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
-    try:
-        from llmlingua import PromptCompressor
-        compressor = PromptCompressor(model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", use_llmlingua2=True, device_map=DEVICE)
-        results = compressor.compress_prompt([refined], rate=0.7, force_tokens=['\n', '|', '-', ':', '#'], chunk_end_tokens=['\n', '.'], return_word_label=False)
-        result = results.get('compressed_prompt', refined); set_cache(cache_key, result); latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(result), latency)
-        return result
-    except Exception as e: return f"Error: {str(e)}"
+    start_t = time.time()
+    result = sift_kernel.perform_extraction_cleaning(content)
+    latency = (time.time() - start_t) * 1000
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(result), latency)
+    return result
 
 @mcp.tool()
 async def get_sift_stats(scope: str = "current") -> str:
@@ -345,7 +286,7 @@ async def get_sift_stats(scope: str = "current") -> str:
 
 @mcp.tool()
 async def sift_onboard(target_dir: str = None) -> str:
-    report = ["# 🔍 Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA: {torch.cuda.is_available()}", f"- Device: {DEVICE}", "- Security: SAST/SCA Audited (0 CVEs)\n", "## 📝 Setup"]
+    report = ["# 🔍 Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA: {torch.cuda.is_available()}", f"- Device: {sift_kernel.DEVICE}", "- Security: SAST/SCA Audited (0 CVEs)\n", "## 📝 Setup"]
     for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — SOP", SOP_TEMPLATE.strip(), target_dir): report.append(f"- {action}")
     report.append("\n**Fully configured.**\n"); report.append(await sift_orchestrate(target_dir=target_dir)); return "\n".join(report)
 
@@ -376,7 +317,7 @@ async def sift_orchestrate(manual_tools: list[str] = None, custom_paths: list[st
 async def sift_analyze(text: str) -> str:
     char_count = len(text); is_masked = "<tool_output_masked>" in text or "Output too large." in text
     if is_masked: return "## 🛡️ Host Truncation Detected\n- **Status**: Host already masked output.\n- **Recommendation**: **MANDATORY SIFT** raw file."
-    timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', text)); uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text)); repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
+    timestamps = len(re.findall(r'\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?', text)); uuids = len(re.findall(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', text)); repetition = len(re.findall(r'[=\-]{5,}|[\.]{3,}', text))
     noise_ratio = min((((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0)
     report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
     if noise_ratio > 15.0: report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
@@ -387,17 +328,13 @@ async def sift_analyze(text: str) -> str:
 
 @mcp.tool()
 async def sift_rank(query: str, documents: list[str], top_n: int = 3) -> str:
-    try:
-        from sentence_transformers import CrossEncoder
-        model = CrossEncoder('BAAI/bge-reranker-base', device=DEVICE)
-        scores = model.predict([[query, doc] for doc in documents])
-        scored_docs = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)[:top_n]
-        report = [f"## 🎯 Reranking Results (Top {top_n})\n"]
-        for i, (score, doc) in enumerate(scored_docs):
-            report.append(f"### Rank {i+1} (Score: {score:.4f})\n{doc[:500]}..." if len(doc) > 500 else f"### Rank {i+1} (Score: {score:.4f})\n{doc}")
-            report.append("\n---\n")
-        return "\n".join(report)
-    except Exception as e: return f"Error: {str(e)}"
+    scored_docs = sift_kernel.perform_ranking(query, documents, top_n)
+    if not scored_docs: return "Ranking failed or returned no results."
+    report = [f"## 🎯 Reranking Results (Top {top_n})\n"]
+    for i, (score, doc) in enumerate(scored_docs):
+        report.append(f"### Rank {i+1} (Score: {score:.4f})\n{doc[:500]}..." if len(doc) > 500 else f"### Rank {i+1} (Score: {score:.4f})\n{doc}")
+        report.append("\n---\n")
+    return "\n".join(report)
 
 if __name__ == "__main__":
     mcp.run()
