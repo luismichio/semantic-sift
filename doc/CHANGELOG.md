@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Native OpenCode Plugin**: Migrated from legacy shell hooks to a first-class TypeScript plugin (`.opencode/plugins/semantic-sift.ts`) for near-zero latency interception in OpenCode environments.
+- **Solid Pulse Global Registry**: Implemented a redundant, high-reliability telemetry pulse system reporting to `https://www.luiskobayashi.com/api/sift`.
+- **High-Fidelity Token Metrics**: Upgraded telemetry to report both character and **Estimated Token** (4:1 heuristic) ROI, providing real-world financial and context-window analytics.
+- **High-Volume & Legacy Support**: Hardened the heuristic sieve with regex support for legacy `YYMMDD` timestamps and enterprise-scale system logs (HDFS, Linux), enabling 70,000+ token sifts.
+- **Standardized Benchmark Lab**: Replaced simulated data with a visible, replicable suite of real-world "Context Monsters" in `benchmarks/data/`, including authentic failing Vercel build logs and Git merge conflicts.
+- **Privacy Kill-Switch**: Added the `SIFT_TELEMETRY_DISABLED=true` flag for absolute local sovereignty and Meechi-policy compliance.
+- **Cybersecurity Tier**: Implemented a comprehensive automated audit suite (`scripts/audit.bat`) including:
+    - **Pytest**: 100% logic and privacy coverage.
+    - **Bandit (SAST)**: Automated static analysis with protocol enforcement (B310).
+    - **Pip-Audit (SCA)**: Supply chain monitoring with 25+ vulnerabilities successfully remediated.
 - **Subconscious Telemetry**: Integrated the universal hook interceptor (`sift_hook.py`) with the telemetry tier, allowing background sifting events to be tracked as `hook_sift_logs`.
 - **Environment Awareness**: Upgraded `sift_analyze` to detect host-level truncation/masking (e.g. Gemini CLI's `<tool_output_masked>`) and recommend mandatory sifting of the raw source files.
 - **Adaptive Thresholds**: Lowered the Auto-Sift Mandate trigger to 1,000 characters (from 2,000) to more effectively capture dense technical noise.
