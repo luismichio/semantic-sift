@@ -214,13 +214,59 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
     cursor_path = os.path.join(cwd, ".cursor", "hooks.json")
     os.makedirs(os.path.dirname(cursor_path), exist_ok=True)
     if merge_hook_json(cursor_path, "postToolUse", {"command": cmd_str}, version=1): actions.append("Merged into Cursor hooks.")
+    # 2. VS Code Copilot
     vscode_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
     os.makedirs(os.path.dirname(vscode_path), exist_ok=True)
-    if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}): actions.append("Merged into VS Code hooks.")
+    if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}):
+        actions.append("Merged into VS Code hooks.")
+
+    # 3. OpenCode Native Plugin
+    opencode_plugin_path = os.path.join(cwd, ".opencode", "plugins", "semantic-sift.ts")
+    os.makedirs(os.path.dirname(opencode_plugin_path), exist_ok=True)
+    plugin_content = f"""/**
+    * Semantic-Sift Native OpenCode Plugin
+    * 
+    * Intercepts tool outputs and applies heuristic sifting before they reach the LLM.
+    */
+
+    export const SemanticSiftPlugin = async ({{ $ }}) => {{
+    return {{
+    hooks: {{
+      "tool.execute.after": async (input, output) => {{
+        if (typeof output.result !== 'string' || output.result.length < 1000) return;
+
+        try {{
+          const pythonExe = "{python_exe}";
+          const siftScript = "{hook_script}";
+          const payload = {{
+            hook_event_name: "AfterTool",
+            tool_name: input.tool,
+            tool_response: {{ llmContent: output.result }}
+          }};
+          const response = await $`${{pythonExe}} ${{siftScript}}`.input(JSON.stringify(payload)).text();
+          const siftedData = JSON.parse(response);
+          if (siftedData?.tool_response?.llmContent) {{
+            output.result = siftedData.tool_response.llmContent;
+          }}
+        }} catch (error) {{
+          console.error("[Semantic-Sift Plugin] Sifting failed:", error);
+        }}
+      }}
+    }}
+    }};
+    }};
+
+    export default SemanticSiftPlugin;
+    """
+    try:
+        if not os.path.exists(opencode_plugin_path):
+            with open(opencode_plugin_path, "w", encoding="utf-8") as f:
+                f.write(plugin_content)
+            actions.append("Configured OpenCode native plugin.")
+    except Exception as e:
+        actions.append(f"Error configuring OpenCode plugin: {str(e)}")
+
     return actions
-
-# --- Tools ---
-
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
     start_t = time.time(); result = apply_heuristic_sieve(raw_text); latency = (time.time() - start_t) * 1000
