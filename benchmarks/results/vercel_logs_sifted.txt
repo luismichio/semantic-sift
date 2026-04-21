@@ -1,22 +1,18 @@
-[14:22:05.123] Running build in "production"
-[14:22:05.456] Detected Next.js version: 14.1.0
-[14:22:05.789] Running "npm run build"
-[14:22:06.111] > my-app@0.1.0 build
-[14:22:06.111] > next build
-[14:22:06.450]  ▲ Next.js 14.1.0
-[14:22:06.450]
-[14:22:15.234] Failed to compile.
-[14:22:15.234]
-[14:22:15.235] ./src/components/UserCard.tsx:14:22
-[14:22:15.235] Type error: Property 'email' does not exist on type 'UserProps'.
-[14:22:15.235]
-[14:22:15.235]   12 |   return (
-[14:22:15.235]   13 |     <div>
-[14:22:15.235] > 14 |       <p>{user.email}</p>
-[14:22:15.235]      |                ^
-[14:22:15.235]   15 |     </div>
-[14:22:15.235]   16 |   );
-[14:22:15.235]   17 | }
-[14:22:15.235]
-[14:22:15.300] Error: Command "npm run build" exited with 1
-[14:22:15.500] Deployment failed with error: BUILD_UTILS_BUILD_FAILED_COMMAND_EXITED_1
+Running build in "production"
+Detected Next.js version: 14.1.0
+Running "npm run build"
+> my-app@0.1.0 build
+> next build
+▲ Next.js 14.1.0
+Failed to compile.
+./src/components/UserCard.tsx:14:22
+Type error: Property 'email' does not exist on type 'UserProps'.
+12 |   return (
+13 |     <div>
+> 14 |       <p>{user.email}</p>
+|                ^
+15 |     </div>
+16 |   );
+17 | }
+Error: Command "npm run build" exited with 1
+Deployment failed with error: BUILD_UTILS_BUILD_FAILED_COMMAND_EXITED_1

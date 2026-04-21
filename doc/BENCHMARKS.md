@@ -31,77 +31,52 @@ This document provides empirical evidence of the sifting engine's impact across 
 
 ---
 
-## 🔍 Visual Proof: Before & After
+## 🔍 Visual Proof: The "Clean File" Evidence
 
-Seeing is believing. Below are side-by-side examples of how Semantic-Sift "incinerates" noise while preserving the high-signal "Needle in the Haystack."
+To avoid the perception of data manipulation, we provide direct access to the raw inputs and the resulting "clean" files. Seeing the actual logs stripped of noise is the ultimate proof of Semantic-Sift's surgical precision.
 
-### 1. Vercel Build Failure
-**Noise**: Repetitive bracketed timestamps.
-**Signal**: The specific TypeScript error and code line.
+### 🔦 Featured Example: Vercel Build Failure
+Below is a realistic comparison of a Vercel deployment log. Notice how the engine identifies and incinerates the bracketed timestamps and repetitive boilerplate while preserving the exact error trace.
 
-| Raw Input (Noise) | Sifted Output (Signal) |
-| :--- | :--- |
-| `[14:22:05.123] Running build in "production"` | `Running build in "production"` |
-| `[14:22:15.235] Failed to compile.` | `Failed to compile.` |
-| `[14:22:15.235] ./src/components/UserCard.tsx:14:22` | `./src/components/UserCard.tsx:14:22` |
+#### **Raw Log (Noise)**
+```text
+[14:22:05.123] Running build in "production"
+[14:22:05.456] Detected Next.js version: 14.1.0
+[14:22:05.789] Running "npm run build"
+[14:22:06.111] > my-app@0.1.0 build
+[14:22:06.111] > next build
+[14:22:06.450]  ▲ Next.js 14.1.0
+[14:22:06.450] 
+[14:22:07.890] Creating an optimized production build ...
+[14:22:15.234] Failed to compile.
+[14:22:15.235] ./src/components/UserCard.tsx:14:22
+[14:22:15.235] Type error: Property 'email' does not exist on type 'UserProps'.
+```
 
-### 2. Git Merge Conflict
-**Noise**: Multi-line hunk headers and metadata.
-**Signal**: The conflict markers and local/incoming divergence.
+#### **Sifted Result (Signal)**
+```text
+Running build in "production"
+Detected Next.js version: 14.1.0
+Running "npm run build"
+> my-app@0.1.0 build
+> next build
+▲ Next.js 14.1.0
+Failed to compile.
+./src/components/UserCard.tsx:14:22
+Type error: Property 'email' does not exist on type 'UserProps'.
+```
 
-| Raw Input (Noise) | Sifted Output (Signal) |
-| :--- | :--- |
-| `index 4c2a1d3,8e9f2a1..0000000` | `CONFLICT (content): Merge conflict in index.html` |
-| `--- a/index.html` | `<<<<<<< HEAD` |
-| `+++ b/index.html` | `    <title>My Local Website Title</title>` |
+### 🧪 Full Benchmark Lab (Audit Yourself)
+You can inspect the full "Before & After" for every scenario by opening the source files directly in this repository:
 
-### 3. HDFS System Logs (The Monster)
-**Noise**: Legacy `YYMMDD` timestamps and repetitive `INFO dfs.` boilerplate.
-**Signal**: The specific block operation and status.
-
-| Raw Input (Noise) | Sifted Output (Signal) |
-| :--- | :--- |
-| `081109 203615 148 INFO dfs.DataNode$PacketResponder: ...` | `PacketResponder 1 for block blk_38865... terminating` |
-| `081109 204005 35 INFO dfs.FSNamesystem: BLOCK* ...` | `BLOCK* NameSystem.addStoredBlock: blockMap updated...` |
-
-### 4. GitHub Actions (CI)
-**Noise**: Group/section markers and debug environment variables.
-**Signal**: Actual test pass/fail results.
-
-| Raw Input (Noise) | Sifted Output (Signal) |
-| :--- | :--- |
-| `2024-06-17T16:29:41Z ##[group]Run dotnet test` | `dotnet test --configuration Release --no-build` |
-| `2024-06-17T16:30:52Z [FAIL] IntegrationTests...` | `[FAIL] IntegrationTests.WebTests.GetAccounts...` |
-
-### 5. NPM Install
-**Noise**: Long progress strings and funding boilerplate.
-**Signal**: Package count and installation status.
-
-| Raw Input (Noise) | Sifted Output (Signal) |
-| :--- | :--- |
-| `npm install --save semantic-sift` | `npm install --save semantic-sift` |
-| `........................................` | `added 124 packages in 5s` |
-| `34 packages are looking for funding` | `run npm fund for details` |
-
-### 6. Natural Language (Semantic)
-**Noise**: Repetitive Markdown links, badge formatting, and conversational filler.
-**Signal**: Core technical features and value proposition.
-
-| Raw Input (Noise) | Sifted Output (Signal) |
-| :--- | :--- |
-| `FastAPI framework, high performance...` | `FastAPI: fast high-performance framework` |
-| `<a href="..."><img src="..."></a>` | `Python type hints based` |
-| `Fast to code: Increase speed by 200%` | `Increases dev speed 200-300%` |
-
-### 7. Git History
-**Noise**: ISO-8601 timestamps and multi-line author/committer headers.
-**Signal**: Commit hash, author name, and the core message.
-
-| Raw Input (Noise) | Sifted Output (Signal) |
-| :--- | :--- |
-| `Author: John Keeping <john@...>` | `Author: John Keeping` |
-| `Date: 2015-09-03 17:12:23 +0100` | `date: make "local" orthogonal to date format` |
-| `CommitDate: 2015-10-05 14:30:00 -0700` | `Git 2.45.0-rc1` |
+| Scenario | Raw Input (Noise) | Sifted Result (Clean) |
+| :--- | :--- | :--- |
+| **HDFS System Logs** | [hdfs_system_logs.txt](../benchmarks/data/hdfs_system_logs.txt) | [hdfs_system_logs_sifted.txt](../benchmarks/results/hdfs_system_logs_sifted.txt) |
+| **Git Merge Conflict** | [git_diff.txt](../benchmarks/data/git_diff.txt) | [git_diff_sifted.txt](../benchmarks/results/git_diff_sifted.txt) |
+| **GitHub Actions (CI)** | [github_actions.txt](../benchmarks/data/github_actions.txt) | [github_actions_sifted.txt](../benchmarks/results/github_actions_sifted.txt) |
+| **NPM Install** | [npm_install.txt](../benchmarks/data/npm_install.txt) | [npm_install_sifted.txt](../benchmarks/results/npm_install_sifted.txt) |
+| **Git History** | [git_history.txt](../benchmarks/data/git_history.txt) | [git_history_sifted.txt](../benchmarks/results/git_history_sifted.txt) |
+| **Natural Language** | [natural_language.txt](../benchmarks/data/natural_language.txt) | [natural_language_sifted.txt](../benchmarks/results/natural_language_sifted.txt) |
 
 ---
 

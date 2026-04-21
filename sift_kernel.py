@@ -27,8 +27,8 @@ def apply_heuristic_sieve(text: str) -> str:
     """Sifts through raw technical logs to remove noise."""
     lines = text.splitlines()
     sifted = []
-    # Broad timestamp support
-    timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?)|(\d{6}\s\d{6}\s\d+)')
+    # Broad timestamp support: ISO-8601, Legacy (YYMMDD), and Bracketed (Vercel)
+    timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?)|(\d{6}\s\d{6}\s\d+)|(\[\d{2}:\d{2}:\d{2}(\.\d+)?\])')
     progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
     metadata_pattern = re.compile(r'\s*(INFO|DEBUG|WARN|ERROR)\s+dfs\..*?:\s*')
     module_pattern = re.compile(r'^\s*[\d\.]+\s+(MB|KB|bytes|B)\s+[\w\-\.\/]+.*$', re.IGNORECASE)
