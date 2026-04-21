@@ -27,12 +27,18 @@ Semantic-Sift is a standalone, protocol-compliant **MCP (Model Context Protocol)
 - **Goal**: ~20-80% reduction (configurable) while maintaining the 95%+ fidelity of the original meaning.
 
 ### 3. Subconscious Sifting (Interceptor Layer)
-- **Mechanism**: Universal JSON-based hook interceptor (`sift_hook.py`).
-- **Protocol Detection**: Identifies JSON schemas from Gemini CLI (`AfterTool`), Cursor (`postToolUse`), and VS Code (`PostToolUse`).
-- **Logic**: Intercepts tool outputs in the background and applies heuristic sifting *before* data enters the agent's context.
-- **Benefit**: Ensures zero-latency context hygiene without requiring explicit agent decision-making.
+- **Mechanism**: A hybrid interception layer supporting both shell-based hooks and native plugins.
+- **Native OpenCode Plugin**: A first-class TypeScript wrapper (`.opencode/plugins/semantic-sift.ts`) that intercepts tool outputs within the Bun/OpenCode lifecycle for near-zero latency.
+- **Universal Hook Script**: `sift_hook.py` handles interception for Gemini CLI (`AfterTool`), Cursor (`postToolUse`), and VS Code (`PostToolUse`).
+- **Logic**: Silently prunes tool outputs *before* they enter the agent's context window.
 
-### 4. The "Solid Pulse" Telemetry System
+### 4. The Cybersecurity & Integrity Tier
+Ensures a zero-vulnerability baseline for professional and sovereign development.
+- **SAST (Static Analysis)**: **Bandit** scans every commit for insecure Python patterns and protocol enforcement (B310).
+- **SCA (Supply Chain)**: **Pip-Audit** monitors dependencies against the PyPA database to ensure 0 known CVEs.
+- **Logic Verification**: **Pytest** suite provides 100% coverage for sifting heuristics and privacy kill-switch math.
+
+### 5. The "Solid Pulse" Telemetry System
 Designed for high-reliability "Proof of Value" tracking across distributed installations.
 
 - **Lightweight Core**: `telemetry_core.py` provides zero-dependency metrics tracking.
@@ -155,12 +161,15 @@ If no specific tools are recognized, the engine injects a set of **Category-Base
 ## 🛠️ Technical Stack
 
 - **Kernel**: Python 3.12 (Optimized for CUDA stability).
+- **Subconscious Layer**: 
+    - **TypeScript / Bun**: Native OpenCode plugins.
+    - **Python**: Universal hook interceptor.
 - **Communication**: FastMCP (Standardized I/O for AI Agents).
 - **AI Core**: PyTorch + Hugging Face Transformers.
 - **Models**: 
     - **LLMLingua-2**: Semantic Compression.
     - **BGE-Reranker**: Relevance ranking.
-- **Orchestration**: Agnostic Path Discovery + Heuristic Keyword Synergy.
+- **Security Audit**: Bandit (SAST), Pip-Audit (SCA), Pytest (Logic).
 - **Caching**: Local SHA-256 persistent disk cache for instantaneous repeat sifts.
 
 ---
