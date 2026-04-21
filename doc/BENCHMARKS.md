@@ -44,7 +44,6 @@ Seeing is believing. Below are side-by-side examples of how Semantic-Sift "incin
 | `[14:22:05.123] Running build in "production"` | `Running build in "production"` |
 | `[14:22:15.235] Failed to compile.` | `Failed to compile.` |
 | `[14:22:15.235] ./src/components/UserCard.tsx:14:22` | `./src/components/UserCard.tsx:14:22` |
-| `[14:22:15.235] Type error: Property 'email' does...` | `Type error: Property 'email' does...` |
 
 ### 2. Git Merge Conflict
 **Noise**: Multi-line hunk headers and metadata.
@@ -52,10 +51,57 @@ Seeing is believing. Below are side-by-side examples of how Semantic-Sift "incin
 
 | Raw Input (Noise) | Sifted Output (Signal) |
 | :--- | :--- |
-| `diff --cc index.html` | `index.html` |
 | `index 4c2a1d3,8e9f2a1..0000000` | `CONFLICT (content): Merge conflict in index.html` |
 | `--- a/index.html` | `<<<<<<< HEAD` |
 | `+++ b/index.html` | `    <title>My Local Website Title</title>` |
+
+### 3. HDFS System Logs (The Monster)
+**Noise**: Legacy `YYMMDD` timestamps and repetitive `INFO dfs.` boilerplate.
+**Signal**: The specific block operation and status.
+
+| Raw Input (Noise) | Sifted Output (Signal) |
+| :--- | :--- |
+| `081109 203615 148 INFO dfs.DataNode$PacketResponder: ...` | `PacketResponder 1 for block blk_38865... terminating` |
+| `081109 204005 35 INFO dfs.FSNamesystem: BLOCK* ...` | `BLOCK* NameSystem.addStoredBlock: blockMap updated...` |
+
+### 4. GitHub Actions (CI)
+**Noise**: Group/section markers and debug environment variables.
+**Signal**: Actual test pass/fail results.
+
+| Raw Input (Noise) | Sifted Output (Signal) |
+| :--- | :--- |
+| `2024-06-17T16:29:41Z ##[group]Run dotnet test` | `dotnet test --configuration Release --no-build` |
+| `2024-06-17T16:30:52Z [FAIL] IntegrationTests...` | `[FAIL] IntegrationTests.WebTests.GetAccounts...` |
+
+### 5. NPM Install
+**Noise**: Long progress strings and funding boilerplate.
+**Signal**: Package count and installation status.
+
+| Raw Input (Noise) | Sifted Output (Signal) |
+| :--- | :--- |
+| `npm install --save semantic-sift` | `npm install --save semantic-sift` |
+| `........................................` | `added 124 packages in 5s` |
+| `34 packages are looking for funding` | `run npm fund for details` |
+
+### 6. Natural Language (Semantic)
+**Noise**: Repetitive Markdown links, badge formatting, and conversational filler.
+**Signal**: Core technical features and value proposition.
+
+| Raw Input (Noise) | Sifted Output (Signal) |
+| :--- | :--- |
+| `FastAPI framework, high performance...` | `FastAPI: fast high-performance framework` |
+| `<a href="..."><img src="..."></a>` | `Python type hints based` |
+| `Fast to code: Increase speed by 200%` | `Increases dev speed 200-300%` |
+
+### 7. Git History
+**Noise**: ISO-8601 timestamps and multi-line author/committer headers.
+**Signal**: Commit hash, author name, and the core message.
+
+| Raw Input (Noise) | Sifted Output (Signal) |
+| :--- | :--- |
+| `Author: John Keeping <john@...>` | `Author: John Keeping` |
+| `Date: 2015-09-03 17:12:23 +0100` | `date: make "local" orthogonal to date format` |
+| `CommitDate: 2015-10-05 14:30:00 -0700` | `Git 2.45.0-rc1` |
 
 ---
 
