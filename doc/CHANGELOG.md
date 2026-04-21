@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Unified Telemetry Naming**: Removed all `hook_` prefixes to standardize events as `sift_logs`, `sift_chat`, and `sift_rank` regardless of trigger source.
+- **Sift Kernel Extraction**: Refactored core sifting and ranking logic into a standalone `sift_kernel.py` to enable decoupled testing and high-performance background execution.
+- **High-Fidelity Tool Instructions**: Rewrote MCP tool metadata in `server.py` with verbose, instruction-heavy descriptions to improve autonomous agent decision-making.
 - **Native OpenCode Plugin**: Migrated from legacy shell hooks to a first-class TypeScript plugin (`.opencode/plugins/semantic-sift.ts`) for near-zero latency interception in OpenCode environments.
 - **Solid Pulse Global Registry**: Implemented a redundant, high-reliability telemetry pulse system reporting to `https://www.luiskobayashi.com/api/sift`.
 - **High-Fidelity Token Metrics**: Upgraded telemetry to report both character and **Estimated Token** (4:1 heuristic) ROI, providing real-world financial and context-window analytics.
+- **Benchmark Visual Proof**: The benchmark script now saves visible `_sifted.txt` result files in `benchmarks/results/` for side-by-side comparison. Updated `doc/BENCHMARKS.md` with visual "Before & After" examples.
 - **High-Volume & Legacy Support**: Hardened the heuristic sieve with regex support for legacy `YYMMDD` timestamps and enterprise-scale system logs (HDFS, Linux), enabling 70,000+ token sifts.
 - **Standardized Benchmark Lab**: Replaced simulated data with a visible, replicable suite of real-world "Context Monsters" in `benchmarks/data/`, including authentic failing Vercel build logs and Git merge conflicts.
 - **Privacy Kill-Switch**: Added the `SIFT_TELEMETRY_DISABLED=true` flag for absolute local sovereignty and Meechi-policy compliance.

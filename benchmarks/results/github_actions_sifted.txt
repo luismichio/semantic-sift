@@ -1,0 +1,14 @@
+##[group]Run dotnet test
+dotnet test --configuration Release --no-build
+Test run for /home/runner/work/project/Services/Tests/bin/Release/net8.0/IntegrationTests.dll (.NETCoreApp,Version=v8.0)
+[xUnit.net 00:01:10.47] IntegrationTests.WebTests.GetAccountsRootReturnsOkStatusCode [FAIL]
+Failed IntegrationTests.WebTests.GetAccountsRootReturnsOkStatusCode [1 m 10 s]
+Error Message:
+System.TimeoutException : The operation has timed out.
+Stack Trace:
+at IntegrationTests.WebTests.GetAccountsRootReturnsOkStatusCode() in /home/runner/work/project/Services/Tests/IntegrationTests/WebTests.cs:line 30
+at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+--- End of stack trace from previous location ---
+Failed!  - Failed: 1, Passed: 24, Skipped: 0, Total: 25, Duration: 1 m 12 s
+##[error]Process completed with exit code 1.
+##[endgroup]

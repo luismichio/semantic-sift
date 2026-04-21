@@ -1,0 +1,15 @@
+commit 7b09c45
+Author:     John Keeping <john@keeping.me.uk>
+AuthorDate:  +0100
+Commit:     Junio C Hamano <gitster@pobox.com>
+CommitDate:  -0700
+date: make "local" orthogonal to date format
+Most of our "--date" modes are about the format of the date.
+However, one of them, "--date=local", is really about the timezone
+in which the date is shown.
+commit f8b31a2
+Author:     Linus Torvalds <torvalds@linux-foundation.org>
+AuthorDate:  -0700
+Commit:     Linus Torvalds <torvalds@linux-foundation.org>
+CommitDate:  -0700
+Git 2.45.0-rc1

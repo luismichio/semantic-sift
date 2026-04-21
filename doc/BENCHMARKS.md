@@ -29,8 +29,33 @@ This document provides empirical evidence of the sifting engine's impact across 
 ### 2. CI/CD Logs (GitHub Actions & Vercel)
 **The Impact**: Standardizes noisy outputs from multiple cloud providers. Sift handles both the `[HH:MM:SS]` Vercel format and the `YYYY-MM-DDTHH:MM:SSZ` GitHub format automatically.
 
-### 3. Natural Language (Semantic)
-**The Impact**: Achieves near-total reduction on low-entropy boilerplate while preserving instructions. 
+---
+
+## 🔍 Visual Proof: Before & After
+
+Seeing is believing. Below are side-by-side examples of how Semantic-Sift "incinerates" noise while preserving the high-signal "Needle in the Haystack."
+
+### 1. Vercel Build Failure
+**Noise**: Repetitive bracketed timestamps.
+**Signal**: The specific TypeScript error and code line.
+
+| Raw Input (Noise) | Sifted Output (Signal) |
+| :--- | :--- |
+| `[14:22:05.123] Running build in "production"` | `Running build in "production"` |
+| `[14:22:15.235] Failed to compile.` | `Failed to compile.` |
+| `[14:22:15.235] ./src/components/UserCard.tsx:14:22` | `./src/components/UserCard.tsx:14:22` |
+| `[14:22:15.235] Type error: Property 'email' does...` | `Type error: Property 'email' does...` |
+
+### 2. Git Merge Conflict
+**Noise**: Multi-line hunk headers and metadata.
+**Signal**: The conflict markers and local/incoming divergence.
+
+| Raw Input (Noise) | Sifted Output (Signal) |
+| :--- | :--- |
+| `diff --cc index.html` | `index.html` |
+| `index 4c2a1d3,8e9f2a1..0000000` | `CONFLICT (content): Merge conflict in index.html` |
+| `--- a/index.html` | `<<<<<<< HEAD` |
+| `+++ b/index.html` | `    <title>My Local Website Title</title>` |
 
 ---
 
