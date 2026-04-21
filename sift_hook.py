@@ -65,6 +65,10 @@ def main():
                 summary = sift_kernel.perform_compaction_summary(raw_content)
                 # Inject summary into OpenCode output
                 data["summary"] = summary
+                
+                # Log Compaction ROI
+                telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, "event_compacting", len(raw_content), len(summary), (time.time() - start_t) * 1000)
+                
                 sys.stdout.write(json.dumps(data))
                 return
             
