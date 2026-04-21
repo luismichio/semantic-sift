@@ -28,13 +28,17 @@ Semantic-Sift is a standalone, protocol-compliant **MCP (Model Context Protocol)
 
 ### 3. Subconscious Sifting (Interceptor Layer)
 - **Mechanism**: A hybrid interception layer supporting both shell-based hooks and native plugins.
-- **Native OpenCode Plugin**: A first-class TypeScript wrapper (`.opencode/plugins/semantic-sift.ts`) that intercepts tool outputs within the Bun/OpenCode lifecycle.
-- **Universal Hook Script**: `sift_hook.py` handles interception for Gemini CLI (`AfterTool`), Cursor (`postToolUse`), and VS Code (`PostToolUse`).
-- **Autonomous Intelligence Routing**:
-    - **`hook_sift_logs`**: Triggered by technical tools (shell, git, npm). Applies high-speed regex to strip formatting boilerplate.
-    - **`hook_sift_semantic`**: Triggered by prose tools (read_file on .md, fetch). Automatically applies BERT-based compression to long documentation.
-    - **`hook_sift_rank`**: Triggered by search tools (grep, find). Silently re-ranks retrieved chunks using BGE-Reranker before delivery.
-- **Benefit**: Ensures the "99% savings" claim is realized automatically, even if the agent is "lazy" and does not explicitly call sifting tools.
+- **Native OpenCode Plugin**: A first-class TypeScript wrapper (`.opencode/plugins/semantic-sift.ts`) that intercepts tool outputs and structural compaction events.
+- **Universal Hook Script**: `sift_hook.py` handles interception for Gemini CLI (`AfterTool`, `PreCompress`), Cursor (`postToolUse`), and VS Code (`PostToolUse`).
+- **Autonomous Tiering**:
+    - **Tier 1 (Reactive)**: Intercepts tool outputs.
+        - **`sift_logs`**: Strips formatting boilerplate from shell, git, and npm tools.
+        - **`sift_chat`**: Applies BERT-based compression to long documentation fetches.
+        - **`sift_rank`**: Silently re-ranks retrieved chunks from search tools.
+    - **Tier 2 (Proactive)**: Intercepts Lifecycle Events.
+        - **`Compacting` (OpenCode)**: Interventional hook. Replaces the default summary with a high-fidelity "State Snapshot" (Task Status + Important Decisions) to prevent context loss.
+        - **`PreCompress` (Gemini CLI)**: Advisory hook. Logs context ROI and monitors compression events to track token survival.
+- **Benefit**: Ensures the "99% savings" claim is realized automatically, ensuring that critical task state persists even through context-window cycles.
 
 ### 4. The Cybersecurity & Integrity Tier
 Ensures a zero-vulnerability baseline for professional and sovereign development.

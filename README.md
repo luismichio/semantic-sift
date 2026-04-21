@@ -74,8 +74,9 @@ A multi-stage pipeline designed for long-form documentation and messy OCR extrac
 **Silent Context Sanitation.**
 Intercepts data streams *before* they enter the context window for zero-latency reasoning.
 - **Deep Integration**: Deeply hooks into **Gemini CLI**, **Claude Code**, and **OpenCode**.
-- **Heuristic Interception**: Automatically cleans logs and verbose tool outputs in the background using the high-speed sieve engine.
-- **Visibility**: Every background sift is logged as `hook_sift_logs` in your telemetry report.
+- **Tier 1 (Tool Sanitation)**: Automatically cleans logs and verbose tool outputs in the background using the high-speed sieve engine.
+- **Tier 2 (Structural Distillation)**: Handles "End of Context" lifecycle events. It provides high-fidelity **State Snapshots** (Status + Decisions) during OpenCode compaction and Gemini CLI compression, ensuring critical task state survives context loss.
+- **Visibility**: Every background sift is logged as its corresponding tool name in your telemetry report.
 
 ---
 
