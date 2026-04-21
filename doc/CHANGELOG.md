@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🚀 Tier 2: Structural Distillation
+- **Compaction Hooks**: Implemented native support for OpenCode `experimental.session.compacting` hook, allowing Semantic-Sift to provide a high-fidelity "State Snapshot" during structural context loss.
+- **Compression Telemetry**: Registered the `PreCompress` hook for Gemini CLI to track structural distillation ROI and monitor context lifecycle events.
+- **Smart Summarizer**: Added `perform_compaction_summary` to `sift_kernel.py` to intelligently prioritize task status, decisions, and active files when summarizing session history.
+
 ### Added
 - **Unified Telemetry Naming**: Removed all `hook_` prefixes to standardize events as `sift_logs`, `sift_chat`, and `sift_rank` regardless of trigger source.
 - **Sift Kernel Extraction**: Refactored core sifting and ranking logic into a standalone `sift_kernel.py` to enable decoupled testing and high-performance background execution.

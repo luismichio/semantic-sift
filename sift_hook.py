@@ -39,17 +39,45 @@ def main():
         platform = "unknown"
 
         # Platform Detection
-        if data.get("hook_event_name") == "AfterTool":
+        event_name = data.get("hook_event_name", "unknown")
+        tool_name = data.get("tool_name", "unknown")
+        raw_content = ""
+        platform = "unknown"
+
+        if event_name in ["AfterTool", "PreCompress"]:
             platform = "Gemini"
-            tool_name = data.get("tool_name", "unknown")
             raw_content = data.get("tool_response", {}).get("llmContent", "")
         elif "tool_response" in data and "llmContent" in data["tool_response"]:
             platform = "VSCode"
-            tool_name = data.get("tool_name", "unknown")
             raw_content = data["tool_response"]["llmContent"]
         elif "result" in data and isinstance(data["result"], str):
             platform = "Cursor"
             raw_content = data["result"]
+        elif event_name == "Compacting":
+            platform = "OpenCode"
+            # OpenCode Compacting hook usually passes the context to summarize
+            raw_content = data.get("context", "")
+
+        # 3. Structural Lifecycle Routing (Compaction)
+        if event_name in ["Compacting", "PreCompress"]:
+            log(f"Handling structural {event_name} event for {platform}")
+            if event_name == "Compacting" and raw_content:
+                summary = sift_kernel.perform_compaction_summary(raw_content)
+                # Inject summary into OpenCode output
+                data["summary"] = summary
+                sys.stdout.write(json.dumps(data))
+                return
+            
+            # For advisory-only PreCompress, just pulse telemetry
+            telemetry_core.send_telemetry_pulse(
+                tool_name=f"event_{event_name.lower()}",
+                original=len(raw_content),
+                final=0, # Advisory only
+                latency=0,
+                tier_override="Structural"
+            )
+            sys.stdout.write(raw_input)
+            return
 
         if not raw_content or len(raw_content) < 500:
             sys.stdout.write(raw_input)
@@ -72,7 +100,7 @@ def main():
                     scored = sift_kernel.perform_ranking(query, chunks, top_n=5)
                     if scored:
                         sifted = "\n---\n".join([doc for _, doc in scored])
-                        sift_type = "hook_sift_rank"
+                        sift_type = "sift_rank"
 
         # --- B. Auto-Semantic (Prose/Docs) ---
         if not sifted:
@@ -82,13 +110,13 @@ def main():
             if (is_prose or has_md_ext) and len(raw_content) > 3000:
                 log(f"Auto-Semantic sifting prose from {tool_name}")
                 sifted = sift_kernel.perform_semantic_sift(raw_content, rate=0.6)
-                sift_type = "hook_sift_semantic"
+                sift_type = "sift_chat"
 
         # --- C. Auto-Heuristic (Default / Logs) ---
         if not sifted:
             sifted = sift_kernel.apply_heuristic_sieve(raw_content)
             if len(sifted) < len(raw_content):
-                sift_type = "hook_sift_logs"
+                sift_type = "sift_logs"
             else:
                 sifted = None
 

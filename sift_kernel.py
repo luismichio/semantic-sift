@@ -98,6 +98,20 @@ def perform_doc_sift(text: str) -> str:
     cleaned = apply_heuristic_sieve(text)
     return perform_semantic_sift(cleaned, rate=0.4)
 
+def perform_compaction_summary(text: str) -> str:
+    """Sifts session history for structural compaction snapshots."""
+    # Heuristically find 'Decision', 'Status', 'File' markers to prioritize them
+    # before semantic compression
+    priorities = re.findall(r'(?:Decision|Status|File|Task).*?:.*', text, re.IGNORECASE)
+    context_hint = "\n".join(priorities) if priorities else ""
+    
+    # We use a very aggressive rate for compaction (0.2) to save massive space
+    summary = perform_semantic_sift(text, rate=0.2)
+    
+    if context_hint:
+        return f"## Structural Snapshot\n{context_hint}\n\n## Semantic Summary\n{summary}"
+    return summary
+
 def perform_extraction_cleaning(content: str) -> str:
     """Sifts raw OCR/Docling extractions."""
     refined = content

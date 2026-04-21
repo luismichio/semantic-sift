@@ -60,6 +60,11 @@
         "matcher": ".*",
         "hooks": [
           {
+            "name": "semantic-sift-compression",
+            "type": "command",
+            "command": "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe C:/Users/luism/Workbench/GitHub/semantic-sift/sift_hook.py"
+          },
+          {
             "name": "context-mode-compress",
             "type": "command",
             "command": "context-mode hook gemini precompress"

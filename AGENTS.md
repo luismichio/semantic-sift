@@ -125,8 +125,16 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
 
 ## 📊 Global Savings Registry
-- **Endpoint**: `https://luiskobayashi.com/api/sift`
+- **Endpoint**: `https://www.luiskobayashi.com/api/sift`
 - **Goal**: Aggregate anonymous character savings to prove the value of the context sanitation engine.
+
+## 🔄 Tier 2: Structural Distillation (Compaction Hooks)
+Beyond reactive tool sifting, Semantic-Sift now supports **Structural Lifecycle Hooks** to handle the "End of Context" event.
+
+| Platform | Hook Event | Logic |
+| :--- | :--- | :--- |
+| **OpenCode** | `experimental.session.compacting` | **Interventional**: Replaces default summary with a high-fidelity semantic snapshot (Task Status + Decisions). |
+| **Gemini CLI** | `PreCompress` | **Advisory**: Logs "Compaction ROI" telemetry to track token survival before internal summarization. |
 
 ## 🚫 Sifting Forbidden
 - **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
@@ -138,7 +146,7 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 ---
 
 # 🤝 Unified Context Orchestration
-- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` on all tool outputs > 1,000 characters BEFORE calling `context-mode_ctx_index`. This ensures the FTS5 search index remains high-signal.
-- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or repository search results to focus on actionable code changes.
-- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval to prune docstring/comment bloat while keeping logic.
+- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` BEFORE calling `context-mode_ctx_index`.
+- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or search results.
+- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval.
 <!-- SIFT_SECTION_END:ORCHESTRATION -->
