@@ -103,16 +103,17 @@ Using a local **BGE-Reranker**, Sift can prioritize information *before* it is p
 
 ## 🤝 Universal Orchestration: The "Chain of Context"
 
-Semantic-Sift is designed to be the **intelligent glue** between all your specialist MCPs. When you run `sift_onboard()`, it automatically detects your active tools and injects high-fidelity collaborative rules into your instruction files.
+Semantic-Sift is designed to be the **intelligent glue** between all your specialist MCPs. While it is not yet capable of automatic tool detection, it provides a set of **Verified Blueprints** for high-fidelity collaboration. 
 
-### Orchestration Blueprints:
-*   **Discovery (Serena, Investigator)**: Always pipe code bodies > 100 lines through `sift_chat` after retrieval to prune docstring and comment bloat while preserving logic.
-*   **Storage (Context-Mode, Memory)**: Sift all tool outputs > 1,000 characters **before** they are indexed into a searchable database to ensure search results remain high-signal.
-*   **Knowledge (Slack, Notion, Discord, Confluence)**: Distill chat history and wiki pages to isolate decisions and action items, ignoring UI noise, block IDs, and system events.
-*   **Infrastructure (AWS, Azure, GCP, Kubernetes)**: Apply `sift_logs` to massive cloud resource snapshots (JSON) to strip redundant fields (ETags, Request IDs, Timestamps).
-*   **Data (Postgres, SQL, SQLite)**: If a query returns a massive result set, Sift keeps the schema and edge rows while pruning the middle to maintain a lean context.
-*   **Browsing (Puppeteer, Playwright, Browser)**: Automatically clean up raw HTML fetches by removing navigation menus, footers, and tracking scripts before analysis.
-*   **Workflow (Jira, Linear)**: Sift ticket descriptions and comment chains to focus on the 'State Change' and 'Resolution' logic, ignoring boilerplate status updates.
+> **Master Integration Guide**: For a detailed breakdown of 16+ IDEs, Agents, and Server schemas, see [IDE_MCP_INTEGRATION_WIKI.md](doc/IDE_MCP_INTEGRATION_WIKI.md).
+
+### Orchestration Blueprints (Actionable Rules):
+*   **Discovery (Serena, Investigator)**: Always pipe code bodies > 100 lines through `sift_chat` after retrieval. Note: `sift_hook` prioritizes Search/Ranking for tools containing 'find'; manual `sift_chat(rate=0.7)` is required for symbol bodies.
+*   **Storage (Context-Mode, Memory)**: Use the **Low-Context Indexing** flow: `sift_read_file(path)` -> `ctx_index(content)`. This discards 90% noise *before* indexing.
+*   **Infrastructure (AWS, Azure, GCP)**: Apply `sift_logs` (Heuristic) to massive cloud resource snapshots (JSON) to strip ETags, Request IDs, and redundant metadata while keeping the resource state.
+*   **Data (Postgres, SQL)**: NEVER use `sift_chat` on raw database rows. Use `sift_logs` or custom prompts to keep headers and first 5 rows to avoid JSON syntax corruption.
+*   **Browsing (Puppeteer, Playwright)**: Automatically clean up raw HTML fetches using `sift_doc` to remove navigation menus, footers, and scripts before analysis.
+*   **Workflow (Jira, Slack)**: Sift descriptions and comment chains to focus on 'Resolution' logic, ignoring UI noise and status updates. Use `sift_chat(rate=0.5)` for communication threads.
 
 ---
 
@@ -139,15 +140,71 @@ pip install -r requirements.txt
 ```
 
 ### 2. Connect the MCP
-Add Semantic-Sift to your AI host's configuration file (e.g., `.gemini/settings.json`, `.cursor/mcp.json`, or `claude_desktop_config.json`).
+
+The MCP ecosystem is highly fragmented. To ensure a stable connection, you must use the correct **Config File Location** and **JSON/TOML Schema** for your specific software.
+
+#### 📍 Master Location Table
+| Software | Default Config Location | Schema Style |
+| :--- | :--- | :--- |
+| **Cursor / Roo Code** | `.cursor/mcp.json` | Standard |
+| **Gemini CLI / Qwen** | `.gemini/settings.json` | Standard |
+| **OpenCode** | `opencode.json` | **Local Array** |
+| **VS Code Copilot** | `~/.copilot/mcp-config.json` | Standard |
+| **Claude Code** | `.claude/settings.json` | Standard |
+| **Windsurf** | `mcp_config.json` | Unified |
+| **Continue** | `config.json` / `config.yaml` | Unified |
+| **Cline** | `cline_mcp_settings.json` | **Extended** |
+| **Codex CLI** | `config.toml` | **TOML** |
+| **Zed** | `settings.json` (`context_servers`) | Standard |
+
+---
+
+#### 🛠️ Schema A: Standard (Cursor, Gemini, Zed, Roo Code, VS Code)
+```json
+"semantic-sift": {
+  "type": "stdio",
+  "command": "C:/path/to/venv312/Scripts/python.exe",
+  "args": ["C:/path/to/server.py"]
+}
+```
+
+#### 🛠️ Schema B: Local Array (OpenCode, Kilo Code)
+**MANDATORY**: Combine executable and script into one `command` array. **Do not use `args` key.**
+```json
+"semantic-sift": {
+  "type": "local",
+  "command": [
+    "C:/path/to/venv312/Scripts/python.exe",
+    "C:/path/to/server.py"
+  ]
+}
+```
+
+#### 🛠️ Schema C: Extended (Cline)
+Includes `autoApprove` to prevent manual confirmation loops during background sifting.
+```json
+"semantic-sift": {
+  "command": "python",
+  "args": ["server.py"],
+  "autoApprove": ["sift_read_file", "sift_analyze_file", "sift_logs", "sift_chat"]
+}
+```
+
+#### 🛠️ Schema D: TOML (Codex CLI)
+```toml
+[mcp_servers.semantic-sift]
+command = "python"
+args = ["server.py"]
+```
+
+#### 🛠️ Schema E: Unified (Continue, Windsurf)
+Requires the `type` and `name` fields to be explicitly defined.
 ```json
 {
-  "mcpServers": {
-    "semantic-sift": {
-      "command": "C:/path/to/semantic-sift/venv312/Scripts/python.exe",
-      "args": ["C:/path/to/semantic-sift/server.py"]
-    }
-  }
+  "name": "semantic-sift",
+  "type": "stdio",
+  "command": "python",
+  "args": ["server.py"]
 }
 ```
 
