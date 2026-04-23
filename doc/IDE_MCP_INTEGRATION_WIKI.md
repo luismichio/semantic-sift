@@ -32,6 +32,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Hook Mechanism**: Native TypeScript Plugins (`.opencode/plugins/`).
 *   **Execution Lifecycle**: Hooks into `tool.execute.after`.
 *   **Payload Schema**: **Smart Hook**. Provides rich context including `hook_event_name`, `tool_name`, and `tool_args`.
+*   **Config Schema**: **Strict Local Array**. Unlike Gemini, OpenCode requires `"type": "local"` and expects the executable and arguments to be combined into a single `"command": []` array.
 *   **Semantic-Sift Strategy**: Highly reliable. `sift_onboard` dynamically generates a TS plugin that easily bypasses loops via `if (input.tool.startsWith('sift_')) return;`.
 
 ### Gemini CLI
@@ -124,6 +125,110 @@ Middleware must never corrupt JSON or machine-readable outputs.
 Because platforms like **Zed** and **Continue** are "Unshielded" (no middleware), relying on interceptors is fundamentally flawed.
 *   **Rule**: The primary defense against context flooding is Proactive Path-Native execution. Agents must be heavily instructed via `AGENTS.md` to use `sift_read_file(path)` and `sift_analyze_file(path)` for all local I/O, shifting the token burden entirely to the server side.
 
-### D. Setup Verification (`sift_onboard`)
-Onboarding cannot just append text to a `.cursorrules` file.
-*   **Rule**: `sift_onboard` must act as an active auditor. It must scan IDE configuration files for `preToolUse` / `beforeMCPExecution` security gateways and alert the user if custom `sift_` tools are not whitelisted. It must also scan agent rule files to detect and override contradictory instructions (e.g., "always read the full file").
+---
+
+## 4. MCP Data Synergy Matrix (Source Analysis)
+
+While Section 2 maps the *Clients* (IDEs), this section maps the *Servers* (the data sources). Different MCP servers return wildly different data structures. Applying the wrong sifting strategy will lead to **Data Corruption** (e.g., BERT destroying JSON syntax).
+
+| MCP Server Family | Representative Tools | Primary Data Type | Vulnerability | Verified Sifting Strategy |
+|:--- |:--- |:--- |:--- |:--- |
+| **Databases** | Postgres, SQLite, MySQL | JSON-Serialized Rows | BERT destroys keys/brackets. | **Structured Data Exemption**. Skip `sift_chat`. |
+| **Communication** | Slack, Discord, Microsoft Teams | Arrays of Message Objects | Pruning removes timestamps/user IDs. | Use `sift_chat(rate=0.7)` to preserve doc-like flow. |
+| **Browsing** | Puppeteer, Playwright, Fetch | Raw HTML / DOM Blobs | 90% DOM noise (tags, scripts). | **MANDATORY** `sift_doc` to strip boilerplate. |
+| **Infrastructure** | AWS, GCP, Azure, Kubernetes | Resource Snapshots (JSON) | Pruning removes critical ARNs/IDs. | Use `sift_logs` (Heuristic) to strip ETags/MetaData. |
+| **Reasoning** | Sequential Thinking | Structured "Thought" blocks | Sifting breaks reasoning chain. | **TOTAL EXEMPTION**. Never sift reasoning steps. |
+| **Workflow** | Jira, Linear, GitHub Issues | JSON objects / MD descriptions | Pruning loses "Resolution" state. | Manual `sift_chat` only on the `description` field. |
+| **Discovery** | Serena, Investigator | Code Symbol Bodies | Hook misinterprets as "Search". | Manual `sift_chat(rate=0.7)` after symbol retrieval. |
+
+---
+
+## 5. Universal Orchestration Blueprints
+
+To ensure high-fidelity context across the "Chain of Context," the agent must follow these verified blueprints based on the data source:
+
+### A. The "Clean Indexing" Flow (Context-Mode Synergy)
+*   **Target**: Local Files.
+*   **Workflow**: `sift_read_file(path)` -> `mcp_context-mode_index(content)`.
+*   **Result**: Discards 90% noise *before* indexing, ensuring search results are high-density.
+
+### B. The "Schema-First" Flow (Database Synergy)
+*   **Target**: Postgres / SQLite.
+*   **Workflow**: Query returns 500 rows.
+*   **Rule**: NEVER use `sift_chat`. Use a custom prompt to "Keep headers and first 5 rows, then summarize total count."
+
+### C. The "Signal-Only" Flow (Web / Browsing Synergy)
+*   **Target**: Puppeteer / Playwright / Fetch.
+*   **Workflow**: Tool returns 50k chars of HTML.
+*   **Mandate**: Use `sift_doc` immediately. Semantic-Sift's hybrid engine is specifically tuned to incinerate CSS/JS boilerplate while keeping the text content.
+
+---
+
+## 6. Master Configuration Matrix (By Software)
+
+This section provides the exact file paths and schema requirements for each platform to ensure a zero-gap connection.
+
+| Software | Config File Location (Default) | Transport Key | Schema Style |
+| :--- | :--- | :--- | :--- |
+| **Cursor** | `.cursor/mcp.json` | `mcpServers` | Standard |
+| **Gemini CLI**| `.gemini/settings.json` | `mcpServers` | Standard |
+| **OpenCode** | `opencode.json` | `mcp` | Local Array |
+| **Cline** | `cline_mcp_settings.json` | `mcpServers` | Extended |
+| **Continue** | `config.yaml` / `config.json` | `mcpServers` | Unified |
+| **Windsurf** | `mcp_config.json` | `mcpServers` | Unified |
+| **Codex CLI** | `config.toml` | `[mcp_servers]` | TOML |
+| **Kilo Code** | `.kilocode/mcp.json` | `mcpServers` | Local Array |
+| **Zed** | `settings.json` | `context_servers` | Standard |
+| **Claude Code**| `.claude/settings.json` | `mcp_servers` | Standard |
+
+---
+
+### A. Standard Schema (Cursor, Gemini, Zed, Roo Code, VS Code)
+```json
+"semantic-sift": {
+  "type": "stdio",
+  "command": "C:/path/to/venv312/Scripts/python.exe",
+  "args": ["C:/path/to/server.py"]
+}
+```
+
+### B. Local Array Schema (OpenCode, Kilo Code)
+**MANDATORY**: Combine executable and script into one `command` array. **Do not use `args` key.**
+```json
+"semantic-sift": {
+  "type": "local",
+  "command": [
+    "C:/path/to/venv312/Scripts/python.exe",
+    "C:/path/to/server.py"
+  ]
+}
+```
+
+### C. Extended Schema (Cline / Roo Code)
+Includes `autoApprove` to prevent manual confirmation loops during sifting.
+```json
+"semantic-sift": {
+  "command": "python",
+  "args": ["server.py"],
+  "autoApprove": ["sift_read_file", "sift_analyze_file", "sift_logs", "sift_chat"]
+}
+```
+
+### D. TOML Schema (Codex CLI)
+```toml
+[mcp_servers.semantic-sift]
+command = "python"
+args = ["server.py"]
+```
+
+### E. Unified Schema (Continue, Windsurf)
+Requires explicit `type: "stdio"` in the object or YAML block.
+```json
+{
+  "name": "semantic-sift",
+  "type": "stdio",
+  "command": "python",
+  "args": ["server.py"]
+}
+```
+
