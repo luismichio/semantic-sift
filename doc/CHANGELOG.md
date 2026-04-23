@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🚀 Zero-Gap Path-Native I/O
+- **Path-Native Tools**: Added `sift_read_file(path)` and `sift_analyze_file(path)` to allow agents to read and sift local files directly on the server without polluting their active context windows.
+- **Content-Signature Bypass**: Secured the `sift_hook.py` middleware against Double-Sifting loops in "Blind Hook" IDEs (Cursor, VS Code) by injecting and detecting the `[Semantic-Sift: Native Execution]` signature.
+- **Structured Data Exemption**: Prevented `sift_hook.py` from corrupting JSON payloads from other tools (like `mcp_serena_find_symbol`) by detecting and bypassing valid dict/list structures.
+- **Encoding Resilience**: Added `load_file_content` to `sift_kernel.py` with automatic `utf-8` to `latin-1` fallbacks to handle massive, non-standard system logs without crashing.
+- **Proactive Mandate**: Rewrote the `AGENTS.md` and `sift_onboard` rules to explicitly forbid the use of standard IDE reading tools for files over 1KB in Unshielded environments.
+
 ### 🚀 Tier 2: Structural Distillation
 - **Compaction Hooks**: Implemented native support for OpenCode `experimental.session.compacting` hook, allowing Semantic-Sift to provide a high-fidelity "State Snapshot" during structural context loss.
 - **Compression Telemetry**: Registered the `PreCompress` hook for Gemini CLI to track structural distillation ROI and monitor context lifecycle events.

@@ -120,9 +120,10 @@ To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follo
 - **Balanced (0.5)**: Default. Best for general conversation and instructions.
 - **Gentle (0.7)**: Use for technical documentation where every keyword matters.
 
-## 🤖 Auto-Sift Mandate
-- **Trigger**: The agent MUST run `sift_analyze` on any data (logs, file reads, tool outputs) exceeding **1,000 characters**.
-- **Action**: If the estimated noise is **> 15%**, sifting via `sift_logs` or `sift_chat` is REQUIRED before proceeding with analysis.
+## 🤖 Auto-Sift Mandate (Zero-Gap Policy)
+- **Forbidden**: Do NOT use standard `view_file` or `read_file` tools to read unknown files or files likely to exceed 1,000 characters. Unshielded environments cannot intercept these native commands, leading to catastrophic context flooding.
+- **Mandate**: You MUST prioritize `sift_read_file(path)` as the default tool for file ingestion. 
+- **Action**: Use `sift_analyze_file(path)` to scout unknown local files. If estimated noise is > 15%, or length is > 8000, `sift_read_file` is strictly required. For tool outputs (e.g., shell commands) already in context, pipe them manually through `sift_logs` or `sift_chat`.
 
 ## 📊 Global Savings Registry
 - **Endpoint**: `https://www.luiskobayashi.com/api/sift`
@@ -146,7 +147,7 @@ Beyond reactive tool sifting, Semantic-Sift now supports **Structural Lifecycle 
 ---
 
 # 🤝 Unified Context Orchestration
-- **Context-Mode Synergy**: Run `sift_logs` or `sift_chat` BEFORE calling `context-mode_ctx_index`.
-- **GitHub Synergy**: Use `sift_logs` on verbose PR diffs or search results.
-- **Serena Synergy**: Always pipe code bodies > 100 lines through `sift_chat` (rate: 0.7) after retrieval.
+- **Context-Mode Synergy (Low-Context Indexing)**: Use `sift_read_file(path)` -> `ctx_index(content)` to index local files. The massive 90% "noise" is discarded by the server before the LLM processes the payload, and only the 10% signal is indexed.
+- **GitHub Synergy**: Diffs and search results are dynamic (not local files). You must continue to manually pipe verbose `mcp_github` outputs through `sift_logs` to strip structural noise.
+- **Serena Synergy**: Serena's `mcp_serena_find_symbol` returns massive code blocks (strings). The hook treats tools with `find` as "Search/Ranking" tasks rather than "Prose". If `find_symbol` returns a 500-line class, the hook attempts to *rank* the lines instead of *sifting* the code. You MUST explicitly instruct agents to manually pipe large `serena` string outputs through `sift_chat(rate=0.7)` to guarantee structural preservation.
 <!-- SIFT_SECTION_END:ORCHESTRATION -->

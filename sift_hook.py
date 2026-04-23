@@ -87,6 +87,20 @@ def main():
             sys.stdout.write(raw_input)
             return
 
+        if "--- [Semantic-Sift: Native Execution] ---" in raw_content:
+            log(f"Bypassing Native Execution for {tool_name}")
+            sys.stdout.write(raw_input)
+            return
+
+        try:
+            parsed = json.loads(raw_content)
+            if isinstance(parsed, (dict, list)):
+                log(f"Structured Data Exemption for {tool_name}")
+                sys.stdout.write(raw_input)
+                return
+        except json.JSONDecodeError:
+            pass
+
         # 3. Subconscious Routing Intelligence
         sifted = None
         sift_type = "none"

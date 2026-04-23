@@ -10,16 +10,34 @@ CACHE_DIR = ".sift_cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Lazy Device Detection
+DEVICE = "cpu"
 _DEVICE = None
 def get_device():
-    global _DEVICE
+    global _DEVICE, DEVICE
     if _DEVICE is None:
         try:
             import torch
             _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
         except:
             _DEVICE = "cpu"
+        DEVICE = _DEVICE
     return _DEVICE
+
+def load_file_content(path: str) -> str:
+    """Safely loads file content with encoding fallbacks."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except UnicodeDecodeError:
+        try:
+            with open(path, "r", encoding="latin-1") as f:
+                return f.read()
+        except Exception as e:
+            return f"Error reading file (latin-1 fallback failed): {str(e)}"
+    except FileNotFoundError:
+        return f"Error: File not found at {path}"
+    except Exception as e:
+        return f"Error reading file: {str(e)}"
 
 # --- Core Heuristic Logic ---
 

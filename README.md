@@ -49,7 +49,13 @@ Whether your AI tools charge **per token** or **per request**, Semantic-Sift pro
 
 ## 🛠️ Core Capabilities
 
-### 1. The Structural Sieve (`sift_logs`)
+### 1. Path-Native I/O (`sift_read_file` | `sift_analyze_file`)
+**Zero-Context Data Ingestion.**
+The most efficient way to read local files. Instead of an agent reading a 50,000-character file into its context window and *then* sifting it, these tools process the file directly on the disk.
+- **The Magic**: The MCP server reads the file, applies the appropriate compression (logs, prose, or docs), and returns *only* the condensed signal to the LLM. 
+- **Result**: The 90% "noise" of the original file never touches the agent's context window.
+
+### 2. The Structural Sieve (`sift_logs`)
 **Heuristic Distillation for Technical Data.**
 `sift_logs` uses high-speed regex engines to strip structural noise from technical outputs.
 - **Targets**: **Vercel** build logs, **GitHub Actions** outputs, Webpack/Vite module listings, and NPM/Yarn install progress.
