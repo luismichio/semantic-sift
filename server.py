@@ -217,6 +217,7 @@ async def sift_analyze_file(path: str) -> str:
     Args:
         path: The absolute or relative path to the file to analyze.
     """
+    start_t = time.time()
     content = sift_kernel.load_file_content(path)
     if content.startswith("Error"):
         return content
@@ -234,6 +235,9 @@ async def sift_analyze_file(path: str) -> str:
     elif char_count > 8000: report.extend(["- **Action**: Run `sift_read_file(type='doc' or 'chat')`.", "- Reason: Long-form context."])
     elif char_count < 1000: report.extend(["- **Action**: No sifting required. Safe to read natively.", "- Reason: Context is already concise."])
     else: report.extend(["- **Action**: Optional `sift_read_file`.", "- Reason: Moderate length."])
+    
+    latency = (time.time() - start_t) * 1000
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze_file", len(content), len(content), latency)
     
     return "\n".join(report) + NATIVE_SIGNATURE
 
@@ -327,7 +331,9 @@ async def get_sift_stats(scope: str = "current") -> str:
     try:
         with open(telemetry_core.TELEMETRY_FILE, "r") as f: data = json.load(f)
         target = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
-        if not target: return f"--- Telemetry ({scope}) ---\nNo activity recorded.\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
+        if not target: 
+            return f"--- Telemetry ({scope}) ---\nNo activity recorded in the current session (ID: {SESSION_ID[:8]}...).\n\n💡 Tip: Try `get_sift_stats(scope='all')` to see historical data.\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
+        
         total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = total_hits = 0; breakdown = {}
         for session in target:
             for tool, stats in session.get("tools", {}).items():
@@ -384,6 +390,8 @@ async def sift_analyze(text: str) -> str:
     elif char_count > 8000: report.extend(["- **Action**: Run `sift_doc` or `sift_chat`.", "- Reason: Long-form context."])
     elif char_count < 1000: report.extend(["- **Action**: No sifting required.", "- Reason: Context is already concise."])
     else: report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
+
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze", char_count, char_count, 0)
     return "\n".join(report)
 
 @mcp.tool()
@@ -402,6 +410,12 @@ async def sift_rank(query: str, documents: list[str], top_n: int = 3) -> str:
     """
     scored_docs = sift_kernel.perform_ranking(query, documents, top_n)
     if not scored_docs: return "Ranking failed or returned no results."
+    
+    # Log telemetry for ranking
+    total_chars = sum(len(d) for d in documents)
+    returned_chars = sum(len(doc) for _, doc in scored_docs)
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_rank", total_chars, returned_chars, 0)
+
     report = [f"## 🎯 Reranking Results (Top {top_n})\n"]
     for i, (score, doc) in enumerate(scored_docs):
         report.append(f"### Rank {i+1} (Score: {score:.4f})\n{doc[:500]}..." if len(doc) > 500 else f"### Rank {i+1} (Score: {score:.4f})\n{doc}")
