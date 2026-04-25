@@ -7,31 +7,32 @@ This document tracks identified challenges, real-world usage observations, and p
 ## 🔴 Open Challenges (To be Addressed)
 
 ### 1. `sift_analyze` Trigger Blindness
-**Observation**: During a long-running implementation session (e.g., Soft-NAM Core DSP), the mandatory `sift_analyze` trigger was rarely hit despite high activity.
-
-**Identified Causes**:
-- **Environment-Level Pre-Truncation**: The hosting environment (Gemini CLI) often heuristically truncates or masks verbose tool outputs (e.g., `<tool_output_masked>`) *before* they reach the agent's context. This removes the "wall of noise" that would typically trigger a semantic analysis.
-- **SOP Conflict (Foundational Protection)**: Standard Operating Procedures (SOPs) explicitly forbid sifting foundational instruction files (`AGENTS.md`, `GEMINI.md`). Since these are often the largest files in a repo, the agent skips analysis even if they exceed the 2,000-character threshold.
-- **Surgical Task Focus**: In the implementation phase, the agent frequently performs targeted reads (e.g., specific line ranges). These high-signal reads often fall just below the 2,000-character mandatory trigger.
+**Observation**: During long implementation sessions, the agent may skip sifting for surgical reads that fall just below current thresholds.
 
 **Proposed Solutions**:
-- [ ] **Adaptive Thresholds**: Lower the `sift_analyze` trigger to ~1,000 characters for technical logs while keeping it higher for source code.
-- [ ] **Environment Awareness**: Detect when the host has already performed brute-force truncation and adjust the recommendation accordingly.
-- [ ] **Foundational Sanitization**: Implement a non-semantic "comment stripper" for foundational files that preserves instructions but reduces character count without violating the "Never Sift" rule.
+- [ ] **Adaptive Thresholds**: Implement dynamic thresholds in `sift_analyze` (e.g., triggering at 500 chars for high-noise logs but keeping 2000+ for high-signal source code).
+- [ ] **Foundational Sanitization**: Implement a non-semantic "comment stripper" for foundational files (`AGENTS.md`) that preserves instructions but reduces character count without violating the "Never Sift" rule.
 
 ---
 
 ## 🟡 In Progress
 
-### 2. Multi-IDE Orchestration
-- [x] Heuristic keyword discovery for standard config paths.
-- [x] Injection of "Context-Mode" specific synergy rules.
-- [ ] Support for **Zed** and **Continue.dev** specific tool schemas.
+### 2. Analytical Feedback Loop
+- [ ] **Local LLM Feedback**: Allow the agent to "downvote" a sift if it loses too much meaning, updating local heuristic rules.
+- [ ] **Automatic Rate Adjustment**: Dynamically adjust compression rates based on the observed "Meaning Loss" telemetry.
 
 ---
 
+## 🟢 Completed (Phase 1: Multi-Agent & Platform Shielding)
+- [x] **Recursive Subagent Discovery**: Implemented workspace crawling to identify and shield specialized agent folders.
+- [x] **Multi-IDE Hook Support**: Implemented native integrations for Claude, Qwen, Codex, Windsurf, Cline, OpenClaw, and JetBrains.
+- [x] **Security Gateways**: Implemented proactive inhibitors for Windsurf and Cline.
+- [x] **Subagent Telemetry**: Integrated platform "sniffing" and `agent_label` tracking.
+- [x] **MCP Synergy Matrix**: Integrated as a prompt-engineered mandate (Supersedes "Intelligent Tool Awareness").
+- [x] **Environment Awareness**: `sift_analyze` now detects host-level truncation (`<tool_output_masked>`) and adjusts recommendations.
+
 ## 🟢 Completed (Phase 0)
-- [x] **`sift_analyze` Trigger Blindness**: Implemented environment awareness to detect host-level truncation (Gemini CLI) and lowered the mandatory trigger threshold to 1,000 characters.
+- [x] **Threshold Optimization**: Lowered the mandatory trigger threshold to 1,000 characters globally.
 - [x] **Kernel Implementation**: LLMLingua-2 integration via FastMCP.
 - [x] **Telemetry Tier**: Local JSON performance tracking.
 - [x] **Structural Sieve**: Regex-based log distillation.
@@ -41,4 +42,4 @@ This document tracks identified challenges, real-world usage observations, and p
 
 ## ⚪ Long-term Vision
 - [ ] **WebGPU/ONNX Port**: Native browser execution for the Meechi PWA.
-- [ ] **Local LLM Feedback**: Allow the agent to "downvote" a sift if it loses too much meaning, updating local heuristic rules.
+- [ ] **Subconscious Entropy Mapping**: Use the BERT attention maps to "highlight" high-signal segments in the UI.
