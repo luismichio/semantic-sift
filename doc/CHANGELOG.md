@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🤖 Multi-Agent & Subagent Shielding
+- **Recursive Discovery**: Implemented a workspace crawler in `server.py` that automatically detects and shields specialized agent folders (`.codex/agents/`, `.cursor/agents/`, `.junie/agents/`) and scoped `AGENTS.md` mandates.
+- **TOML Configuration Injector**: Added specialized support for **Codex CLI** subagents, safely merging the Sift Mandate into `.toml` definitions without breaking syntax.
+- **Subagent Telemetry Tracking**: Extended the telemetry system and `sift_hook.py` to "sniff" for subagent identities (e.g., `$CLAUDE_AGENT_NAME`, `threadLabel`, worker prefixes) and attribute context savings to specific threads via a new `agent_label` field.
+
+### 🛡️ Expanded Platform Hook Support
+- **Smart Hooks (CLI Agents)**: Implemented native `PostToolUse` shell hook support for **Claude Code**, **Qwen CLI**, and **Codex CLI**, including platform-specific environment variable parsing in `sift_hook.py`.
+- **Security Gateways (Inhibitors)**: Added proactive blocking hooks for **Windsurf** and **Cline** that intercept and terminate native file readers (`read_file`, `view_file`) for files > 1KB, forcing adoption of semantic sifting.
+- **Dynamic Platform Identification**: Refactored the telemetry layer to dynamically override `client_id` based on the detected IDE/extension platform, providing high-fidelity "Global Pulse" metrics.
+- **Native OpenClaw Plugin**: Developed a native TypeScript plugin for **OpenClaw** that hooks into `api.on("tool:after")` for transparent context sanitation.
+- **JetBrains Junie Integration**: Added automated configuration discovery for both **Junie CLI** and the **JetBrains AI Assistant** in `server.py`.
+
+### 🤝 Universal Orchestration
+- **MCP Synergy Matrix**: Integrated a detailed synergy matrix into the `sift_onboard` mandate, providing agents with explicit recipes for handling Web/HTML, Cloud Logs, and Database data.
+- **Official Documentation Index**: Updated the `IDE_MCP_INTEGRATION_WIKI.md` with verified official documentation URLs for 12+ supported environments to serve as a technical reference point.
+
+### 🛰️ Guaranteed Telemetry & Efficacy
+- **OpenTelemetry Tracing**: Integrated OTel with an isolated TracerProvider to provide a traceable "Chain of Custody" for data without interfering with host applications (like Gemini CLI).
+- **Visual Audit Header**: Added a customizable dynamic header (`SIFT_AUDIT_HEADER`) that prepends live ROI stats (Reduction %, Latency, Echo Status) to every sifting result.
+- **Cross-Process Echo Detector**: Implemented a disk-persistent SHA-256 hash cache in `.sift_cache` to detect and bypass redundant sifting calls across separate processes (Hooks vs Server).
+
 ### 🚀 Zero-Gap Path-Native I/O
 - **Path-Native Tools**: Added `sift_read_file(path)` and `sift_analyze_file(path)` to allow agents to read and sift local files directly on the server without polluting their active context windows.
 - **Content-Signature Bypass**: Secured the `sift_hook.py` middleware against Double-Sifting loops in "Blind Hook" IDEs (Cursor, VS Code) by injecting and detecting the `[Semantic-Sift: Native Execution]` signature.
