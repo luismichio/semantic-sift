@@ -310,6 +310,57 @@ export default function (api) {{
             actions.append("Injected Kilo Code workspace rules.")
         except Exception as e: actions.append(f"Error configuring Kilo Code rules: {str(e)}")
 
+    # 9. Cline
+    cline_hooks_dir = os.path.join(cwd, ".clinerules", "hooks")
+    os.makedirs(cline_hooks_dir, exist_ok=True)
+    
+    # Windows: PreToolUse.ps1
+    cline_ps1_path = os.path.join(cline_hooks_dir, "PreToolUse.ps1")
+    cline_ps1_content = """$inputJson = $input | ConvertFrom-Json
+if ($inputJson.preToolUse.toolName -eq 'read_file' -or $inputJson.preToolUse.toolName -eq 'view_file') {
+    $filePath = $inputJson.preToolUse.parameters.path
+    if (Test-Path $filePath) {
+        $size = (Get-Item $filePath).Length
+        if ($size -gt 1024) {
+            $response = @{ cancel = $true; errorMessage = "[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead." }
+            $response | ConvertTo-Json -Compress | Write-Output
+            exit 0
+        }
+    }
+}
+$response = @{ cancel = $false }
+$response | ConvertTo-Json -Compress | Write-Output
+"""
+    if not os.path.exists(cline_ps1_path):
+        try:
+            with open(cline_ps1_path, "w", encoding="utf-8") as f: f.write(cline_ps1_content)
+            actions.append("Injected Cline PreToolUse.ps1 hook.")
+        except Exception as e: actions.append(f"Error configuring Cline PS1 hook: {str(e)}")
+
+    # Unix: PreToolUse (bash)
+    cline_bash_path = os.path.join(cline_hooks_dir, "PreToolUse")
+    cline_bash_content = """#!/bin/bash
+INPUT=$(cat)
+TOOL_NAME=$(echo "$INPUT" | grep -oP '(?<="toolName":")[^"]*')
+if [[ "$TOOL_NAME" == "read_file" ]] || [[ "$TOOL_NAME" == "view_file" ]]; then
+    FILE_PATH=$(echo "$INPUT" | grep -oP '(?<="path":")[^"]*')
+    if [[ -f "$FILE_PATH" ]]; then
+        SIZE=$(wc -c < "$FILE_PATH" 2>/dev/null || stat -f %s "$FILE_PATH" 2>/dev/null || stat -c %s "$FILE_PATH" 2>/dev/null)
+        if [[ "$SIZE" -gt 1024 ]]; then
+            echo '{"cancel": true, "errorMessage": "[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead."}'
+            exit 0
+        fi
+    fi
+fi
+echo '{"cancel": false}'
+"""
+    if not os.path.exists(cline_bash_path):
+        try:
+            with open(cline_bash_path, "w", encoding="utf-8", newline='\\n') as f: f.write(cline_bash_content)
+            os.chmod(cline_bash_path, 0o755)
+            actions.append("Injected Cline PreToolUse bash hook.")
+        except Exception as e: actions.append(f"Error configuring Cline bash hook: {str(e)}")
+
     return actions
 
 # --- Tools ---

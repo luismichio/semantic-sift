@@ -87,6 +87,20 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Triggered via `pre_mcp_tool_use`. Uses shell exit codes (e.g., `exit 2`) to block execution.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` injects a Security Gateway hook that automatically blocks standard MCP file readers (`read_file`, `view_file`) if the file size exceeds 1KB, advising the agent via `stderr` to use `sift_read_file` instead.
 
+### Cline
+*   **Hook Mechanism**: Executable files in `.clinerules/hooks/` (e.g., `PreToolUse.ps1` or `PreToolUse`).
+*   **Execution Lifecycle**: Uses standard streams (stdin/stdout) exchanging strict JSON (`{"cancel": boolean}`). It does not allow mutating the actual tool output strings via `PostToolUse`.
+*   **Payload Schema**: **Smart Hook**. Passes explicit context via standard streams.
+*   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` generates a `PreToolUse` security gateway hook that blocks native file readers (`read_file`, `view_file`) if the file size exceeds 1KB, forcing the agent to use `sift_read_file` instead.
+
+### Zed & Continue.dev
+*   **Hook Mechanism**: **Unshielded**. These platforms primarily use MCP for context fetching and direct tool invocation. They currently lack robust, deterministic post-tool shell-hook architectures.
+*   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` MUST inject extremely aggressive, mandatory rules into `AGENTS.md` to force the LLM to use `sift_read_file` instead of standard file readers.
+
+### JetBrains (IntelliJ IDEA, PyCharm, WebStorm)
+*   **Hook Mechanism**: Built-in MCP server (2025.2+) with plugin extension points. Connecting clients (Claude Code, Qoder) implement the actual hooks.
+*   **Semantic-Sift Strategy**: High risk of terminal noise. If the client lacks a hook, `sift_onboard` must configure aggressive prompt rules.
+
 ### Kilo Code
 *   **Hook Mechanism**: **Unshielded**. Kilo Code lacks native deterministic shell hooks for MCP out-of-the-box.
 *   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` generates a strict `.kilocode/rules/context.md` file containing the explicit MCP Synergy Matrix and Path-Native mandates to shield the context window manually.
