@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🚀 Multi-Modal & HTML Intelligence
+- **MarkItDown Integration**: Integrated Microsoft's `MarkItDown` as a structural pre-processor. Semantic-Sift now natively supports converting **PDF, DOCX, XLSX, and PPTX** to Markdown before sifting.
+- **Subconscious HTML Normalization**: Upgraded the `sift_hook.py` interceptor to automatically detect HTML content (e.g., from web search results) and convert it to clean Markdown using MarkItDown before semantic compression.
+- **Two-Stage Caching**: Implemented a secondary caching layer in `.sift_cache/` that stores the raw Markdown conversion (`raw_[hash].md`) independently of the sifted result, ensuring lightning-fast re-sifting at different rates.
+
+### 🛰️ High-Fidelity Telemetry & Format Attribution
+- **Format Tracking**: Extended the telemetry system and `log_telemetry` function to track the specific file format (e.g., `.pdf`, `.html`, `grep`) being processed.
+- **Aggressive Tool Discovery**: Implemented a recursive tool name sniffing engine in `sift_hook.py` that scans for common MCP keys (`tool_name`, `tool`, `call`, etc.) and nested structures to minimize `unknown` telemetry entries.
+- **Granular Intercept Attribution**: The "Subconscious Brain" now reports tool-specific ROI using the `{sift_type}:{original_tool_name}` naming convention (e.g., `sift_chat:fetch`), allowing for precise analysis of which external tools generate the most noise.
+- **Supabase Compatibility**: Documented the backend requirements for the new `agent_label` and `file_ext` fields for high-fidelity ROI dashboards.
+
 ### 🤖 Multi-Agent & Subagent Shielding
 - **Recursive Discovery**: Implemented a workspace crawler in `server.py` that automatically detects and shields specialized agent folders (`.codex/agents/`, `.cursor/agents/`, `.junie/agents/`) and scoped `AGENTS.md` mandates.
 - **TOML Configuration Injector**: Added specialized support for **Codex CLI** subagents, safely merging the Sift Mandate into `.toml` definitions without breaking syntax.

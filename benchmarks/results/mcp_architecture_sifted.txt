@@ -1,0 +1,310 @@
+Skip to main content ] content - area ) 
+ Model Context Protocol home page! light logo ] mintcdn 2BMHnlNW5OqOohXZ? fit max format 85 & s = a5ac61ce77858fb1ddaf6de761c39499 dark logo ]? max format 2BMHnlNW5OqOohXZ 85 s = 1227cb7feb8344f9f6288c6b5b0a6d80 
+ 
+ Blog modelcontextprotocol 
+ GitHub ] 
+ Navigation 
+ MCP 
+ Architecture overview 
+ Documentation Extensions Specification specification 2025 - 11 - 25 Registry 
+ 
+ MCP? intro 
+ MCP 
+ Architecture learn 
+ Servers server - concepts 
+ 
+ Versioning 
+ Develop with MCP 
+ Connect to local MCP servers connect - local - servers 
+Connect to remote MCP Servers ] docs develop / connect - remote servers ) 
+ Build with Agent Skills ] develop / build - with - agent - skills 
+ Build an MCP server ] develop / build - server ) 
+ Clients 
+ SDKs ] docs / sdk ) 
+ Security 
+ Developer tools 
+ MCP Inspector ] docs tools inspector 
+ Debugging ] docs tools / debugging 
+ Examples 
+ Example Clients clients ) 
+ Servers examples 
+ 
+ Scope scope ) 
+ Concepts of MCP concepts - of mcp 
+ Participants participants 
+ Layers layers 
+ Data layer data - layer 
+ Transport layer layer 
+ Data Layer Protocol data - layer protocol 
+ Lifecycle management 
+ Primitives primitives 
+ Notifications notifications 
+ Example example 
+ Data Layer data - layer 2 
+ Understanding Initialization Exchange 
+ in AI Applications 
+ Tool Discovery Request 
+ Response 
+ 
+ Tool Execution Request execution 
+ Key Elements of Tool Execution tool 
+Understanding Tool Execution Response tool - execution response 
+ Works in AI Applications ai applications - 3 
+ Understanding Tool List Change Notifications list change notifications 
+ Key Features of MCP Notifications - of mcp - notifications 
+ Client Response to Notifications client - response - to notifications 
+ Why Notifications Matter 
+ AI Applications applications 4 
+ MCP 
+ Architecture overview 
+ Copy page 
+ 
+ Model Context Protocol ( MCP discusses scope core concepts example core concept 
+ MCP SDKs abstract concerns developers data layer protocol ] section useful. MCP servers provide context to AI application 
+ specific implementation details refer to documentation for language - specific SDK ] docs sdk 
+ 
+ Model Context Protocol includes projects 
+ MCP Specification implementation requirements for clients servers 
+ MCP SDKs for different programming languages implement MCP 
+ MCP Development Tools developing MCP servers clients MCP Inspector 
+ MCP Reference Server Implementationsmodelcontextprotocol servers Reference implementations MCP servers 
+ MCP focuses on protocol context exchange dictate 
+ AI applications use LLMs context 
+ concepts - of - mcp 
+ participants 
+ MCP follows client - server architecture MCP host AI application Claude establishes connections to MCP servers MCP host one MCP client each maintains dedicated connection MCP server 
+ Local MCP servers STDIO serve single MCP client remote MCP servers Streamable HTTP transport serve many MCP clients 
+ key participants 
+ Host AI application coordinates manages MCP clients 
+ Client maintains connection MCP server obtains context 
+ program provides context MCP clients 
+ Visual Studio Code acts MCP host Studio Code establishes connection to MCP server Sentry MCP server runtime instantiates MCP client connection 
+ connects to another MCP server local filesystem server modelcontextprotocol runtime instantiates additional MCP client object 
+MCP server refers program context data 
+ MCP servers execute locally or remotely 
+ Claude Desktop launches filesystem 
+ server ] 
+ runs locally on same machine uses STDIO 
+ transport local MCP server official 
+ Sentry MCP server ] docs mcp runs on 
+ Sentry platform uses Streamable HTTP transport 
+ remote MCP server 
+ 
+ two layers 
+ Defines JSON - RPC protocol for client - server communication lifecycle management core primitives tools resources prompts notifications 
+ Transport layer communication mechanisms channels data exchange transport - specific connection establishment message framing authorization 
+ inner 
+ 
+ implements JSON - RPC 2. 0 ] exchange protocol message structure semantics 
+ includes 
+ Lifecycle management connection initialization capability negotiation connection termination between clients servers 
+ features core functionality tools for AI actions resources context data prompts for interaction templates 
+ sample LLM elicit input log messages 
+Utility features Supports capabilities notifications real - time updates progress tracking long - running operations 
+ transport - layer Transport layer 
+ manages communication channels authentication between clients servers handles connection establishment message framing secure communication MCP 
+ supports two transport mechanisms 
+ Uses standard input streams direct process communication optimal performance no network overhead 
+ Streamable HTTP transport Uses HTTP POST for client server messages Server - Sent Events streaming enables remote server communication supports standard HTTP authentication methods bearer tokens API keys custom headers recommends OAuth authentication tokens 
+ abstracts communication details JSON - RPC 2. 0 message format 
+ data - layer protocol 
+ schema semantics between MCP clients servers context 
+ uses JSON - RPC 2. 0 ] underlying RPC protocol Client servers send requests respond Notifications when no response required 
+ lifecycle - management 
+ stateful protocol requires lifecycle management negotiate capabilities client server support information in specification showcases initialization sequence 
+# primitives ) Primitives 
+ MCP primitives important MCP define clients servers specify contextual information with AI applications range actions 
+ MCP defines three core primitives expose 
+ Executable functions AI applications actions file operations API calls database queries 
+ Resources contextual information AI file contents database records API responses 
+ Prompts Reusable templates structure interactions with language models system prompts few - shot examples 
+ primitive type methods for discovery retrieval execution 
+ MCP clients use methods discover primitives client list tools execute design allows listings dynamic 
+ consider MCP server context about database expose tools for querying prompt few - shot examples 
+ details server primitives concepts 
+ defines primitives expose allow authors build richer interactions 
+ Sampling Allows servers request language model completions from AI application authors access model - independent not include language SDK sampling method request language model completion AI application 
+ Elicitation Allows servers request additional informationuseful when server authors want information ask confirmation use elicitation create method request additional information 
+ Logging Enables servers send log messages debugging monitoring 
+ client primitives concepts 
+ offers cross - cutting utility primitives requests 
+ Tasks Durable execution wrappers deferred result retrieval status tracking for MCP requests computations workflow automation batch processing multi - step operations 
+ 
+ supports real - time notifications dynamic updates send tool update notifications Notifications sent as JSON - RPC 2. 0 notification messages enable MCP servers provide real - time updates 
+ 
+ data - layer 2 
+ step by walkthrough MCP client - server interaction data layer protocol lifecycle sequence tool operations notifications using JSON - RPC 2. 0 messages 
+ 
+ Initialization Lifecycle Management 
+ begins with lifecycle management capability negotiation handshake client sends initialize request establish connection negotiate features 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+params " 
+ protocolVersion 2025 - 06 - 18 
+ capabilities 
+ elicitation 
+ 
+ clientInfo 
+ name example - client 
+ version 1. 0. 0 
+ 
+ 
+ 
+ 
+ understanding initialization exchange Initialization Exchange 
+ key MCP lifecycle management 
+ Protocol Version Negotiation protocolVersion 2025 - 06 - 18 ensures client server compatible protocol versions prevents communication errors mutually compatible version not negotiated connection terminated 
+ Capability Discovery capabilities allows declare features primitives tools resources prompts notifications efficient communication avoiding unsupported operations 
+ Identity Exchange clientInfo serverInfo identification versioning information debugging compatibility 
+ capability negotiation demonstrates MCP primitives Client Capabilities 
+ elicitation " client declares work user interaction requests 
+ Server Capabilities 
+ tools " listChanged server supports tools primitive tools list changed notifications changes 
+ supports resources primitive 
+ initialization client sends notification 
+ Notification 
+
+ 
+ jsonrpc 2. 0 
+ method notifications initialized 
+ 
+ 
+ applications AI Applications 
+ AI application MCP client manager establishes connections servers stores capabilities application uses information servers functionality tools resources prompts real - time updates 
+ Pseudo - code AI application initialization 
+ 
+ 
+ async stdio _ client server config 
+ ClientSession 
+ init response = await session initialize 
+ 
+ app register mcp server 
+ set server ready 
+ 
+ 
+ Tool Discovery 
+ connection client discover tools tools / list request fundamental to MCP tool discovery mechanism understand tools 
+ 
+ 
+ 
+ 
+ jsonrpc 2. 0 
+ id 
+ method tools list 
+ 
+ 
+ understanding - tool - discovery - request Tool Discovery Request 
+ simple no parameters 
+ 
+ contains tools array comprehensive metadata tool array - structure allows expose multiple tools maintaining clear boundaries tool object includes key fields 
+name unique identifier for tool within server namespace primary key for tool execution follow clear naming pattern calculator _ arithmetic 
+ title human - readable display name for tool 
+ description Detailed explanation of tool when 
+ inputSchema JSON Schema defines expected input parameters type validation clear documentation about required optional parameters 
+ applications AI Applications 
+ fetches available tools from MCP servers combines into unified tool registry allows LLM to understand actions generates tool calls 
+ Pseudo - code for AI application tool discovery 
+ 
+ MCP SDK 
+ available tools 
+ 
+ tools response 
+ 
+ 
+ 
+ 
+ Tool Execution 
+ client can execute tool using tools / call method demonstrates MCP primitives after tools client invoke with appropriate arguments 
+ tool execution request Tool Execution Request 
+ follows structured format safety clear communication between client server proper tool name from discovery response 
+ Tool Call Request 
+ 
+ 
+ 
+0 
+ id " 3 
+ method tools / call 
+ params 
+ name weather _ current 
+ arguments 
+ location San Francisco 
+ units imperial 
+ 
+ 
+ 
+ 
+ key - elements - tool execution Tool Execution 
+ request structure includes components 
+ name match tool name discovery response weather _ current ensures server identify tool 
+ arguments Contains input parameters tool inputSchema 
+ location San Francisco parameter 
+ units imperial 
+ JSON - RPC Structure 2. 0 format request - response correlation 
+ understanding tool execution response Tool Execution 
+ demonstrates MCP flexible content system 
+ content Array return array content objects rich multi - format responses text images resources 
+ Content Types object field plain text content supports content types 
+ Structured Output response provides actionable information AI application context for language model interactions 
+ execution pattern allows invoke server functionality receive structured responses conversations language models 
+ AI Applications 
+language model tool conversation AI application intercepts call routes to MCP server executes returns results back to LLM enables LLM access real - time data perform actions external world 
+ 
+ Pseudo - code for AI application tool execution 
+ handle tool _ call conversation tool name arguments 
+ session = app 
+ result = 
+ add tool result 
+ 
+ 
+ Real - time Updates ( Notifications 
+ MCP supports - notifications inform about changes without requested notification system keeps MCP connections synchronized responsive 
+ understanding tool - list change notifications 
+ tools change existing tools modified unavailable notify connected clients 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ key features Features MCP Notifications 
+ No Response Required follows JSON - RPC 2. 0 notification semantics no response expected sent 
+ Capability - Based notification sent by servers listChanged " during initialization 
+Event - Driven server decides notifications based on state changes MCP connections dynamic responsive 
+ client - response - to notifications to Notifications 
+ client reacts requesting updated tool list refresh cycle understanding of tools 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ why - notifications 
+ notification system crucial 
+ Dynamic Environments Tools based on server state dependencies user permissions 
+ Efficiency Clients poll for changes notified when updates 
+ Consistency clients accurate information about server capabilities 
+ Real - time Collaboration AI applications changing contexts 
+ notification pattern extends to MCP primitives real - time synchronization 
+ 
+ application receives notification about changed tools refreshes tool registry updates LLM capabilities ensures ongoing conversations access to current tools LLM adapt to new functionality 
+ 
+ Pseudo - code for AI application notification 
+ handle tools changed notification ( session 
+ response 
+ app. update _ available _ tools 
+ 
+notify new capabilities 
+ 
+ page helpful? 
+ 
+ MCP? docs intro Servers docs learn server concepts 
+ 
+ github com modelcontextprotocol

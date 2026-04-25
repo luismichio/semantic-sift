@@ -1,0 +1,13 @@
+Documentation 
+ System Architecture v2. 4 
+ core Semantic Sift system 
+ Extraction 
+ MarkItDown 
+ Format Support 
+ 
+ 
+ 
+ 
+ 
+ Uses LLMLingua - 2 token pruning 
+ © 2026 Studio Two Page 1 42

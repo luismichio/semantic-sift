@@ -76,6 +76,8 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 ### Global Telemetry Pulse
 *   **Function**: `send_telemetry_pulse()` fires a non-blocking POST request for aggregate analytics.
 *   **Endpoint**: Defined by `SIFT_TELEMETRY_URL` (default: `https://www.luiskobayashi.com/api/sift`).
+*   **High-Fidelity Intercept Attribution**: When sifting is triggered by the `sift_hook.py` interceptor (the "Subconscious Brain"), the `tool_name` is reported using the convention `{sift_type}:{original_tool_name}` (e.g., `sift_rank:grep_search` or `sift_chat:fetch`). 
+*   **Format Attribution**: The `file_ext` field identifies the format of the processed data (e.g., `.pdf`, `.xlsx`, `.html`, `grep`), allowing for ROI analysis across different content types.
 *   **Security Constraint**: Enforces `http://` or `https://` schemes only (Bandit B310 compliance).
 *   **Payload Schema**:
     ```json
@@ -84,7 +86,8 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
         "client_id": "Claude",
         "agent_label": "researcher-subagent",
         "tier": "Community",
-        "tool_name": "sift_logs",
+        "tool_name": "sift_chat:fetch",
+        "file_ext": "html",
         "original_chars": 15000,
         "final_chars": 5000,
         "original_tokens": 3750,
@@ -98,6 +101,7 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 ### Licensing & Identity
 *   **`SIFT_CLIENT_ID`**: Defaults to `"Generic CLI"`. Identifies the host application.
 *   **Dynamic Client Identification**: The `sift_hook.py` interceptor automatically detects the platform (e.g., `"Claude"`, `"Gemini"`, `"Cursor"`) and passes it as a `client_id_override` to the telemetry system.
+*   **Aggressive Tool Sniffing**: To minimize `unknown` tool entries, the interceptor uses a recursive discovery engine that searches for tool names across common JSON keys (`tool_name`, `tool`, `call`, etc.) and nested payload structures.
 *   **Subagent Tracking (`agent_label`)**: The interceptor further "sniffs" the payload for subagent markers (e.g., `CLAUDE_AGENT_NAME`, `threadLabel`, or result prefixes like `[Explore]`) to attribute context savings to specific specialized agent threads.
 *   **`SIFT_LICENSE_KEY`**: If present, sets the `tier` payload attribute to `"Commercial"`. Otherwise, it defaults to `"Community"`. Testing/Diagnostic tools automatically override the tier to `"Internal-Testing"`.
 *   **`.sift_identity`**: Generates and stores a persistent, anonymous `uuid.uuid4()` machine ID to prevent metric duplication across sessions without storing PII.

@@ -9,8 +9,9 @@ This document provides the technical specification of the Semantic-Sift system's
 The Sift Hook Interceptor acts as the "Subconscious Brain" of the system, intercepting JSON payloads from various IDEs and agents via standard input, processing them, and returning the modified payload via standard output.
 
 ### Hook Event Handling & Platform Detection
-The interceptor reads `sys.stdin` for a JSON payload. It infers the host platform based on specific structural keys, environment variables, or event names:
+The interceptor reads `sys.stdin` for a JSON payload. It infers the host platform based on specific structural keys, environment variables, or event names.
 
+*   **Aggressive Tool Discovery**: To ensure high-fidelity telemetry, the hook implements a recursive discovery function (`find_tool_name`) that scans the payload for common MCP keys including `tool_name`, `tool`, `name`, `call`, `command`, and `mcp_tool`. It also inspects nested objects to ensure tool names are captured even in complex client responses.
 *   **Gemini (`AfterTool` / `PreCompress`)**:
     *   **Detection**: Checks if `hook_event_name` is `"AfterTool"` or `"PreCompress"`.
     *   **Extraction**: Targets `data["tool_response"]["llmContent"]`.
@@ -66,9 +67,31 @@ During the `sift_onboard` process, the system performs a recursive crawl of the 
     *   **Markdown/Rules**: Injects the mandate into standard `.md` or `.cursorrules` files.
     *   **TOML**: Utilizes a specialized `update_toml_config` injector for Codex agents, safely merging the mandate into the `instructions` key without breaking TOML syntax.
 
+## 3. Multi-Modal Ingestion Engine (`sift_kernel.py`)
+
+To support complex corporate environments, Semantic-Sift includes a structural pre-processing layer that transforms binary files into siftable text.
+
+### MarkItDown Integration
+The kernel utilizes Microsoft's `MarkItDown` to handle non-text formats.
+*   **Supported Formats**: PDF, DOCX, XLSX, PPTX, ZIP, and HTML.
+*   **Structural Awareness**: MarkItDown preserves tables (Excel/Word) and document hierarchies (Headings), which improves the accuracy of the subsequent Semantic Engine.
+
+### Two-Stage Ingestion Pipeline
+When a binary file is read via `sift_read_file` or intercepted by the hook:
+1.  **Stage 1 (Extraction)**:
+    *   Generates a SHA-256 hash of the binary file content.
+    *   Checks `.sift_cache/` for `raw_[hash].md`.
+    *   If missing, converts the file to Markdown and caches the result.
+2.  **Stage 2 (Distillation)**:
+    *   The cached Markdown is passed to the Heuristic or Semantic engines based on the requested `type` and `rate`.
+    *   The final sifted result is cached separately as `sift_[hash]_[params].txt`.
+
+### Subconscious HTML Normalization
+The `sift_hook.py` middleware automatically detects HTML tags in tool outputs. It utilizes the kernel's `MarkItDown` instance to strip DOM noise (scripts, styles, nav) and convert the content to clean Markdown before it ever reaches the sifting models.
+
 ---
 
-## 3. Distillation Kernel (`sift_kernel.py`)
+## 4. Distillation Kernel (`sift_kernel.py`)
 
 The Distillation Kernel contains the mathematical and logical engines that physically reduce the character and token footprint of text.
 

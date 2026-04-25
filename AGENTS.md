@@ -43,9 +43,11 @@ Before acting on any non-trivial task, produce a plan first.
 - **Language**: Python 3.10+
 - **Framework**: FastMCP
 - **AI Core**: PyTorch, Transformers (Hugging Face)
+- **Ingestion**: MarkItDown (Binary -> Markdown)
 - **Compression**: LLMLingua-2
 
 ### Architecture
+- **Ingestion Phase**: Converts PDF, DOCX, XLSX, and HTML to Markdown via MarkItDown with local disk caching.
 - **The Sieve**: Heuristic-based regex filtering for structural noise.
 - **The Sift**: Semantic-based model pruning for natural language.
 - **The Refinery Loop**: Integration point for Docling/LlamaIndex.
@@ -99,48 +101,16 @@ Use `grep_search` with conservative `total_max_matches`.
 ---
 
 # 🔍 Semantic-Sift — SOP
----
+Guidelines for high-fidelity context.
+    
+**MANDATORY LOCAL I/O**: Do NOT use `view_file` or `read_file` for files > 1KB. You MUST use `sift_read_file(path)` or `sift_analyze_file(path)`.
 
-# 🔍 Semantic-Sift — Standard Operating Procedures
-
-To maintain high Signal-to-Noise Ratio (SNR) and prevent context flooding, follow these usage guidelines.
-
-## 🛠️ Tool Selection & Thresholds
-
-| Tool | Trigger Condition | Goal |
-| :--- | :--- | :--- |
-| `sift_logs` | Any log/terminal output > 50 lines or containing progress bars. | Heuristic removal of timestamps/noise. |
-| `sift_chat` | Previous conversation history exceeding 5,000 characters. | Prune linguistic filler (default rate: 0.5). |
-| `sift_doc` | Reading documentation files > 10,000 characters. | Hybrid distillation (Heuristic + Semantic). |
-| `sift_extraction` | Processing raw OCR or Docling extractions. | Preserve Markdown structure while cleaning debris. |
-| `sift_rank` | Selecting best chunks from multiple retrieved documents. | Filter by semantic relevance before sifting. |
-
-## 📐 Rate Guidelines
-- **Aggressive (0.3)**: Use for "lost in the middle" scenarios or massive histories.
-- **Balanced (0.5)**: Default. Best for general conversation and instructions.
-- **Gentle (0.7)**: Use for technical documentation where every keyword matters.
-
-## 🤖 Auto-Sift Mandate (Zero-Gap Policy)
-- **Forbidden**: Do NOT use standard `view_file` or `read_file` tools to read unknown files or files likely to exceed 1,000 characters. Unshielded environments cannot intercept these native commands, leading to catastrophic context flooding.
-- **Mandate**: You MUST prioritize `sift_read_file(path)` as the default tool for file ingestion. 
-- **Action**: Use `sift_analyze_file(path)` to scout unknown local files. If estimated noise is > 15%, or length is > 8000, `sift_read_file` is strictly required. For tool outputs (e.g., shell commands) already in context, pipe them manually through `sift_logs` or `sift_chat`.
-
-## 📊 Global Savings Registry
-- **Endpoint**: `https://www.luiskobayashi.com/api/sift`
-- **Goal**: Aggregate anonymous character savings to prove the value of the context sanitation engine.
-
-## 🔄 Tier 2: Structural Distillation (Compaction Hooks)
-Beyond reactive tool sifting, Semantic-Sift now supports **Structural Lifecycle Hooks** to handle the "End of Context" event.
-
-| Platform | Hook Event | Logic |
-| :--- | :--- | :--- |
-| **OpenCode** | `experimental.session.compacting` | **Interventional**: Replaces default summary with a high-fidelity semantic snapshot (Task Status + Decisions). |
-| **Gemini CLI** | `PreCompress` | **Advisory**: Logs "Compaction ROI" telemetry to track token survival before internal summarization. |
-
-## 🚫 Sifting Forbidden
-- **NEVER** sift foundational instructions (`AGENTS.md`, `GEMINI.md`).
-- **NEVER** sift small, surgical code snippets (symbol-level).
-- **NEVER** sift security-sensitive configuration files (`.env`, secrets).
+**MANDATORY MCP SYNERGIES**:
+When receiving data from external MCP servers, you MUST manually apply the correct sifting tool to the output to prevent context flooding:
+*   **Web/HTML (Puppeteer, Fetch)**: Immediately pass output to `sift_doc` to incinerate DOM noise.
+*   **Logs/Cloud (AWS, Kubernetes, Vercel)**: Pass output to `sift_logs` to strip timestamps and ETags.
+*   **Databases (Postgres, SQLite)**: Do NOT use sifting tools on JSON or structured rows; use SQL `LIMIT` clauses instead.
+*   **Large Search Results (GitHub, Serena)**: Pass the array of chunks to `sift_rank` to return only the Top 3 results.
 <!-- SIFT_SECTION_END:SOP -->
 
 <!-- SIFT_SECTION_START:ORCHESTRATION -->

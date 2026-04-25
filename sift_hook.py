@@ -42,19 +42,32 @@ def main():
         # Platform Detection
         event_name = data.get("hook_event_name", "unknown")
         
+        # Aggressive Tool Name Discovery
+        def find_tool_name(d):
+            # Check common keys in order of likelihood
+            for key in ["tool_name", "tool", "name", "call", "command", "mcp_tool"]:
+                if key in d and isinstance(d[key], str):
+                    return d[key]
+            # Check nested call info if present
+            if "call" in d and isinstance(d["call"], dict):
+                return find_tool_name(d["call"])
+            return None
+
+        tool_name = find_tool_name(data) or "unknown"
+        
         if os.environ.get("CLAUDE_TOOL_NAME"):
             platform = "Claude"
-            tool_name = os.environ.get("CLAUDE_TOOL_NAME")
+            tool_name = os.environ.get("CLAUDE_TOOL_NAME", tool_name)
             # Subagent detection for Claude
             agent_label = os.environ.get("CLAUDE_AGENT_NAME") or os.environ.get("CLAUDE_SUBAGENT_ID")
             raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
         elif os.environ.get("QWEN_TOOL_NAME") or ("tool_name" in data and "tool_input" in data and "context" in data):
             platform = "Qwen"
-            tool_name = os.environ.get("QWEN_TOOL_NAME", data.get("tool_name", "unknown"))
+            tool_name = os.environ.get("QWEN_TOOL_NAME", tool_name)
             raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
         elif os.environ.get("CODEX_TOOL_NAME"):
             platform = "Codex"
-            tool_name = os.environ.get("CODEX_TOOL_NAME")
+            tool_name = os.environ.get("CODEX_TOOL_NAME", tool_name)
             # Subagent detection for Codex
             agent_label = data.get("context", {}).get("agent_name")
             raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
@@ -67,11 +80,9 @@ def main():
                 platform = "Gemini/OpenClaw"
         elif "tool_response" in data and "llmContent" in data["tool_response"]:
             platform = "VSCode"
-            tool_name = data.get("tool_name", "unknown")
             raw_content = data["tool_response"]["llmContent"]
         elif "result" in data and isinstance(data["result"], str):
             platform = "Cursor"
-            tool_name = data.get("tool_name", "unknown")
             # Subagent detection for Cursor (sniff from result prefix or metadata)
             if data["result"].startswith("[Explore]"): agent_label = "Explore"
             elif data["result"].startswith("[Bash]"): agent_label = "Bash"
@@ -176,11 +187,29 @@ def main():
             # --- B. Auto-Semantic (Prose/Docs) ---
             if not sifted:
                 is_prose = any(x in tool_name.lower() for x in ['read', 'fetch', 'extraction', 'chat'])
+                is_html = "<html" in raw_content.lower()[:500] or "<!doctype html" in raw_content.lower()[:500]
                 has_md_ext = any(x in raw_content[:200].lower() for x in ['.md', '# ', '---'])
                 
-                if (is_prose or has_md_ext) and len(raw_content) > 3000:
+                # Normalize HTML to Markdown first if needed
+                working_content = raw_content
+                if is_html:
+                    md_converter = sift_kernel.get_markitdown()
+                    if md_converter:
+                        try:
+                            log(f"Normalizing HTML to Markdown for {tool_name}")
+                            import tempfile
+                            with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w", encoding="utf-8") as tf:
+                                tf.write(raw_content)
+                                temp_path = tf.name
+                            result = md_converter.convert(temp_path)
+                            working_content = result.text_content
+                            os.remove(temp_path)
+                        except Exception as e:
+                            log(f"HTML Normalization failed: {e}")
+
+                if (is_prose or has_md_ext or is_html) and len(working_content) > 3000:
                     log(f"Auto-Semantic sifting prose from {tool_name}")
-                    sifted = sift_kernel.perform_semantic_sift(raw_content, rate=0.6)
+                    sifted = sift_kernel.perform_semantic_sift(working_content, rate=0.6)
                     sift_type = "sift_chat"
 
             # --- C. Auto-Heuristic (Default / Logs) ---
@@ -196,8 +225,16 @@ def main():
                 latency = (time.time() - start_t) * 1000
                 log(f"Subconscious {sift_type} successful: saved {len(raw_content) - len(sifted)} chars")
                 
+                # Combine sift type with intercepted tool name for high-fidelity telemetry
+                telemetry_name = f"{sift_type}:{tool_name}"
+                
+                # Detect extension for telemetry
+                hook_file_ext = "html" if is_html else "txt"
+                if any(x in tool_name.lower() for x in ['search', 'grep', 'find']):
+                    hook_file_ext = "grep"
+
                 # Record accurate telemetry
-                telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, sift_type, len(raw_content), len(sifted), latency, client_id_override=platform, agent_label=agent_label)
+                telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, telemetry_name, len(raw_content), len(sifted), latency, client_id_override=platform, agent_label=agent_label, file_ext=hook_file_ext)
 
                 # Inject back to platform
                 msg = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted)} chars of noise.]"

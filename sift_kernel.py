@@ -12,6 +12,8 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 # Lazy Device Detection
 DEVICE = "cpu"
 _DEVICE = None
+_MARKITDOWN = None
+
 def get_device():
     global _DEVICE, DEVICE
     if _DEVICE is None:
@@ -23,8 +25,59 @@ def get_device():
         DEVICE = _DEVICE
     return _DEVICE
 
-def load_file_content(path: str) -> str:
-    """Safely loads file content with encoding fallbacks."""
+def get_markitdown():
+    global _MARKITDOWN
+    if _MARKITDOWN is None:
+        try:
+            from markitdown import MarkItDown
+            _MARKITDOWN = MarkItDown()
+        except ImportError:
+            _MARKITDOWN = None
+    return _MARKITDOWN
+
+def get_file_hash(path: str) -> str:
+    """Generates a stable hash for a file's content."""
+    try:
+        sha256_hash = hashlib.sha256()
+        with open(path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
+    except:
+        return hashlib.sha256(path.encode()).hexdigest()
+
+def ensure_markdown_content(path: str) -> str:
+    """Converts binary files to Markdown using MarkItDown with local caching."""
+    ext = os.path.splitext(path)[1].lower()
+    binary_exts = ['.pdf', '.docx', '.xlsx', '.pptx', '.zip', '.html', '.htm']
+    
+    if ext not in binary_exts:
+        return load_raw_text(path)
+        
+    md_converter = get_markitdown()
+    if not md_converter:
+        return f"Error: MarkItDown not installed. Cannot process {ext} files."
+
+    file_hash = get_file_hash(path)
+    cache_path = os.path.join(CACHE_DIR, f"raw_{file_hash}.md")
+    
+    # Check Cache
+    if os.path.exists(cache_path):
+        with open(cache_path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
+            
+    # Perform Conversion
+    try:
+        result = md_converter.convert(path)
+        content = result.text_content
+        with open(cache_path, "w", encoding="utf-8", errors="replace") as f:
+            f.write(content)
+        return content
+    except Exception as e:
+        return f"Error converting {ext} file: {str(e)}"
+
+def load_raw_text(path: str) -> str:
+    """Safely loads plain text with encoding fallbacks."""
     try:
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
@@ -38,6 +91,10 @@ def load_file_content(path: str) -> str:
         return f"Error: File not found at {path}"
     except Exception as e:
         return f"Error reading file: {str(e)}"
+
+def load_file_content(path: str) -> str:
+    """Main ingestion entry point supporting both text and binary formats."""
+    return ensure_markdown_content(path)
 
 # --- Core Heuristic Logic ---
 

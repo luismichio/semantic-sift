@@ -509,7 +509,8 @@ async def sift_read_file(path: str, rate: float = 0.5, type: str = "auto") -> st
         result = sift_kernel.perform_semantic_sift(content, rate=rate)
         
     latency = (time.time() - start_t) * 1000
-    telemetry_core.log_telemetry(SESSION_ID, START_TIME, f"sift_read_file_{sifter_type}", len(content), len(result), latency)
+    file_ext = os.path.splitext(path)[1].lower() or "txt"
+    telemetry_core.log_telemetry(SESSION_ID, START_TIME, f"sift_read_file_{sifter_type}", len(content), len(result), latency, file_ext=file_ext)
     
     # Trace instrumentation
     tracer = telemetry_core.get_tracer()

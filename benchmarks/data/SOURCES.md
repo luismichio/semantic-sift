@@ -5,6 +5,10 @@ The following samples are used as the "Ground Truth" for Semantic-Sift performan
 | Sample | Source Origin | Description |
 | :--- | :--- | :--- |
 | `github_actions.txt` | [GitHub Runner Docs](https://github.com/actions/runner) | Raw diagnostic logs with `##[debug]` and `##[group]` markers. |
+| `aws_framework.pdf` | [AWS Well-Architected](https://docs.aws.amazon.com/wellarchitected/latest/framework/wellarchitected-framework.pdf) | 14MB production-grade technical whitepaper with complex diagrams and tables. |
+| `financial_sample.xlsx` | [Microsoft Samples](https://go.microsoft.com/fwlink/?LinkID=521962) | Official Microsoft sample containing financial records across multiple regions. |
+| `mcp_architecture.html` | [Anthropic MCP Docs](https://modelcontextprotocol.io/docs/learn/architecture) | High-noise documentation page featuring complex sidebars and navigation menus. |
+| `sample_prd.docx` | [Standard Docs](https://file-examples.com) | Representative corporate Project Requirement Document with headings and lists. |
 | `vercel_logs.txt` | [Vercel CLI Docs](https://vercel.com/docs/cli/logs) | Authentic build-time stdout/stderr from Next.js deployments. |
 | `git_history.txt` | [Git Source Project](https://github.com/git/git) | Verbose commit history generated via `git log --date=iso --pretty=fuller`. |
 | `git_diff.txt` | [Linux Kernel Diffs](https://github.com/torvalds/linux) | Complex, multi-hunk diffs with extensive metadata. |
