@@ -62,6 +62,55 @@ def get_global_mcp_configs() -> list[dict]:
             except Exception: pass
     return configs
 
+def discover_agent_configs(target_dir: str) -> list[str]:
+    """Recursively finds specialized subagent configuration files."""
+    found_paths = []
+    agent_dirs = [".codex/agents", ".cursor/agents", ".junie/agents", ".agents"]
+    
+    # 1. Check known subagent directories
+    for d in agent_dirs:
+        full_dir = os.path.join(target_dir, d)
+        if os.path.exists(full_dir):
+            for f in os.listdir(full_dir):
+                if f.endswith((".toml", ".md")):
+                    found_paths.append(os.path.join(full_dir, f))
+    
+    # 2. Check for scoped AGENTS.md in subdirectories (up to 3 levels deep)
+    for root, dirs, files in os.walk(target_dir):
+        depth = root[len(target_dir):].count(os.sep)
+        if depth > 3: continue
+        if "AGENTS.md" in files and root != target_dir:
+            found_paths.append(os.path.join(root, "AGENTS.md"))
+            
+    return found_paths
+
+def update_toml_config(path: str, section_id: str, content: str) -> bool:
+    """Safely injects a mandate into a TOML file, targeting the 'instructions' key if present."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            file_content = f.read()
+        
+        block_id = f"# SIFT_SECTION_START:{section_id}"; block_end = f"# SIFT_SECTION_END:{section_id}"
+        full_payload = f"\n{block_id}\n# ---\n# {content}\n{block_end}\n"
+        
+        # Check if already present
+        pattern = re.compile(rf'{re.escape(block_id)}.*?{re.escape(block_end)}', re.DOTALL)
+        if pattern.search(file_content):
+            new_content = pattern.sub(full_payload.strip(), file_content)
+        else:
+            # Try to find 'instructions =' to append within the string if possible, 
+            # otherwise just append to end of file
+            if "instructions =" in file_content:
+                # Basic string insertion after instructions key
+                new_content = file_content.replace("instructions = \"\"\"", f"instructions = \"\"\"\n{content}\n")
+            else:
+                new_content = file_content + full_payload
+                
+        with open(path, "w", encoding="utf-8", errors="replace") as f:
+            f.write(new_content)
+        return True
+    except: return False
+
 def merge_hook_json(path: str, hook_key: str, new_hook: dict, version: int = None):
     """Safely merges a new hook into an existing JSON file without overwriting others."""
     data = {"hooks": {}}
@@ -92,11 +141,30 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
     cmd_str = f"{python_exe} {hook_script}"
     block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"; block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
     full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
-    for filename in INSTRUCTION_TARGETS:
-        if not filename.endswith((".md", ".clinerules", ".cursorrules", ".windsurfrules")): continue
-        target_path = os.path.join(cwd, filename)
+    
+    # 1. Main Instruction Files
+    targets = INSTRUCTION_TARGETS[:] # Copy list
+    
+    # 2. Discover specialized subagent configs
+    subagent_paths = discover_agent_configs(cwd)
+    targets.extend(subagent_paths)
+    
+    for target in targets:
+        # If target is already a full path from discovery, use it, otherwise join with cwd
+        target_path = target if os.path.isabs(target) else os.path.join(cwd, target)
         if os.path.exists(target_path):
             try:
+                filename = os.path.basename(target_path)
+                
+                # Handle TOML files (Codex)
+                if target_path.endswith(".toml"):
+                    if update_toml_config(target_path, section_id, content):
+                        actions.append(f"Shielded subagent config: `{filename}`.")
+                    continue
+
+                # Handle Markdown/Text files
+                if not filename.endswith((".md", ".clinerules", ".cursorrules", ".windsurfrules")): continue
+                
                 with open(target_path, "r", encoding="utf-8", errors="replace") as f: file_content = f.read()
                 
                 # Rule Auditing: Check for contradictory instructions
@@ -111,7 +179,7 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
                 else:
                     with open(target_path, "a", encoding="utf-8", errors="replace") as f: f.write(full_payload)
                     actions.append(f"Injected into `{filename}`.")
-            except Exception as e: actions.append(f"Error updating `{filename}`: {str(e)}")
+            except Exception as e: actions.append(f"Error updating `{target_path}`: {str(e)}")
     
     cursor_path = os.path.join(cwd, ".cursor", "hooks.json")
     os.makedirs(os.path.dirname(cursor_path), exist_ok=True)
