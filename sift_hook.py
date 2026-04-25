@@ -87,22 +87,49 @@ def main():
             sys.stdout.write(raw_input)
             return
 
-        if "--- [Semantic-Sift: Native Execution] ---" in raw_content:
-            log(f"Bypassing Native Execution for {tool_name}")
-            sys.stdout.write(raw_input)
-            return
+        # --- New: Echo Detector & OTel Integration ---
+        is_echo = telemetry_core.check_echo(raw_content)
+        tracer = telemetry_core.get_tracer()
+        
+        with tracer.start_as_current_span("subconscious_sift") as span:
+            span.set_attribute("tool.name", tool_name)
+            span.set_attribute("platform", platform)
+            span.set_attribute("is_echo", is_echo)
 
-        try:
-            parsed = json.loads(raw_content)
-            if isinstance(parsed, (dict, list)):
-                log(f"Structured Data Exemption for {tool_name}")
+            if is_echo:
+                log(f"ECHO DETECTED for {tool_name} - Bypassing BERT")
+                # Even for echoes, we inject the header so the user knows why it bypassed
+                header = telemetry_core.generate_audit_header(len(raw_content), len(raw_content), 0, is_echo=True)
+                
+                # Re-wrap in the correct JSON schema for the platform
+                bypassed_content = header + raw_content
+                if platform == "Gemini":
+                    data["tool_response"]["llmContent"] = bypassed_content
+                elif platform == "VSCode":
+                    data["tool_response"]["llmContent"] = bypassed_content
+                elif platform == "Cursor" or platform == "unknown":
+                    # For Cursor or generic payloads, use the 'result' key
+                    data["result"] = f"[Echo Bypassed] {bypassed_content}"
+                
+                sys.stdout.write(json.dumps(data))
+                return
+
+            if "--- [Semantic-Sift Audit] ---" in raw_content:
+                log(f"Bypassing Native Execution for {tool_name}")
                 sys.stdout.write(raw_input)
                 return
-        except json.JSONDecodeError:
-            pass
 
-        # 3. Subconscious Routing Intelligence
-        sifted = None
+            try:
+                parsed = json.loads(raw_content)
+                if isinstance(parsed, (dict, list)):
+                    log(f"Structured Data Exemption for {tool_name}")
+                    sys.stdout.write(raw_input)
+                    return
+            except json.JSONDecodeError:
+                pass
+
+            # 3. Subconscious Routing Intelligence
+            sifted = None
         sift_type = "none"
         
         # --- A. Auto-Ranking (Search Tools) ---

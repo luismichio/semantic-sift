@@ -1,10 +1,33 @@
 import os
+import sys
 import json
 import uuid
 import time
 import hashlib
 import urllib.request
 from datetime import datetime
+
+# OpenTelemetry Imports
+try:
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
+    from opentelemetry.sdk.resources import Resource
+    OTEL_AVAILABLE = True
+except ImportError:
+    import logging
+    # Mock trace if not available
+    class MockTracer:
+        def start_as_current_span(self, name, *args, **kwargs):
+            class MockSpan:
+                def __enter__(self): return self
+                def __exit__(self, *args): pass
+                def set_attribute(self, *args): pass
+            return MockSpan()
+    class MockTrace:
+        def get_tracer(self, name): return MockTracer()
+    trace = MockTrace()
+    OTEL_AVAILABLE = False
 
 # Persistent Configuration
 TELEMETRY_FILE = ".sift_telemetry.json"
@@ -18,6 +41,85 @@ SIFT_TIER = "Commercial" if SIFT_LICENSE_KEY else "Community"
 
 # Privacy Kill-Switch (Meechi Compliance)
 SIFT_TELEMETRY_DISABLED = os.environ.get("SIFT_TELEMETRY_DISABLED", "false").lower() == "true"
+
+# --- OTel Initialization (Isolated Provider) ---
+_TRACER = None
+
+def get_tracer():
+    global _TRACER
+    if SIFT_TELEMETRY_DISABLED or not OTEL_AVAILABLE:
+        return trace.get_tracer(__name__)
+    
+    if _TRACER is None:
+        # Create an isolated provider to avoid conflict with host apps
+        resource = Resource(attributes={"service.name": "semantic-sift-mcp"})
+        provider = TracerProvider(resource=resource)
+        
+        # Simple console exporter for local verification
+        processor = SimpleSpanProcessor(ConsoleSpanExporter())
+        provider.add_span_processor(processor)
+        
+        _TRACER = provider.get_tracer(__name__)
+    
+    return _TRACER
+
+# --- Echo Detection (Disk-Based Cache) ---
+# Use absolute path to ensure consistency across separate processes
+CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".sift_cache")
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+def check_echo(text: str) -> bool:
+    """Checks if the text content has been processed recently (Disk-persistent)."""
+    if SIFT_TELEMETRY_DISABLED or not text or len(text) < 100:
+        return False
+    
+    content_hash = hashlib.sha256(text.encode()).hexdigest()
+    echo_path = os.path.join(CACHE_DIR, f"echo_{content_hash}.tmp")
+    now = time.time()
+    
+    if os.path.exists(echo_path):
+        try:
+            with open(echo_path, "r") as f:
+                expiry = float(f.read().strip())
+            if now < expiry:
+                return True
+            else:
+                os.remove(echo_path) # Expired
+        except: pass
+    
+    # Record current hash to disk
+    try:
+        with open(echo_path, "w") as f:
+            f.write(str(now + 30)) # 30s TTL
+    except: pass
+    return False
+
+# --- Audit Header Logic ---
+
+def generate_audit_header(original_len: int, sifted_len: int, latency_ms: float, is_echo: bool = False) -> str:
+    """Generates a Markdown audit header based on SIFT_AUDIT_HEADER preference."""
+    if SIFT_TELEMETRY_DISABLED:
+        return ""
+    
+    style = os.environ.get("SIFT_AUDIT_HEADER", "full").lower()
+    if style == "silent":
+        return ""
+        
+    reduction = (1 - (sifted_len / original_len)) * 100 if original_len > 0 else 0
+    guard_status = "Trace-Verified (No Echo)" if not is_echo else "🚨 ECHO DETECTED (Bypassed)"
+    
+    if style == "minimal":
+        return f"[Semantic-Sift: {reduction:.1f}% Savings | ⚡ {latency_ms:.1f}ms]\n\n"
+        
+    # Default: Full
+    header = [
+        "--- [Semantic-Sift Audit] ---",
+        f"📊 Reduction: {reduction:.1f}% ({original_len/1024:.1f}KB -> {sifted_len/1024:.1f}KB)",
+        f"🛡️ Guard: {guard_status}",
+        f"⚡ Latency: {latency_ms:.1f}ms",
+        "-----------------------------\n"
+    ]
+    return "\n".join(header)
 
 def estimate_tokens(text: str) -> int:
     """Provides a fast, high-fidelity token estimate (Standard 4 chars/token heuristic)."""

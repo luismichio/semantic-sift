@@ -4,3 +4,5 @@ torch
 transformers
 numpy
 sentence-transformers
+opentelemetry-api
+opentelemetry-sdk

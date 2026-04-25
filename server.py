@@ -203,7 +203,15 @@ async def sift_read_file(path: str, rate: float = 0.5, type: str = "auto") -> st
     latency = (time.time() - start_t) * 1000
     telemetry_core.log_telemetry(SESSION_ID, START_TIME, f"sift_read_file_{sifter_type}", len(content), len(result), latency)
     
-    return result + NATIVE_SIGNATURE
+    # Trace instrumentation
+    tracer = telemetry_core.get_tracer()
+    with tracer.start_as_current_span(f"sift_read_file:{sifter_type}") as span:
+        span.set_attribute("file.path", path)
+        span.set_attribute("sift.reduction_pct", (1 - len(result)/len(content)) * 100 if len(content) > 0 else 0)
+
+    # Dynamic Audit Header
+    header = telemetry_core.generate_audit_header(len(content), len(result), latency)
+    return header + result
 
 @mcp.tool()
 async def sift_analyze_file(path: str) -> str:
@@ -239,7 +247,13 @@ async def sift_analyze_file(path: str) -> str:
     latency = (time.time() - start_t) * 1000
     telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze_file", len(content), len(content), latency)
     
-    return "\n".join(report) + NATIVE_SIGNATURE
+    # Trace instrumentation
+    tracer = telemetry_core.get_tracer()
+    with tracer.start_as_current_span("sift_analyze_file") as span:
+        span.set_attribute("file.path", path)
+    
+    header = telemetry_core.generate_audit_header(len(content), len(content), latency)
+    return header + "\n".join(report)
 
 @mcp.tool()
 async def sift_logs(raw_text: str) -> str:
