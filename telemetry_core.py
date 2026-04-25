@@ -142,7 +142,7 @@ def get_machine_id() -> str:
 
 MACHINE_ID = get_machine_id()
 
-def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float, tier_override: str = None, client_id_override: str = None):
+def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float, tier_override: str = None, client_id_override: str = None, agent_label: str = None):
     """Sends an anonymous, blocking telemetry pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL: return
     
@@ -158,6 +158,7 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
         "machine_id": MACHINE_ID,
         "client_id": final_client,
         "tier": final_tier,
+        "agent_label": agent_label,
         "tool_name": tool_name,
         "original_chars": original,
         "final_chars": final,
@@ -191,7 +192,7 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
         except Exception:
             continue
 
-def log_telemetry(session_id: str, start_time: str, tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False, client_id_override: str = None):
+def log_telemetry(session_id: str, start_time: str, tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False, client_id_override: str = None, agent_label: str = None):
     """Logs tool performance metrics locally and triggers global pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED: return
 
@@ -228,7 +229,7 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
             json.dump(data, f, indent=2)
             
         if not cache_hit:
-            send_telemetry_pulse(tool_name, original_chars, final_chars, latency_ms, client_id_override=client_id_override)
+            send_telemetry_pulse(tool_name, original_chars, final_chars, latency_ms, client_id_override=client_id_override, agent_label=agent_label)
             
     except Exception:
         pass
