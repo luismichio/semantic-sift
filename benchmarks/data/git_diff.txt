@@ -1,12 +1,19 @@
-diff --git a/telemetry_core.py b/telemetry_core.py
-index 5d35c6f..a392089 100644
---- a/telemetry_core.py
-+++ b/telemetry_core.py
-@@ -10,6 +10,10 @@ def send_pulse(tool_name, original, final):
-+    # Security check (Bandit B310)
-+    if not url.startswith('https://'):
-+        return
-     payload = {
-         "tool": tool_name,
-         "saved": original - final
-     }
+Auto-merging index.html
+CONFLICT (content): Merge conflict in index.html
+Auto-merging src/app.js
+CONFLICT (content): Merge conflict in src/app.js
+Automatic merge failed; fix conflicts and then commit the result.
+
+diff --cc index.html
+index 4c2a1d3,8e9f2a1..0000000
+--- a/index.html
++++ b/index.html
+@@@ -4,7 -4,7 +4,11 @@@
+  <head>
+      <meta charset="UTF-8">
+++<<<<<<< HEAD
+ +    <title>My Local Website Title</title>
+++=======
++     <title>The Incoming Feature Title</title>
+++>>>>>>> feature-branch-name
+  </head>

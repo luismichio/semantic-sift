@@ -9,46 +9,66 @@ This document provides the technical specification of the Semantic-Sift system's
 The Sift Hook Interceptor acts as the "Subconscious Brain" of the system, intercepting JSON payloads from various IDEs and agents via standard input, processing them, and returning the modified payload via standard output.
 
 ### Hook Event Handling & Platform Detection
-The interceptor reads `sys.stdin` for a JSON payload. It infers the host platform based on specific structural keys or event names and extracts the target content:
+The interceptor reads `sys.stdin` for a JSON payload. It infers the host platform based on specific structural keys, environment variables, or event names:
 
 *   **Gemini (`AfterTool` / `PreCompress`)**:
     *   **Detection**: Checks if `hook_event_name` is `"AfterTool"` or `"PreCompress"`.
     *   **Extraction**: Targets `data["tool_response"]["llmContent"]`.
     *   **Injection**: Modifies `data["tool_response"]["llmContent"]` with the distilled text and injects an informational string into `data["hookSpecificOutput"]["additionalContext"]` to notify the LLM of the noise reduction.
-    *   **Note**: `PreCompress` acts as an advisory lifecycle event. It pulses telemetry for structural processing but does not modify the content, returning the raw input.
+*   **Claude Code, Qwen CLI & Codex CLI**:
+    *   **Detection**: Checks for platform-specific environment variables (`$CLAUDE_TOOL_NAME`, `$QWEN_TOOL_NAME`, or `$CODEX_TOOL_NAME`).
+    *   **Extraction**: Reads the raw tool output from standard input.
+    *   **Injection**: Modifies the JSON structure (targeting `tool_response.llmContent` or `result`) and returns the payload via standard output.
 *   **VSCode (Copilot / Native)**:
     *   **Detection**: Checks for the existence of `data["tool_response"]["llmContent"]` when no specific `hook_event_name` matches.
     *   **Extraction**: Targets `data["tool_response"]["llmContent"]`.
-    *   **Injection**: Modifies `data["tool_response"]["llmContent"]` directly with the distilled text.
+    *   **Injection**: Modifies `data["tool_response"]["llmContent"]` directly.
 *   **Cursor**:
     *   **Detection**: Checks if `data["result"]` exists and is a string.
     *   **Extraction**: Targets `data["result"]`.
     *   **Injection**: Prepends `[Sifted]` or `[Echo Bypassed]` to the modified `data["result"]`.
-*   **OpenCode (`Compacting`)**:
-    *   **Detection**: Checks if `hook_event_name` is `"Compacting"`.
-    *   **Extraction**: Targets `data["context"]` (the conversation history).
-    *   **Injection**: Creates a new key `data["summary"]` containing the structural snapshot and semantic compression, which is then parsed by the OpenCode native plugin wrapper (`.opencode/plugins/semantic-sift.ts`).
-*   **Generic & Unshielded Clients (e.g., Qwen CLI, OpenClaw)**:
-    *   **Fallback Logic**: If a client does not match the specific `hook_event_name` or payload shapes above, the content extraction safely fails (`raw_content = ""`).
-    *   **Pass-Through**: The interceptor acts as a transparent pass-through, writing the untouched original JSON directly back to `sys.stdout` to prevent breaking unsupported IDEs.
+*   **OpenCode & OpenClaw**:
+    *   **Detection**: Triggered via native TypeScript plugins (`tool.execute.after` or `api.on("tool:after")`).
+    *   **Extraction**: Receives a unified `AfterTool` JSON structure constructed by the plugin wrapper.
+    *   **Injection**: Reassigns the sifted content directly to the plugin's output context.
+*   **Security Gateways (Windsurf & Cline)**:
+    *   **Architecture**: Unlike reactive hooks, these are **proactive inhibitors**.
+    *   **Mechanism**: A `pre_mcp_tool_use` hook (Windsurf) or `PreToolUse` executable (Cline) intercepts native file readers (`read_file`, `view_file`) before they execute.
+    *   **Logic**: If the target file size > 1KB, the gateway terminates the process with an error message, physically forcing the agent to use `sift_read_file`.
 
 ### Subconscious Routing Intelligence
-When a payload is intercepted and the extracted content is larger than 500 characters, the hook applies an intelligent routing cascade to determine the optimal sifting strategy:
+When a payload is intercepted and the extracted content is larger than 500 characters, the hook applies an intelligent routing cascade:
 
 1.  **Exemptions for JSON Structured Data**:
-    Before any sifting occurs, the interceptor attempts to parse the raw content as JSON using `json.loads()`. If the content is valid structured data (`dict` or `list`), it logs a "Structured Data Exemption" and bypasses all semantic processing to prevent breaking programmatic syntax.
+    Before sifting, the interceptor attempts to parse the raw content as JSON. If the content is valid structured data (`dict` or `list`), it bypasses all semantic processing to prevent breaking programmatic syntax.
 2.  **Echo Detection Bypass**:
-    Consults `telemetry_core.check_echo()`. If the exact content was recently processed, it bypasses the BERT/Heuristic models to save compute, injecting only an audit header.
-3.  **Auto-Ranking (Search Tools)**:
-    If the `tool_name` implies a search (e.g., `search`, `grep`, `find`), and the payload contains a search query (`pattern`, `query`, or `substring_pattern` found in `tool_args`), it splits the content by file delimiters (`\n(?=File: |Path: |---)`) and routes to `sift_rank` (Ranking Engine) to return only the top 5 most relevant chunks.
-4.  **Auto-Semantic (Prose/Docs)**:
-    If the tool implies reading prose or documentation (e.g., `read`, `fetch`, `extraction`, `chat`), or if the content has Markdown extensions (`.md`, `# `, `---`), and the content exceeds 3000 characters, it routes to `sift_chat` (Semantic Engine) with a `0.6` compression rate.
-5.  **Auto-Heuristic (Default/Logs)**:
-    If neither Ranking nor Semantic routing applies, it defaults to the Heuristic Engine. If the regex sieve successfully reduces the character count, it is classified as `sift_logs`.
+    Consults `telemetry_core.check_echo()`. If the exact content was recently processed, it bypasses the BERT/Heuristic models to save compute, injecting only a 30s TTL audit header.
+3.  **Subagent Identification ("Sniffing")**:
+    The hook scans for identification markers (e.g., `$CLAUDE_AGENT_NAME`, `threadLabel`, or task-specific prefixes like `[Explore]`) to attribute the transformation to a specific specialized agent thread in the telemetry logs.
+4.  **Auto-Ranking (Search Tools)**:
+    If the `tool_name` implies a search (e.g., `search`, `grep`, `find`), it splits the content by file delimiters (`\n(?=File: |Path: |---)`) and routes to the Ranking Engine to return only the Top 5 results.
+5.  **Auto-Semantic (Prose/Docs)**:
+    If the tool implies reading prose or documentation (e.g., `read`, `fetch`, `extraction`), or if the content has Markdown extensions and exceeds 3000 characters, it routes to the Semantic Engine with a `0.6` compression rate.
+6.  **Auto-Heuristic (Default/Logs)**:
+    Default fallback. If the regex sieve reduces the character count, it is classified as `sift_logs`.
 
 ---
 
-## 2. Distillation Kernel (`sift_kernel.py`)
+## 2. Recursive Subagent Discovery (`server.py`)
+
+A critical component of the architecture is the **Recursive Discovery Engine**, which ensures that even isolated background threads are shielded by Semantic-Sift.
+
+### Discovery Logic
+During the `sift_onboard` process, the system performs a recursive crawl of the project workspace (up to 3 levels deep):
+*   **Known Folders**: Specifically targets `.codex/agents/`, `.cursor/agents/`, `.junie/agents/`, and `.agents/`.
+*   **Scoped Mandates**: Identifies any `AGENTS.md` files located in subdirectories.
+*   **Multi-Format Support**:
+    *   **Markdown/Rules**: Injects the mandate into standard `.md` or `.cursorrules` files.
+    *   **TOML**: Utilizes a specialized `update_toml_config` injector for Codex agents, safely merging the mandate into the `instructions` key without breaking TOML syntax.
+
+---
+
+## 3. Distillation Kernel (`sift_kernel.py`)
 
 The Distillation Kernel contains the mathematical and logical engines that physically reduce the character and token footprint of text.
 
@@ -70,21 +90,18 @@ Performs semantic re-ranking of chunked documents against a specific user query.
 *   **Logic**: Scores pairs of `[query, document_chunk]` and sorts them, returning only the top-N results to ensure the context window is filled with the highest-signal data.
 
 ### Hybrid Pipelines
-Combines engines for specialized use cases:
 *   **Document Sifting (`perform_doc_sift`)**: First applies the Heuristic Engine to clean structural noise, then applies the Semantic Engine at a `0.4` rate.
-*   **Extraction Cleaning (`perform_extraction_cleaning`)**: Uses RegEx to strip OCR artifacts (e.g., "Page X of Y", copyright notices, empty bullet points) before applying the Semantic Engine at a `0.7` rate to protect Markdown structures like tables.
-*   **Compaction Summaries (`perform_compaction_summary`)**: Used specifically for the `Compacting` hook event. It uses RegEx to explicitly find and extract critical markers (`Decision:`, `Status:`, `File:`, `Task:`) into a "Structural Snapshot", and then aggressively compresses the rest of the text with the Semantic Engine at a `0.2` rate.
+*   **Extraction Cleaning (`perform_extraction_cleaning`)**: Uses RegEx to strip OCR artifacts (e.g., "Page X of Y", copyright notices) before applying the Semantic Engine at a `0.7` rate to protect Markdown structures like tables.
+*   **Compaction Summaries (`perform_compaction_summary`)**: Used specifically for the `Compacting` hook event. It uses RegEx to extract critical markers (`Decision:`, `Status:`, `File:`, `Task:`) into a "Structural Snapshot", and then aggressively compresses the rest of the text with the Semantic Engine at a `0.2` rate.
 
 ---
 
-## 3. Caching & Device Management
-
-To ensure high performance and prevent redundant compute, the system implements local caching and hardware-aware execution.
+## 4. Caching & Device Management
 
 ### Disk-Persistent Cache (`.sift_cache`)
-*   **Logic**: The Semantic Engine (`perform_semantic_sift`) wraps its execution in a caching layer.
+*   **Logic**: The Semantic Engine wraps its execution in a caching layer.
 *   **Key Generation**: Keys are generated using an SHA-256 hash of the `tool_name`, the raw `text`, and the configuration `kwargs` (like the compression `rate`).
-*   **Storage**: Cached results are written to `.sift_cache/<hash>.txt` and retrieved instantly on subsequent identical calls.
+*   **Retrieval**: Results are retrieved instantly (~1ms) for repeat tool calls.
 
 ### Lazy CPU/CUDA Device Detection
 *   **Logic**: The `get_device()` function delays the importation of `torch` and the checking of `torch.cuda.is_available()` until the exact moment an ML model is invoked.

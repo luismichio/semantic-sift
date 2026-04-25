@@ -20,7 +20,7 @@ The system injects precise metadata into spans depending on the execution contex
     *   `sift_read_file:<type>` and `sift_analyze_file` spans inject `file.path`.
     *   `sift_read_file` spans calculate and inject `sift.reduction_pct` (`(1 - len(result)/len(content)) * 100`).
 *   **Hook Interceptor Spans (`sift_hook.py`)**:
-    *   `subconscious_sift` spans inject `tool.name`, `platform`, and `is_echo` to track routing and bypass events accurately.
+    *   `subconscious_sift` spans inject `tool.name`, `platform`, `agent.label` (e.g., `"Main"`, `"Explore"`, `"researcher"`), and `is_echo` to track routing and bypass events accurately.
 
 ---
 

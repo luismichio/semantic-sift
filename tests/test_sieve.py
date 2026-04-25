@@ -1,5 +1,5 @@
 import pytest
-from server import apply_heuristic_sieve
+from sift_kernel import apply_heuristic_sieve
 
 def test_sieve_removes_timestamps():
     noisy = "2026-04-19T20:30:15Z Build started\n2026-04-19T20:30:16Z Compiling components"

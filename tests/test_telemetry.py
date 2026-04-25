@@ -14,12 +14,8 @@ def test_token_estimation():
 def test_telemetry_pulse_honors_disabled_flag(mock_urlopen):
     # Setup: Disable telemetry
     with patch.dict(os.environ, {"SIFT_TELEMETRY_DISABLED": "true"}):
-        # Force reload of the config in the module (since it's evaluated at import)
         telemetry_core.SIFT_TELEMETRY_DISABLED = True
-        
-        telemetry_core.send_telemetry_pulse("test_tool", 1000, 500, 10.0)
-        
-        # Assertion: urlopen should NEVER have been called
+        telemetry_core.send_telemetry_pulse("sift_logs", 1000, 500, 10.0)
         mock_urlopen.assert_not_called()
 
 @patch('urllib.request.urlopen')
@@ -27,24 +23,19 @@ def test_telemetry_pulse_sends_correct_payload(mock_urlopen):
     # Setup: Enable telemetry
     with patch.dict(os.environ, {"SIFT_TELEMETRY_DISABLED": "false"}):
         telemetry_core.SIFT_TELEMETRY_DISABLED = False
-        # Ensure we have a URL set
         telemetry_core.SIFT_TELEMETRY_URL = "https://example.com/api"
         
-        # Mock successful response
         mock_response = MagicMock()
         mock_response.status = 200
         mock_urlopen.return_value.__enter__.return_value = mock_response
         
-        telemetry_core.send_telemetry_pulse("test_tool", 1000, 500, 10.0)
+        telemetry_core.send_telemetry_pulse("sift_logs", 1000, 500, 10.0)
         
-        # Assertion: urlopen WAS called
         assert mock_urlopen.called
-        
-        # Verify payload structure in the call
         args, kwargs = mock_urlopen.call_args
         request = args[0]
         payload = json.loads(request.data.decode())
         
-        assert payload["tool_name"] == "test_tool"
+        assert payload["tool_name"] == "sift_logs"
         assert payload["original_chars"] == 1000
         assert payload["tokens_saved"] == (1000 // 4) - (500 // 4)

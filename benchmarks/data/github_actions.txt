@@ -1,15 +1,14 @@
-2024-05-20T10:15:01.1234567Z ##[group]Run actions/checkout@v4
-2024-05-20T10:15:01.1235678Z Syncing repository: user/repo
-2024-05-20T10:15:02.4567890Z ##[endgroup]
-2024-05-20T10:15:03.0001234Z ##[section]Starting: Set up Python
-2024-05-20T10:15:03.1234567Z Version 3.11.0 found in cache.
-2024-05-20T10:15:04.5556667Z ##[section]Finishing: Set up Python
-2024-05-20T10:16:01.000Z ##[debug]Evaluating condition for step: 'Run tests'
-2024-05-20T10:16:01.005Z ##[debug]Evaluating: success()
-2024-05-20T10:16:01.005Z ##[debug]Result: true
-2024-05-20T10:16:02.123Z ##[debug]Starting process: 'pytest'
-2024-05-20T10:16:03.456Z ============================= test session starts ==============================
-2024-05-20T10:16:03.457Z platform linux -- Python 3.11.0, pytest-7.4.0, pluggy-1.2.0
-2024-05-20T10:16:04.000Z rootdir: /home/runner/work/repo/repo
-2024-05-20T10:16:05.123Z collected 15 items
-2024-05-20T10:16:06.789Z tests/test_api.py ...........F...                        [100%]
+2024-06-17T16:29:41.4911629Z ##[group]Run dotnet test
+2024-06-17T16:29:41.4911713Z dotnet test --configuration Release --no-build
+2024-06-17T16:29:42.1234567Z Test run for /home/runner/work/project/Services/Tests/bin/Release/net8.0/IntegrationTests.dll (.NETCoreApp,Version=v8.0)
+2024-06-17T16:30:52.8901234Z [xUnit.net 00:01:10.47] IntegrationTests.WebTests.GetAccountsRootReturnsOkStatusCode [FAIL]
+2024-06-17T16:30:52.8912345Z   Failed IntegrationTests.WebTests.GetAccountsRootReturnsOkStatusCode [1 m 10 s]
+2024-06-17T16:30:52.8923456Z   Error Message:
+2024-06-17T16:30:52.8934567Z    System.TimeoutException : The operation has timed out.
+2024-06-17T16:30:52.8945678Z   Stack Trace:
+2024-06-17T16:30:52.8956789Z      at IntegrationTests.WebTests.GetAccountsRootReturnsOkStatusCode() in /home/runner/work/project/Services/Tests/IntegrationTests/WebTests.cs:line 30
+2024-06-17T16:30:52.8967890Z      at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+2024-06-17T16:30:52.8978901Z   --- End of stack trace from previous location ---
+2024-06-17T16:30:53.1245678Z Failed!  - Failed: 1, Passed: 24, Skipped: 0, Total: 25, Duration: 1 m 12 s
+2024-06-17T16:30:53.1256789Z ##[error]Process completed with exit code 1.
+2024-06-17T16:30:53.1267890Z ##[endgroup]

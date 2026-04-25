@@ -1,19 +1,23 @@
-Vercel CLI 32.0.0 > Fetched deployment "my-app-abc123xyz.vercel.app" [250ms]
-[14:04:29.077] Running build in San Francisco, USA (West) – sfo1
-[14:04:29.131] Cloning github.com/user/my-app (Branch: main, Commit: ba81cb8)
-[14:04:29.997] Cloning completed: 866.116ms
-[14:04:30.802] Running "vercel build"
-[14:04:31.238] Vercel CLI 32.0.0
-[14:04:31.484] Installing dependencies...
-[14:04:35.120] npm WARN deprecated source-map-url@0.4.1: See https://github.com/lydell/source-map-url#deprecated
-[14:04:40.558] Detected Next.js version: 14.0.0
-[14:04:40.558] Running "npm run build"
-[14:04:41.100] > my-app@0.1.0 build
-[14:04:41.100] > next build
-[14:04:42.200]   ▲ Next.js 14.0.0
-[14:04:42.200]   - Creating an optimized production build ...
-[14:04:45.300]   - Compiled successfully
-[14:04:45.300]   - Collecting page data ...
-[14:04:46.500]   - Generating static pages (0/5) ...
-[14:04:48.921] Build completed. Populating build cache...
-[14:04:50.180] Build cache uploaded: 1.259s
+[14:22:05.123] Running build in "production"
+[14:22:05.456] Detected Next.js version: 14.1.0
+[14:22:05.789] Running "npm run build"
+[14:22:06.111] > my-app@0.1.0 build
+[14:22:06.111] > next build
+[14:22:06.450]  ▲ Next.js 14.1.0
+[14:22:06.450] 
+[14:22:07.890] Creating an optimized production build ...
+[14:22:15.234] Failed to compile.
+[14:22:15.234] 
+[14:22:15.235] ./src/components/UserCard.tsx:14:22
+[14:22:15.235] Type error: Property 'email' does not exist on type 'UserProps'.
+[14:22:15.235] 
+[14:22:15.235]   12 |   return (
+[14:22:15.235]   13 |     <div>
+[14:22:15.235] > 14 |       <p>{user.email}</p>
+[14:22:15.235]      |                ^
+[14:22:15.235]   15 |     </div>
+[14:22:15.235]   16 |   );
+[14:22:15.235]   17 | }
+[14:22:15.235] 
+[14:22:15.300] Error: Command "npm run build" exited with 1
+[14:22:15.500] Deployment failed with error: BUILD_UTILS_BUILD_FAILED_COMMAND_EXITED_1

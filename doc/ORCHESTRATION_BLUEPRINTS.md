@@ -62,3 +62,35 @@ When utilizing OCR tools or PDF parsers (like Docling), the raw output is often 
     *   The tool first runs RegEx to surgically remove repetitive OCR artifacts (`Page X of Y`).
     *   It then applies a gentle Semantic Sift (`rate=0.7`) to compress the surrounding text while explicitly protecting Markdown structures like `| Tables |` and `# Headers`.
 *   **Result**: A pristine, token-efficient Markdown document ready for grounding or indexing.
+
+---
+
+## 3. Multi-Agent Orchestration & Subagent Shielding
+
+Modern agentic workflows often involve spawning specialized subagents (Workers) from a primary Orchestrator. These subagents frequently start with an isolated context window ("blank slate"), making them prone to flooding their context while trying to "understand" the codebase.
+
+### Blueprint D: The "Shielded Worker" (Recursive Onboarding)
+To ensure every agent thread follows the context sanitation protocol:
+
+1.  **Orchestrator Setup**: The human developer runs `sift_onboard()` in the project root.
+2.  **Recursive Shielding**: Semantic-Sift automatically discovers specialized agent folders (`.cursor/agents/`, `.codex/agents/`, etc.) and injects the **Sift Mandate** directly into their system instructions.
+3.  **Inheritance**:
+    *   **Hooks**: In Smart Hook environments (Gemini, Claude, OpenCode), subagents automatically inherit the `PostToolUse` interceptors, ensuring "Subconscious Sifting" occurs even if the subagent ignores its prompt instructions.
+    *   **Prompt Mandates**: By explicitly shielding the subagent's configuration file, the worker agent is commanded to use `sift_read_file` for its own investigative steps, preventing context crashes in background threads.
+
+---
+
+## 4. The MCP Synergy Matrix (Operational Recipes)
+
+AI agents must manually apply specific sifting tools based on the *source* of the data to avoid context corruption (e.g., BERT destroying JSON syntax).
+
+| Data Source | MCP Tool Example | Recommended Recipe |
+| :--- | :--- | :--- |
+| **Web / HTML** | Puppeteer, Fetch | Use `sift_doc` to incinerate JS/CSS and keep clean text. |
+| **Cloud Logs** | AWS, Vercel, GHA | Use `sift_logs` to strip timestamps, ETags, and progress bars. |
+| **Databases** | Postgres, SQLite | **DO NOT** use semantic sifting. Use SQL `LIMIT` or `sift_analyze` to verify density. |
+| **Discovery** | Serena, Investigator | Use `sift_chat(rate=0.7)` on retrieved code bodies > 100 lines. |
+| **Broad Search** | GitHub, Ripgrep | Collect all chunks and pass to `sift_rank` to return Top-3 results. |
+| **Long Chat** | Conversation Hist. | Use `sift_chat(rate=0.3)` Aggressive to compact analytical investigations. |
+
+*Note: These synergies are automatically injected into agent system prompts during the `sift_onboard` process.*

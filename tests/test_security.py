@@ -1,5 +1,5 @@
 import pytest
-from server import apply_heuristic_sieve
+from sift_kernel import apply_heuristic_sieve
 
 def test_sieve_does_not_mangle_api_keys():
     # Heuristics should remove the noise around a key, but leave the key itself untouched.

@@ -28,6 +28,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Payload Schema**: **Blind Hook**. Passes JSON via `stdin`, but typically omits the `tool_name` (e.g., `{"result": "<output>"}`).
 *   **Rule Infusion**: Relies heavily on `.cursorrules` or `.clinerules`.
 *   **Semantic-Sift Strategy**: Must use **Content-Signature Bypass** (`[Semantic-Sift: Native Execution]`) because `tool_name` is missing. Must audit `beforeMCPExecution` during onboarding.
+*   **Subagents & Multi-Agent**: Uses an Orchestrator-Worker model. Subagents (Workers) are defined via Markdown files in `.cursor/agents/`. They have isolated contexts but inherit global **Lifecycle Hooks** from `.cursor/hooks.json`, ensuring subconscious sifting applies to subagent edits.
 
 ### OpenCode
 *   **Official Docs**: [OpenCode Documentation](https://opencode.ai/docs/mcp-servers/)
@@ -36,6 +37,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Payload Schema**: **Smart Hook**. Provides rich context including `hook_event_name`, `tool_name`, and `tool_args`.
 *   **Config Schema**: **Strict Local Array**. Unlike Gemini, OpenCode requires `"type": "local"` and expects the executable and arguments to be combined into a single `"command": []` array.
 *   **Semantic-Sift Strategy**: Highly reliable. `sift_onboard` dynamically generates a TS plugin that easily bypasses loops via `if (input.tool.startsWith('sift_')) return;`.
+*   **Subagents & Multi-Agent**: Plugin-driven architecture. A spawned subagent triggers the same `tool.execute.after` hooks as the parent, providing consistent shielding across all agent threads.
 
 ### Gemini CLI
 *   **Official Docs**: [Gemini CLI Documentation](https://geminicli.com)
@@ -43,6 +45,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Built directly into the CLI's agent loop.
 *   **Payload Schema**: **Smart Hook**. Passes `tool_name`, `tool_args`, and `tool_response.llmContent`.
 *   **Semantic-Sift Strategy**: Reliable execution. Supports advanced "Compaction" lifecycle events where `semantic-sift` can inject highly-compressed session summaries just before context window limits are reached.
+*   **Subagents & Multi-Agent**: Uses YAML-frontmatter Markdown agents in `.gemini/agents/`. Subagents **inherit the entire parent toolset** (including all MCP servers) by default. They can also define **Inline MCP Servers** private to the subagent thread.
 
 ### Google Antigravity
 *   **Official Docs**: [Antigravity IDE](https://antigravity.google)
@@ -50,11 +53,13 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Agents execute tools directly via the integrated "Manager Surface".
 *   **Payload Schema**: N/A.
 *   **Semantic-Sift Strategy**: Because there is no intercepting hook, if an agent uses `view_file`, it will inevitably flood the context window (as seen in the original bug report). `sift_onboard` MUST inject strict, mandatory Auto-Sift directives into `AGENTS.md` to force the agent to use `sift_read_file` instead.
+*   **Subagents & Multi-Agent**: Antigravity is a native multi-agent environment. Subagents inherit the full parent toolset by default. Directives injected into `AGENTS.md` are critical as they are the primary mechanism to enforce context sanitation across asynchronous agent threads.
 
 ### Kilo Code
 *   **Official Docs**: [Kilo Code Documentation](https://kilo.ai)
 *   **Hook Mechanism**: **Unshielded**. Kilo Code lacks native deterministic shell hooks for MCP out-of-the-box.
 *   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` generates a strict `.kilocode/rules/context.md` file containing the explicit MCP Synergy Matrix and Path-Native mandates to shield the context window manually.
+*   **Subagents & Multi-Agent**: Limited native subagent spawning. Rely on shared rule files (`.kilocode/rules/`) to ensure any parallel tasks follow the context sanitation protocol.
 
 ### VS Code Copilot
 *   **Official Docs**: [VS Code Copilot Documentation](https://code.visualstudio.com/docs/copilot)
@@ -62,6 +67,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: `PostToolUse` command execution.
 *   **Payload Schema**: **Blind Hook**. Passes `{"tool_response": {"llmContent": "..."}}`.
 *   **Semantic-Sift Strategy**: Same vulnerability as Cursor. Requires the **Content-Signature Bypass** to prevent double-sifting.
+*   **Subagents & Multi-Agent**: Spawns internal background workers for indexing and symbol retrieval. While these are not user-defined subagents, the `PostToolUse` hook ensures that any tool output they generate is intercepted and distilled before reaching the primary model's context.
 
 ### Claude Code (Anthropic)
 *   **Official Docs**: [Claude Code Documentation](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview)
@@ -69,6 +75,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Supports explicit `PreToolUse` (blocking) and `PostToolUse` (reactive/formatting) hooks.
 *   **Payload Schema**: **Smart Hook**. Passes explicit context like `$CLAUDE_TOOL_NAME` via environment variables and accepts modified output via `stdout`.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array matching `"mcp__.*__.*"` to invoke the `sift_hook.py` interceptor.
+*   **Subagents & Multi-Agent**: Utilizes sub-agents for complex task decomposition. Sub-agents inherit the session's configuration layers, meaning the global `PostToolUse` hooks are automatically active for all child processes.
 
 ### OpenClaw
 *   **Official Docs**: [OpenClaw Hooks Documentation](https://openclaw.ai)
@@ -83,6 +90,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Identical to Claude Code. Supports blocking tools and modifying outputs via standard streams.
 *   **Payload Schema**: **Smart Hook**. Passes context like `$CODEX_TOOL_NAME` via environment variables.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array matching `"mcp__.*__.*"` to invoke the `sift_hook.py` interceptor.
+*   **Subagents & Multi-Agent**: Official support for subagents via `.codex/agents/*.toml`. Subagents **inherit MCP server configurations and hooks** from the parent session by default, ensuring subconscious sifting is active across all specialized agent threads.
 
 ### ForgeCode
 *   **Official Docs**: N/A (Internal / Proprietary orchestration)
@@ -90,6 +98,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Does not heavily rely on deterministic shell scripts for hooks. It features a system-level "Context Compaction" hook that triggers when token limits are reached.
 *   **Payload Schema**: N/A for standard hooks.
 *   **Semantic-Sift Strategy**: `sift_onboard` must aggressively target `AGENTS.md` to establish the Auto-Sift Mandate. The system-level Compaction feature makes the `sift_chat` tool highly relevant for out-of-band summarization before ForgeCode hits its limits.
+*   **Subagents & Multi-Agent**: Proprietary multi-agent orchestration. Relies on the global `AGENTS.md` directives to ensure that any spawned sub-processes follow the context sanitation protocol.
 
 ### Qwen CLI (Qwen Code)
 *   **Official Docs**: N/A (Relies on Claude Code architectural compatibility)
@@ -97,12 +106,14 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Supports blocking tools via exit codes and modifying outputs via standard out.
 *   **Payload Schema**: **Smart Hook**. Passes explicit context like `$QWEN_TOOL_NAME` via environment variables and standard in.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array identically to Claude Code to invoke the `sift_hook.py` interceptor.
+*   **Subagents & Multi-Agent**: Multi-agent decomposition. Like Claude Code, sub-agents inherit the global `PostToolUse` hooks, providing consistent context shielding.
 
 ### Windsurf (Codeium / Cascade)
 *   **Official Docs**: [Windsurf Hooks Documentation](https://windsurf.com)
 *   **Hook Mechanism**: Cascade Hooks configured via `.windsurf/hooks.json`.
 *   **Execution Lifecycle**: Triggered via `pre_mcp_tool_use`. Uses shell exit codes (e.g., `exit 2`) to block execution.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` injects a Security Gateway hook that automatically blocks standard MCP file readers (`read_file`, `view_file`) if the file size exceeds 1KB, advising the agent via `stderr` to use `sift_read_file` instead.
+*   **Subagents & Multi-Agent**: Utilizes a sophisticated Orchestrator-Worker architecture (e.g. Planning vs. Coder agents). Hooks in `hooks.json` apply to the entire session, ensuring the security gateway blocks native reading for all background sub-agents.
 
 ### Cline
 *   **Official Docs**: [Cline Customization & Hooks](https://docs.cline.bot/customization/hooks)
@@ -110,21 +121,27 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Execution Lifecycle**: Uses standard streams (stdin/stdout) exchanging strict JSON (`{"cancel": boolean}`). It does not allow mutating the actual tool output strings via `PostToolUse`.
 *   **Payload Schema**: **Smart Hook**. Passes explicit context via standard streams.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` generates a `PreToolUse` security gateway hook that blocks native file readers (`read_file`, `view_file`) if the file size exceeds 1KB, forcing the agent to use `sift_read_file` instead.
+*   **Subagents & Multi-Agent**: Supports "Parallel Tasks" and sub-agents. The executable hooks in `.clinerules/hooks/` are session-wide and trigger for all tool calls, providing unified enforcement of the sifting protocol.
 
 ### Zed & Continue.dev
 *   **Official Docs**: [Zed AI Documentation](https://zed.dev/docs) / [Continue.dev Documentation](https://docs.continue.dev)
 *   **Hook Mechanism**: **Unshielded**. These platforms primarily use MCP for context fetching and direct tool invocation. They currently lack robust, deterministic post-tool shell-hook architectures.
 *   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` MUST inject extremely aggressive, mandatory rules into `AGENTS.md` to force the LLM to use `sift_read_file` instead of standard file readers.
+*   **Subagents & Multi-Agent**:
+    *   **Zed**: Uses the Agent Client Protocol (ACP) for multi-agent orchestration. MCP servers (and thus Sift tools) are shared across all active agent threads.
+    *   **Continue**: Features a `subagent` tool for task delegation. Each subagent has an isolated context window but shares access to the parent's MCP registry.
 
 ### JetBrains (IntelliJ IDEA, PyCharm, WebStorm & AI Assistant)
 *   **Official Docs**: [JetBrains MCP Documentation](https://www.jetbrains.com/help/idea/mcp-server.html)
 *   **Hook Mechanism**: **Unshielded**. The JetBrains AI Assistant (Client) connects via internal Settings UI. Connecting to JetBrains as a Server relies on external clients (like Claude Code) implementing hooks.
 *   **Semantic-Sift Strategy**: High risk of terminal noise. Because there are no internal `sift_hook.py` interceptors available, `sift_onboard` must configure aggressive prompt rules (Path-Native Mandate) in `AGENTS.md` to force the AI Assistant to use `sift_read_file`.
+*   **Subagents & Multi-Agent**: Support for specialized sub-agents defined in `.junie/agents/` or `.agents/`. They inherit the `AGENTS.md` mandates, ensuring consistent context sanitation across agent threads.
 
 ### JetBrains Junie (CLI Agent)
 *   **Official Docs**: [Junie Documentation](https://www.jetbrains.com/junie/)
 *   **Hook Mechanism**: **Unshielded**. The Junie autonomous CLI agent currently lacks a native deterministic shell hook like Claude Code's `PostToolUse`.
 *   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` relies on injecting the explicit MCP Synergy Matrix and Path-Native mandates directly into workspace files like `AGENTS.md` to manually shield the context window.
+*   **Subagents & Multi-Agent**: Inherits mandates from the global/workspace `AGENTS.md`, providing a unified reasoning base for any spawned tasks.
 
 ---
 

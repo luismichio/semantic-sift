@@ -92,16 +92,18 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
 ## 4. System Operations
 
 ### `sift_onboard`
-**Intent**: Automatically configures the current project workspace for optimal context sifting by injecting instructions and security hooks into native IDE config files.
+**Intent**: Automatically configures the current project workspace for optimal context sifting by injecting instructions, security hooks, and shielding specialized subagent threads.
 *   **Arguments**:
     *   `target_dir` (str, default: `None`): Optional absolute path to the project root. Defaults to the current working directory.
 *   **Logic**:
-    *   Calls `server.update_instruction_files`.
-    *   Audits instruction files (`AGENTS.md`, `GEMINI.md`, `.clinerules`, etc.) for contradictory rules (e.g., "always use view_file").
-    *   Injects a mandatory `<hook_context>` block explicitly forbidding native file reading tools for files > 1KB.
-    *   Merges execution commands for `sift_hook.py` into `.cursor/hooks.json` and `.github/hooks/semantic-sift.json`.
-    *   Generates the TypeScript wrapper in `.opencode/plugins/semantic-sift.ts`.
-*   **Output**: A Markdown "Onboarding Report" detailing the environment (Python version, CUDA availability, Device), security status, and a bulleted list of all modified files and injected hooks.
+    *   **Recursive Subagent Discovery**: Scans for specialized agent folders (`.codex/agents/`, `.cursor/agents/`, `.junie/agents/`) and scoped `AGENTS.md` files in subdirectories.
+    *   **Multi-Format Shielding**: Injects the Sift Mandate into Markdown, rule files, and **TOML** configurations (for Codex CLI agents).
+    *   **Rule Auditing**: Scans files for contradictory instructions (e.g., "always use view_file") and overrides them.
+    *   **Automated Hook Injection**: 
+        *   Merges `sift_hook.py` into `.cursor/hooks.json`, `.github/hooks/semantic-sift.json`, `~/.claude/settings.json`, `~/.qwen/settings.json`, and `~/.codex/settings.json`.
+        *   Injects **Security Gateways** into `.windsurf/hooks.json` and `.clinerules/hooks/PreToolUse.ps1` to block native file readers > 1KB.
+        *   Generates native TypeScript plugins for OpenCode and OpenClaw.
+*   **Output**: A Markdown "Onboarding Report" detailing the environment (Python, CUDA, Device), security status, a list of **Shielded Subagents**, and a bulleted manifest of all modified files and injected hooks.
 
 ### `get_sift_stats`
 **Intent**: Retrieves performance metrics and token savings data from the local telemetry registry (`.sift_telemetry.json`).
