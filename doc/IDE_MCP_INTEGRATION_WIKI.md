@@ -20,6 +20,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 ## 2. Integration Matrix & Deep Dives
 
 ### Cursor & Roo Code
+*   **Official Docs**: [Cursor Docs](https://docs.cursor.com) / [Roo Code Docs](https://docs.roocode.com)
 *   **Hook Mechanism**: Uses a `hooks.json` file (typically `.cursor/hooks.json`).
 *   **Execution Lifecycle**: 
     *   `preToolUse` / `beforeMCPExecution`: Fires before tool use. Can block, allow, or ask for user confirmation. (Major risk for custom tools getting blocked by user security gateways).
@@ -29,6 +30,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Semantic-Sift Strategy**: Must use **Content-Signature Bypass** (`[Semantic-Sift: Native Execution]`) because `tool_name` is missing. Must audit `beforeMCPExecution` during onboarding.
 
 ### OpenCode
+*   **Official Docs**: [OpenCode Documentation](https://opencode.ai/docs/mcp-servers/)
 *   **Hook Mechanism**: Native TypeScript Plugins (`.opencode/plugins/`).
 *   **Execution Lifecycle**: Hooks into `tool.execute.after`.
 *   **Payload Schema**: **Smart Hook**. Provides rich context including `hook_event_name`, `tool_name`, and `tool_args`.
@@ -36,74 +38,81 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Semantic-Sift Strategy**: Highly reliable. `sift_onboard` dynamically generates a TS plugin that easily bypasses loops via `if (input.tool.startsWith('sift_')) return;`.
 
 ### Gemini CLI
+*   **Official Docs**: [Gemini CLI Documentation](https://geminicli.com)
 *   **Hook Mechanism**: Native platform event hooks (`AfterTool`, `PreCompress`).
 *   **Execution Lifecycle**: Built directly into the CLI's agent loop.
 *   **Payload Schema**: **Smart Hook**. Passes `tool_name`, `tool_args`, and `tool_response.llmContent`.
 *   **Semantic-Sift Strategy**: Reliable execution. Supports advanced "Compaction" lifecycle events where `semantic-sift` can inject highly-compressed session summaries just before context window limits are reached.
 
 ### Google Antigravity
+*   **Official Docs**: [Antigravity IDE](https://antigravity.google)
 *   **Hook Mechanism**: **Unshielded**. It is a heavily modified IDE focused on multi-agent asynchronous orchestration. It relies purely on the MCP standard without specific post-tool shell hooks.
 *   **Execution Lifecycle**: Agents execute tools directly via the integrated "Manager Surface".
 *   **Payload Schema**: N/A.
 *   **Semantic-Sift Strategy**: Because there is no intercepting hook, if an agent uses `view_file`, it will inevitably flood the context window (as seen in the original bug report). `sift_onboard` MUST inject strict, mandatory Auto-Sift directives into `AGENTS.md` to force the agent to use `sift_read_file` instead.
 
 ### Kilo Code
-*   **Hook Mechanism**: **Unshielded**. Kilo Code is a popular open-source, BYOK fork of Cline available on VS Code/JetBrains/CLI. While it connects seamlessly to MCP, it does not currently employ the same formal `PostToolUse` deterministic shell scripts as Claude Code.
-*   **Payload Schema**: N/A.
-*   **Semantic-Sift Strategy**: High risk of context flooding during "Vibe Coding" sessions. Similar to Antigravity, defense relies entirely on `sift_onboard` injecting rules to use path-native tools.
+*   **Official Docs**: [Kilo Code Documentation](https://kilo.ai)
+*   **Hook Mechanism**: **Unshielded**. Kilo Code lacks native deterministic shell hooks for MCP out-of-the-box.
+*   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` generates a strict `.kilocode/rules/context.md` file containing the explicit MCP Synergy Matrix and Path-Native mandates to shield the context window manually.
 
 ### VS Code Copilot
+*   **Official Docs**: [VS Code Copilot Documentation](https://code.visualstudio.com/docs/copilot)
 *   **Hook Mechanism**: Uses `.github/hooks/semantic-sift.json`.
 *   **Execution Lifecycle**: `PostToolUse` command execution.
 *   **Payload Schema**: **Blind Hook**. Passes `{"tool_response": {"llmContent": "..."}}`.
 *   **Semantic-Sift Strategy**: Same vulnerability as Cursor. Requires the **Content-Signature Bypass** to prevent double-sifting.
 
 ### Claude Code (Anthropic)
+*   **Official Docs**: [Claude Code Documentation](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview)
 *   **Hook Mechanism**: Uses a deterministic `PostToolUse` shell script configured via `~/.claude/settings.json` or `.claude/settings.json`.
 *   **Execution Lifecycle**: Supports explicit `PreToolUse` (blocking) and `PostToolUse` (reactive/formatting) hooks.
 *   **Payload Schema**: **Smart Hook**. Passes explicit context like `$CLAUDE_TOOL_NAME` via environment variables and accepts modified output via `stdout`.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array matching `"mcp__.*__.*"` to invoke the `sift_hook.py` interceptor.
 
 ### OpenClaw
+*   **Official Docs**: [OpenClaw Hooks Documentation](https://openclaw.ai)
 *   **Hook Mechanism**: Native plugin system via `api.on("tool:after")`.
 *   **Execution Lifecycle**: Extensive coverage including `tool:after` for payload modification.
 *   **Payload Schema**: **Smart Hook**. Provides rich context (e.g. `ctx.toolName`, `ctx.result`).
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` generates a native `.openclaw/plugins/semantic-sift.ts` plugin wrapper that intercepts the `tool:after` event and pipes it through the Python interceptor.
 
 ### ForgeCode
+*   **Official Docs**: N/A (Internal / Proprietary orchestration)
 *   **Hook Mechanism**: Primarily managed via `AGENTS.md` (or `SKILL.md`) prompt directives, or internal custom MCP server logic.
 *   **Execution Lifecycle**: Does not heavily rely on deterministic shell scripts for hooks. It features a system-level "Context Compaction" hook that triggers when token limits are reached.
 *   **Payload Schema**: N/A for standard hooks.
 *   **Semantic-Sift Strategy**: `sift_onboard` must aggressively target `AGENTS.md` to establish the Auto-Sift Mandate. The system-level Compaction feature makes the `sift_chat` tool highly relevant for out-of-band summarization before ForgeCode hits its limits.
 
 ### Qwen CLI (Qwen Code)
+*   **Official Docs**: N/A (Relies on Claude Code architectural compatibility)
 *   **Hook Mechanism**: Uses a deterministic `PostToolUse` shell script configured via `~/.qwen/settings.json` or `.qwen/settings.json`.
 *   **Execution Lifecycle**: Supports blocking tools via exit codes and modifying outputs via standard out.
 *   **Payload Schema**: **Smart Hook**. Passes explicit context like `$QWEN_TOOL_NAME` via environment variables and standard in.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array identically to Claude Code to invoke the `sift_hook.py` interceptor.
 
 ### Windsurf (Codeium / Cascade)
+*   **Official Docs**: [Windsurf Hooks Documentation](https://windsurf.com)
 *   **Hook Mechanism**: Cascade Hooks configured via `.windsurf/hooks.json`.
 *   **Execution Lifecycle**: Triggered via `pre_mcp_tool_use`. Uses shell exit codes (e.g., `exit 2`) to block execution.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` injects a Security Gateway hook that automatically blocks standard MCP file readers (`read_file`, `view_file`) if the file size exceeds 1KB, advising the agent via `stderr` to use `sift_read_file` instead.
 
 ### Cline
+*   **Official Docs**: [Cline Customization & Hooks](https://docs.cline.bot/customization/hooks)
 *   **Hook Mechanism**: Executable files in `.clinerules/hooks/` (e.g., `PreToolUse.ps1` or `PreToolUse`).
 *   **Execution Lifecycle**: Uses standard streams (stdin/stdout) exchanging strict JSON (`{"cancel": boolean}`). It does not allow mutating the actual tool output strings via `PostToolUse`.
 *   **Payload Schema**: **Smart Hook**. Passes explicit context via standard streams.
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` generates a `PreToolUse` security gateway hook that blocks native file readers (`read_file`, `view_file`) if the file size exceeds 1KB, forcing the agent to use `sift_read_file` instead.
 
 ### Zed & Continue.dev
+*   **Official Docs**: [Zed AI Documentation](https://zed.dev/docs) / [Continue.dev Documentation](https://docs.continue.dev)
 *   **Hook Mechanism**: **Unshielded**. These platforms primarily use MCP for context fetching and direct tool invocation. They currently lack robust, deterministic post-tool shell-hook architectures.
 *   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` MUST inject extremely aggressive, mandatory rules into `AGENTS.md` to force the LLM to use `sift_read_file` instead of standard file readers.
 
 ### JetBrains (IntelliJ IDEA, PyCharm, WebStorm)
+*   **Official Docs**: [JetBrains MCP Documentation](https://www.jetbrains.com/help/idea/mcp-server.html)
 *   **Hook Mechanism**: Built-in MCP server (2025.2+) with plugin extension points. Connecting clients (Claude Code, Qoder) implement the actual hooks.
 *   **Semantic-Sift Strategy**: High risk of terminal noise. If the client lacks a hook, `sift_onboard` must configure aggressive prompt rules.
-
-### Kilo Code
-*   **Hook Mechanism**: **Unshielded**. Kilo Code lacks native deterministic shell hooks for MCP out-of-the-box.
-*   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` generates a strict `.kilocode/rules/context.md` file containing the explicit MCP Synergy Matrix and Path-Native mandates to shield the context window manually.
 
 ---
 
@@ -200,4 +209,3 @@ Requires explicit `type: "stdio"` in the object or YAML block.
   "args": ["server.py"]
 }
 ```
-
