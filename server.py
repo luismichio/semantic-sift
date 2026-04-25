@@ -50,6 +50,7 @@ def get_global_mcp_configs() -> list[dict]:
         {"path": "~/.gemini/antigravity/mcp_config.json", "key": "mcpServers"},
         {"path": "~/.junie/mcp/mcp.json", "key": "mcpServers"},
         {"path": ".junie/mcp/mcp.json", "key": "mcpServers"},
+        {"path": "~/.codex/mcp-config.json", "key": "mcpServers"},
     ]
     for item in discovery_grid:
         if "os" in item and sys.platform != item["os"]: continue
@@ -362,6 +363,42 @@ echo '{"cancel": false}'
             os.chmod(cline_bash_path, 0o755)
             actions.append("Injected Cline PreToolUse bash hook.")
         except Exception as e: actions.append(f"Error configuring Cline bash hook: {str(e)}")
+
+    # 10. Codex CLI (OpenAI)
+    codex_paths = [
+        os.path.join(os.path.expanduser("~"), ".codex", "settings.json"),
+        os.path.join(cwd, ".codex", "settings.json")
+    ]
+    for co_path in codex_paths:
+        if os.path.exists(co_path):
+            try:
+                with open(co_path, "r", encoding="utf-8") as f:
+                    co_data = json.load(f)
+            except:
+                co_data = {}
+            
+            if "hooks" not in co_data: co_data["hooks"] = {}
+            if "PostToolUse" not in co_data["hooks"]: co_data["hooks"]["PostToolUse"] = []
+            
+            exists = False
+            for pt_hook in co_data["hooks"]["PostToolUse"]:
+                if pt_hook.get("matcher") == "mcp__.*__.*":
+                    for inner_hook in pt_hook.get("hooks", []):
+                        if inner_hook.get("command") == cmd_str:
+                            exists = True
+                            break
+            if not exists:
+                codex_hook = {
+                    "matcher": "mcp__.*__.*",
+                    "hooks": [{"type": "command", "command": cmd_str}]
+                }
+                co_data["hooks"]["PostToolUse"] = [codex_hook] + co_data["hooks"]["PostToolUse"]
+                try:
+                    with open(co_path, "w", encoding="utf-8") as f:
+                        json.dump(co_data, f, indent=2)
+                    actions.append(f"Merged into Codex CLI hooks at {co_path}.")
+                except Exception as e:
+                    actions.append(f"Failed to merge Codex CLI hooks: {e}")
 
     return actions
 

@@ -77,6 +77,13 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Payload Schema**: **Smart Hook**. Provides rich context (e.g. `ctx.toolName`, `ctx.result`).
 *   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` generates a native `.openclaw/plugins/semantic-sift.ts` plugin wrapper that intercepts the `tool:after` event and pipes it through the Python interceptor.
 
+### Codex CLI (OpenAI)
+*   **Official Docs**: [Codex CLI Hooks](https://developers.openai.com/codex/hooks)
+*   **Hook Mechanism**: Uses deterministic `PreToolUse` and `PostToolUse` shell scripts configured via `~/.codex/settings.json`.
+*   **Execution Lifecycle**: Identical to Claude Code. Supports blocking tools and modifying outputs via standard streams.
+*   **Payload Schema**: **Smart Hook**. Passes context like `$CODEX_TOOL_NAME` via environment variables.
+*   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array matching `"mcp__.*__.*"` to invoke the `sift_hook.py` interceptor.
+
 ### ForgeCode
 *   **Official Docs**: N/A (Internal / Proprietary orchestration)
 *   **Hook Mechanism**: Primarily managed via `AGENTS.md` (or `SKILL.md`) prompt directives, or internal custom MCP server logic.
@@ -162,8 +169,9 @@ This section provides the exact file paths and schema requirements for each plat
 | **Codex CLI** | `config.toml` | `[mcp_servers]` | TOML |
 | **Kilo Code** | `.kilocode/mcp.json` | `mcpServers` | Local Array |
 | **Zed** | `settings.json` | `context_servers` | Standard |
-| **Claude Code**| `.claude/settings.json` | `mcp_servers` | Standard |
+| Claude Code| `.claude/settings.json` | `mcp_servers` | Standard |
 | **Junie CLI**| `~/.junie/mcp/mcp.json` or `.junie/mcp/mcp.json` | `mcpServers` | Standard |
+| **Codex CLI**| `~/.codex/settings.json` or `.codex/settings.json` | `mcpServers` | Standard |
 
 ---
 

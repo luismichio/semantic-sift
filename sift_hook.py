@@ -56,6 +56,10 @@ def main():
             tool_name = os.environ.get("QWEN_TOOL_NAME", data.get("tool_name", "unknown"))
             # Qwen CLI sends payload directly to stdin. If raw content isn't wrapped, we fallback to the raw input.
             raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
+        elif os.environ.get("CODEX_TOOL_NAME"):
+            platform = "Codex"
+            tool_name = os.environ.get("CODEX_TOOL_NAME")
+            raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
         elif event_name in ["AfterTool", "PreCompress"]:
             platform = "Gemini"
             # OpenClaw explicitly sends an 'AfterTool' event from our generated plugin, but we can differentiate it by the context keys if needed.
