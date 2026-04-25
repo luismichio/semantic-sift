@@ -109,10 +109,15 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Hook Mechanism**: **Unshielded**. These platforms primarily use MCP for context fetching and direct tool invocation. They currently lack robust, deterministic post-tool shell-hook architectures.
 *   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` MUST inject extremely aggressive, mandatory rules into `AGENTS.md` to force the LLM to use `sift_read_file` instead of standard file readers.
 
-### JetBrains (IntelliJ IDEA, PyCharm, WebStorm)
+### JetBrains (IntelliJ IDEA, PyCharm, WebStorm & AI Assistant)
 *   **Official Docs**: [JetBrains MCP Documentation](https://www.jetbrains.com/help/idea/mcp-server.html)
-*   **Hook Mechanism**: Built-in MCP server (2025.2+) with plugin extension points. Connecting clients (Claude Code, Qoder) implement the actual hooks.
-*   **Semantic-Sift Strategy**: High risk of terminal noise. If the client lacks a hook, `sift_onboard` must configure aggressive prompt rules.
+*   **Hook Mechanism**: **Unshielded**. The JetBrains AI Assistant (Client) connects via internal Settings UI. Connecting to JetBrains as a Server relies on external clients (like Claude Code) implementing hooks.
+*   **Semantic-Sift Strategy**: High risk of terminal noise. Because there are no internal `sift_hook.py` interceptors available, `sift_onboard` must configure aggressive prompt rules (Path-Native Mandate) in `AGENTS.md` to force the AI Assistant to use `sift_read_file`.
+
+### JetBrains Junie (CLI Agent)
+*   **Official Docs**: [Junie Documentation](https://www.jetbrains.com/junie/)
+*   **Hook Mechanism**: **Unshielded**. The Junie autonomous CLI agent currently lacks a native deterministic shell hook like Claude Code's `PostToolUse`.
+*   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` relies on injecting the explicit MCP Synergy Matrix and Path-Native mandates directly into workspace files like `AGENTS.md` to manually shield the context window.
 
 ---
 
@@ -158,6 +163,7 @@ This section provides the exact file paths and schema requirements for each plat
 | **Kilo Code** | `.kilocode/mcp.json` | `mcpServers` | Local Array |
 | **Zed** | `settings.json` | `context_servers` | Standard |
 | **Claude Code**| `.claude/settings.json` | `mcp_servers` | Standard |
+| **Junie CLI**| `~/.junie/mcp/mcp.json` or `.junie/mcp/mcp.json` | `mcpServers` | Standard |
 
 ---
 

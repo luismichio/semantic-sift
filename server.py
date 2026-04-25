@@ -48,6 +48,8 @@ def get_global_mcp_configs() -> list[dict]:
         {"path": "~/.opencode.json", "key": "mcpServers"},
         {"path": ".opencode.json", "key": "mcpServers"},
         {"path": "~/.gemini/antigravity/mcp_config.json", "key": "mcpServers"},
+        {"path": "~/.junie/mcp/mcp.json", "key": "mcpServers"},
+        {"path": ".junie/mcp/mcp.json", "key": "mcpServers"},
     ]
     for item in discovery_grid:
         if "os" in item and sys.platform != item["os"]: continue
