@@ -1,213 +1,91 @@
-# Semantic-Sift: Architecture & Philosophy
+# Semantic-Sift: Architecture Specification
 
-## 🧠 Core Philosophy
-Semantic-Sift is built on the **"Studio of Two"** principle: We build **Systems, not Patches**. 
-
-In the modern agentic workspace, the primary bottleneck is not processing power, but **Signal-to-Noise Ratio (SNR)** within the LLM's context window. Semantic-Sift acts as a high-fidelity "Sanitation Tier" that ensures the agent only "sees" the meaningful essence of data.
+This document provides the technical specification of the Semantic-Sift system's core logic, interceptors, and processing pipelines. It is strictly aligned with the implemented codebase.
 
 ---
 
-## 🏗️ Architectural Overview
+## 1. Sift Hook Interceptor (`sift_hook.py`)
 
-Semantic-Sift is a standalone, protocol-compliant **MCP (Model Context Protocol) Server** written in Python. It provides a hybrid approach to data reduction:
+The Sift Hook Interceptor acts as the "Subconscious Brain" of the system, intercepting JSON payloads from various IDEs and agents via standard input, processing them, and returning the modified payload via standard output.
 
-### 1. The Sieve (Structural Distillation)
-- **Mechanism**: Rule-based heuristic filtering (Regex).
-- **Target**: Technical logs (Vercel, GitHub, Console), build outputs, and boilerplate-heavy data.
-- **Logic**: 
-    - Removes ephemeral noise (Timestamps, UUIDs, Session IDs).
-    - Collapses repetitive patterns (Progress bars, "Building..." lines).
-    - Strips low-entropy technical metadata.
-- **Goal**: ~40-60% reduction with zero semantic risk and near-zero latency.
+### Hook Event Handling & Platform Detection
+The interceptor reads `sys.stdin` for a JSON payload. It infers the host platform based on specific structural keys or event names and extracts the target content:
 
-### 2. The Sift (Semantic Compression)
-- **Mechanism**: Model-based compression using **LLMLingua-2** (Prompt Compression).
-- **Target**: Natural language conversation logs, long MDX pages, and PDF transcripts.
-- **Logic**: Uses a lightweight BERT-based model (`microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank`) to calculate token importance. It removes linguistic filler while preserving instruction-carrying tokens and core semantic entities.
-- **Goal**: ~20-80% reduction (configurable) while maintaining the 95%+ fidelity of the original meaning.
+*   **Gemini (`AfterTool` / `PreCompress`)**:
+    *   **Detection**: Checks if `hook_event_name` is `"AfterTool"` or `"PreCompress"`.
+    *   **Extraction**: Targets `data["tool_response"]["llmContent"]`.
+    *   **Injection**: Modifies `data["tool_response"]["llmContent"]` with the distilled text and injects an informational string into `data["hookSpecificOutput"]["additionalContext"]` to notify the LLM of the noise reduction.
+    *   **Note**: `PreCompress` acts as an advisory lifecycle event. It pulses telemetry for structural processing but does not modify the content, returning the raw input.
+*   **VSCode (Copilot / Native)**:
+    *   **Detection**: Checks for the existence of `data["tool_response"]["llmContent"]` when no specific `hook_event_name` matches.
+    *   **Extraction**: Targets `data["tool_response"]["llmContent"]`.
+    *   **Injection**: Modifies `data["tool_response"]["llmContent"]` directly with the distilled text.
+*   **Cursor**:
+    *   **Detection**: Checks if `data["result"]` exists and is a string.
+    *   **Extraction**: Targets `data["result"]`.
+    *   **Injection**: Prepends `[Sifted]` or `[Echo Bypassed]` to the modified `data["result"]`.
+*   **OpenCode (`Compacting`)**:
+    *   **Detection**: Checks if `hook_event_name` is `"Compacting"`.
+    *   **Extraction**: Targets `data["context"]` (the conversation history).
+    *   **Injection**: Creates a new key `data["summary"]` containing the structural snapshot and semantic compression, which is then parsed by the OpenCode native plugin wrapper (`.opencode/plugins/semantic-sift.ts`).
+*   **Generic & Unshielded Clients (e.g., Qwen CLI, OpenClaw)**:
+    *   **Fallback Logic**: If a client does not match the specific `hook_event_name` or payload shapes above, the content extraction safely fails (`raw_content = ""`).
+    *   **Pass-Through**: The interceptor acts as a transparent pass-through, writing the untouched original JSON directly back to `sys.stdout` to prevent breaking unsupported IDEs.
 
-### 3. Subconscious Sifting (Interceptor Layer)
-- **Mechanism**: A hybrid interception layer supporting both shell-based hooks and native plugins.
-- **Native OpenCode Plugin**: A first-class TypeScript wrapper (`.opencode/plugins/semantic-sift.ts`) that intercepts tool outputs and structural compaction events.
-- **Universal Hook Script**: `sift_hook.py` handles interception for Gemini CLI (`AfterTool`, `PreCompress`), Cursor (`postToolUse`), and VS Code (`PostToolUse`).
-- **Autonomous Tiering**:
-    - **Tier 1 (Reactive)**: Intercepts tool outputs.
-        - **`sift_logs`**: Strips formatting boilerplate from shell, git, and npm tools.
-        - **`sift_chat`**: Applies BERT-based compression to long documentation fetches.
-        - **`sift_rank`**: Silently re-ranks retrieved chunks from search tools.
-    - **Tier 2 (Proactive)**: Intercepts Lifecycle Events.
-        - **`Compacting` (OpenCode)**: Interventional hook. Replaces the default summary with a high-fidelity "State Snapshot" (Task Status + Important Decisions) to prevent context loss.
-        - **`PreCompress` (Gemini CLI)**: Advisory hook. Logs context ROI and monitors compression events to track token survival.
-- **Benefit**: Ensures the "99% savings" claim is realized automatically, ensuring that critical task state persists even through context-window cycles.
+### Subconscious Routing Intelligence
+When a payload is intercepted and the extracted content is larger than 500 characters, the hook applies an intelligent routing cascade to determine the optimal sifting strategy:
 
-### 4. The Cybersecurity & Integrity Tier
-Ensures a zero-vulnerability baseline for professional and sovereign development.
-- **SAST (Static Analysis)**: **Bandit** scans every commit for insecure Python patterns and protocol enforcement (B310).
-- **SCA (Supply Chain)**: **Pip-Audit** monitors dependencies against the PyPA database to ensure 0 known CVEs.
-- **Logic Verification**: **Pytest** suite provides 100% coverage for sifting heuristics and privacy kill-switch math.
-
-### 5. The "Solid Pulse" Telemetry System
-Designed for high-reliability "Proof of Value" tracking across distributed installations.
-
-- **Lightweight Core**: `telemetry_core.py` provides zero-dependency metrics tracking.
-- **High-Fidelity Metrics**: Tracks both characters and **Estimated Tokens** (4:1 heuristic) to provide accurate ROI analytics.
-- **Redirect Resilience**: Automatically detects and retries canonical URLs (handling HTTP 308 redirects to `www.`).
-- **Short-Lived Execution**: In CLI/Hook environments, telemetry pulses are blocking to ensure data delivery before process termination, while maintaining sub-50ms latency.
-- **Global Transparency**: Aggregates anonymous savings into a centralized registry for community "Proof of Value."
+1.  **Exemptions for JSON Structured Data**:
+    Before any sifting occurs, the interceptor attempts to parse the raw content as JSON using `json.loads()`. If the content is valid structured data (`dict` or `list`), it logs a "Structured Data Exemption" and bypasses all semantic processing to prevent breaking programmatic syntax.
+2.  **Echo Detection Bypass**:
+    Consults `telemetry_core.check_echo()`. If the exact content was recently processed, it bypasses the BERT/Heuristic models to save compute, injecting only an audit header.
+3.  **Auto-Ranking (Search Tools)**:
+    If the `tool_name` implies a search (e.g., `search`, `grep`, `find`), and the payload contains a search query (`pattern`, `query`, or `substring_pattern` found in `tool_args`), it splits the content by file delimiters (`\n(?=File: |Path: |---)`) and routes to `sift_rank` (Ranking Engine) to return only the top 5 most relevant chunks.
+4.  **Auto-Semantic (Prose/Docs)**:
+    If the tool implies reading prose or documentation (e.g., `read`, `fetch`, `extraction`, `chat`), or if the content has Markdown extensions (`.md`, `# `, `---`), and the content exceeds 3000 characters, it routes to `sift_chat` (Semantic Engine) with a `0.6` compression rate.
+5.  **Auto-Heuristic (Default/Logs)**:
+    If neither Ranking nor Semantic routing applies, it defaults to the Heuristic Engine. If the regex sieve successfully reduces the character count, it is classified as `sift_logs`.
 
 ---
 
-## 🛡️ Privacy & Sovereignty Architecture
+## 2. Distillation Kernel (`sift_kernel.py`)
 
-Semantic-Sift is built on a **"Local-First, Metadata-Only"** philosophy.
+The Distillation Kernel contains the mathematical and logical engines that physically reduce the character and token footprint of text.
 
-### 1. Data Isolation
-No raw text, code, or prompts are ever transmitted outside the local machine. All sifting (BERT, Regex) happens on the local CPU/GPU.
+### Heuristic Engine
+A high-speed, RegEx-based text cleaner designed to incinerate structural noise without using neural networks. It targets:
+*   **Timestamps**: Strips ISO-8601 (`YYYY-MM-DDTHH:MM:SSZ`), legacy (`YYMMDD HHMMSS`), and bracketed (`[HH:MM:SS]`) timestamps.
+*   **Progress Bars**: Removes `[1/10]` or `...` or percentage indicators `100%`.
+*   **Module Logs**: Strips file size listings and boilerplate debug prefixes (e.g., `INFO dfs.`).
 
-### 2. Anonymous Identity
-Each installation generates a persistent, anonymous UUID in `.sift_identity`. This ID is used only for aggregate "Saved Token" counters and contains zero personal information.
+### Semantic Engine
+Performs intelligent prompt compression using a local Small Language Model (SLM).
+*   **Model**: `microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank`.
+*   **Logic**: Utilizes the `llmlingua` PromptCompressor to evaluate token entropy. It identifies and prunes low-value filler tokens while strictly preserving core entities and instructions.
+*   **Configuration**: Forces preservation of specific structural tokens (`\n`, `?`) and defines chunk boundaries (`.`, `\n`) to maintain readability.
 
-### 3. The Privacy Kill-Switch
-For users with absolute non-tracking requirements (e.g., **Meechi** users), the engine supports the `SIFT_TELEMETRY_DISABLED=true` flag.
-- **Total Silence**: When active, the telemetry module returns immediately.
-- **Zero Disk I/O**: No local `.sift_telemetry.json` is created.
-- **Zero Network Pulse**: No HTTP requests are attempted.
+### Ranking Engine
+Performs semantic re-ranking of chunked documents against a specific user query.
+*   **Model**: `BAAI/bge-reranker-base` via `sentence_transformers.CrossEncoder`.
+*   **Logic**: Scores pairs of `[query, document_chunk]` and sorts them, returning only the top-N results to ensure the context window is filled with the highest-signal data.
 
----
-
-## 🔄 The Refinery Loop (RAG Synergy)
-
-Semantic-Sift is designed to sit between **Extraction** (Docling/LiteParse) and **Grounding** (LlamaIndex/Meechi Core). This creates a high-density information loop:
-
-1. **Extraction**: Raw PDF/HTML is converted to Markdown via Docling.
-2. **Refinery (Semantic-Sift)**: 
-    - The `sift_extraction` tool strips repeating footers, metadata noise, and linguistic filler.
-    - Markdown structure (Tables, Headers) is preserved via protected tokens.
-3. **Grounding**: The "Sifted" Markdown is indexed by LlamaIndex.
-
-### Benefits of the Refinery Loop:
-- **Clean Embeddings**: Vector models only see pure semantic signal, reducing retrieval hallucinations.
-- **Context Density**: ~30% more information can be packed into each RAG retrieved chunk.
-- **Cost Reduction**: Lower token usage during both ingestion and query phases.
+### Hybrid Pipelines
+Combines engines for specialized use cases:
+*   **Document Sifting (`perform_doc_sift`)**: First applies the Heuristic Engine to clean structural noise, then applies the Semantic Engine at a `0.4` rate.
+*   **Extraction Cleaning (`perform_extraction_cleaning`)**: Uses RegEx to strip OCR artifacts (e.g., "Page X of Y", copyright notices, empty bullet points) before applying the Semantic Engine at a `0.7` rate to protect Markdown structures like tables.
+*   **Compaction Summaries (`perform_compaction_summary`)**: Used specifically for the `Compacting` hook event. It uses RegEx to explicitly find and extract critical markers (`Decision:`, `Status:`, `File:`, `Task:`) into a "Structural Snapshot", and then aggressively compresses the rest of the text with the Semantic Engine at a `0.2` rate.
 
 ---
 
-## 🛠️ Tool Reference
+## 3. Caching & Device Management
 
-### `sift_logs(raw_text)`
-- **Category**: Structural Sieve
-- **Best For**: Vercel/GitHub build logs, terminal outputs, and repetitive CLI data.
-- **Operation**: Strips ISO timestamps, collapses progress bars, and filters out boilerplate module/file listings.
-- **Benefit**: Near-instant cleanup of "log-bloat" for fast debugging analysis.
+To ensure high performance and prevent redundant compute, the system implements local caching and hardware-aware execution.
 
-### `sift_chat(text, rate)`
-- **Category**: Semantic Sift
-- **Best For**: Conversation history, meeting transcripts, and natural language instructions.
-- **Operation**: Powered by LLMLingua-2 (BERT) to identify instructional signal and prune linguistic filler.
-- **Benefit**: Reduces the token-load of long conversation logs while preserving 95%+ of the core meaning.
+### Disk-Persistent Cache (`.sift_cache`)
+*   **Logic**: The Semantic Engine (`perform_semantic_sift`) wraps its execution in a caching layer.
+*   **Key Generation**: Keys are generated using an SHA-256 hash of the `tool_name`, the raw `text`, and the configuration `kwargs` (like the compression `rate`).
+*   **Storage**: Cached results are written to `.sift_cache/<hash>.txt` and retrieved instantly on subsequent identical calls.
 
-### `sift_doc(text, budget_tokens)`
-- **Category**: Hybrid Signal Extractor
-- **Best For**: Large PDFs, MDX articles, and long-form research.
-- **Operation**: A multi-stage process that first structural-distills noise and then semantically-compresses the remaining prose.
-- **Benefit**: Allows the agent to "see" entire documents in a high-density format that fits comfortably in a standard context window.
-
-### `sift_extraction(content, source_type)`
-- **Category**: RAG Refinery
-- **Best For**: Outputs from Docling, LiteParse, or other OCR/PDF extractors.
-- **Operation**: Specifically tuned to prune OCR artifacts and metadata debris while protecting Markdown structure (tables, headers) and technical entities.
-- **Benefit**: Transforms "noisy" raw extractions into "lean" signal for high-accuracy LlamaIndex grounding.
-
-### `get_sift_stats(scope)`
-- **Category**: Telemetry Tier
-- **Best For**: Monitoring efficiency and quantifying token savings.
-- **Operation**: Aggregates metrics from `.sift_telemetry.json` for either the `current` session or `all` historical sessions. Tracks both manual calls and background hooks (`hook_sift_logs`).
-- **Benefit**: Provides transparency into the "incineration" rate of noise and tracks processing overhead.
-
-### `sift_onboard(target_dir)`
-- **Category**: Automation & Setup
-- **Best For**: Initial installation and environment verification across multiple repositories.
-- **Operation**: Scans for agent instruction files and injects the Semantic-Sift SOPs. Provides a diagnostic report of Python/CUDA/GPU status.
-- **Benefit**: Ensures every repository is "Sift-Aware" with zero manual effort.
-
-### `sift_analyze(text)`
-- **Category**: Context Advisory
-- **Best For**: Deciding whether or not a body of text needs sifting.
-- **Operation**: Uses heuristic regex to detect timestamps, UUIDs, and host-level truncation (Gemini CLI). Formulates a recommendation based on noise density and environment awareness.
-- **Benefit**: Prevents redundant sifting and helps the agent manage its own context window autonomously.
-
-### `sift_rank(query, documents)`
-- **Category**: Intelligence Tier
-- **Best For**: Multi-document RAG retrieval.
-- **Operation**: Uses a local BGE-Reranker model (`BAAI/bge-reranker-base`) to score documents against a query. Returns top-N results.
-- **Benefit**: Ensures the most relevant information is prioritized before the sifting/compression stage.
-
-### `sift_orchestrate(custom_tools, custom_paths, target_dir)`
-- **Category**: Universal Orchestration
-- **Best For**: Cross-IDE and multi-agent collaboration.
-- **Operation**: Performs deep discovery across local and global config files (Claude, Zed, Continue, etc.). Injects tool-specific or category-based "Chain of Context" rules.
-- **Benefit**: Transforms a fragmented toolset into a unified, high-SNR intelligence system.
-
-## 🤝 Collaboration Blueprints
-
-The orchestrator maps discovered tools to specific high-fidelity workflows. Below are the primary blueprints currently active in the engine:
-
-| Category | Targeted Tools | Orchestration Pattern |
-| :--- | :--- | :--- |
-| **Discovery** | Serena, Investigator | **Discovery -> Sifting**: Prunes boilerplate from code bodies immediately after retrieval. |
-| **Storage** | Context-Mode, Memory | **Sifting -> Storage**: Ensures context databases are only indexed with high-signal "lean" data. |
-| **Cloud Infra** | AWS, GCP, Azure | **Metadata Distillation**: Strips redundant JSON fields (ETags, IDs) from cloud resource snapshots. |
-| **Communication** | Slack, Discord | **History Compaction**: Filters out conversational filler and system events from chat logs. |
-| **Data** | Postgres, SQL, SQLite | **Sample Pruning**: Keeps the schema and relevant rows while pruning massive result sets. |
-| **Browsing** | Puppeteer, Playwright | **Web Cleaning**: Removes navigation, footers, and tracking noise from raw HTML extractions. |
-
-### Universal Fallback Strategy
-If no specific tools are recognized, the engine injects a set of **Category-Based Agnostic Rules**. These teach the agent how to categorize its own tools (e.g., "If you find a tool that fetches the web, run `sift_extraction` first") ensuring that even proprietary or niche MCPs benefit from the sifting pipeline.
-
----
-
-## 🛠️ Technical Stack
-
-- **Kernel**: Python 3.12 (Optimized for CUDA stability).
-- **Subconscious Layer**: 
-    - **TypeScript / Bun**: Native OpenCode plugins.
-    - **Python**: Universal hook interceptor.
-- **Communication**: FastMCP (Standardized I/O for AI Agents).
-- **AI Core**: PyTorch + Hugging Face Transformers.
-- **Models**: 
-    - **LLMLingua-2**: Semantic Compression.
-    - **BGE-Reranker**: Relevance ranking.
-- **Security Audit**: Bandit (SAST), Pip-Audit (SCA), Pytest (Logic).
-- **Caching**: Local SHA-256 persistent disk cache for instantaneous repeat sifts.
-
----
-
-## 💰 Economic & Operational Impact
-
-Semantic-Sift is designed to be "Agnostic to the Bill." Its value scales regardless of the provider's pricing model:
-
-### 1. Token-Based Efficiency
-For providers like OpenAI or Google (Gemini API), the ROI is linear. By maintaining a high compression ratio, Sift directly reduces the monthly spend on agentic workflows.
-
-### 2. Request-Based Reliability
-For tools with flat-fee per-request billing, Sift shifts the focus from **Cost** to **Quality**:
-- **Focus Guard**: Prevents "Signal Dilution" where models ignore crucial data due to surrounding noise.
-- **Fail-Safe Capacity**: Ensures that complex contexts (History + RAG + Logs) stay within the model's hard window limit, preventing wasted requests.
-- **Latency Optimization**: Compressing data locally before transmission reduces server-side pre-fill time, resulting in a faster perceived UX.
-
----
-
-## 🚀 Deployment Models
-
-### 1. Developer Mode (Current)
-Running as a standalone process on the developer machine.
-`python server.py`
-
-### 2. The Sidecar (Target)
-Frozen into a standalone binary via **PyInstaller/Nuitka** and bundled inside the **Meechi (Tauri) App**.
-- **Path**: `src-tauri/binaries/semantic-sift-[platform]`
-- **Activation**: Auto-boot on application start via the Tauri Command API.
-
-## 🌟 Future Roadmap
-- **WebGPU Port**: Transitioning from PyTorch to `llmlingua-2-js` (ONNX) for browser-native execution.
-- **Docling Integration**: Tiered PDF parsing that sifts documents before they ground the agent.
+### Lazy CPU/CUDA Device Detection
+*   **Logic**: The `get_device()` function delays the importation of `torch` and the checking of `torch.cuda.is_available()` until the exact moment an ML model is invoked.
+*   **Benefit**: This prevents the heavy overhead of initializing PyTorch during fast heuristic operations or cache hits, falling back to `cpu` gracefully if `torch` is unavailable or hardware acceleration is absent.

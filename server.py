@@ -378,7 +378,14 @@ async def sift_onboard(target_dir: str = None) -> str:
     # New strict mandate for Unshielded IDEs
     mandate_text = """Guidelines for high-fidelity context.
     
-**MANDATORY**: Do NOT use `view_file` or `read_file` for files > 1KB. You MUST use `sift_read_file(path)` or `sift_analyze_file(path)` to prevent context flooding in unshielded environments."""
+**MANDATORY LOCAL I/O**: Do NOT use `view_file` or `read_file` for files > 1KB. You MUST use `sift_read_file(path)` or `sift_analyze_file(path)`.
+
+**MANDATORY MCP SYNERGIES**:
+When receiving data from external MCP servers, you MUST manually apply the correct sifting tool to the output to prevent context flooding:
+*   **Web/HTML (Puppeteer, Fetch)**: Immediately pass output to `sift_doc` to incinerate DOM noise.
+*   **Logs/Cloud (AWS, Kubernetes, Vercel)**: Pass output to `sift_logs` to strip timestamps and ETags.
+*   **Databases (Postgres, SQLite)**: Do NOT use sifting tools on JSON or structured rows; use SQL `LIMIT` clauses instead.
+*   **Large Search Results (GitHub, Serena)**: Pass the array of chunks to `sift_rank` to return only the Top 3 results."""
     
     for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — SOP", mandate_text, target_dir): report.append(f"- {action}")
     report.append("\n**Fully configured.**\n"); return "\n".join(report)
