@@ -59,39 +59,16 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Semantic-Sift Strategy**: Same vulnerability as Cursor. Requires the **Content-Signature Bypass** to prevent double-sifting.
 
 ### Claude Code (Anthropic)
-*   **Hook Mechanism**: Configured via `.claude/settings.json`.
-*   **Execution Lifecycle**: Supports explicit `PreToolUse` and `PostToolUse` deterministic shell commands.
-*   **Payload Schema**: Highly structured, supports regex matching for specific MCP tools (e.g., triggering only on `mcp__server__tool`).
-*   **Semantic-Sift Strategy**: Powerful formatting and normalization capabilities, but requires explicit configuration during `sift_onboard`.
-
-### Windsurf (Codeium / Cascade)
-*   **Hook Mechanism**: Cascade Hooks configured via `mcp_config.json` or dashboard.
-*   **Execution Lifecycle**: Shell commands that trigger on specific actions, cascading from System -> User -> Workspace levels.
-*   **Semantic-Sift Strategy**: Strong enterprise policy enforcement. Requires specific onboarding checks to ensure workspace-level `sift_` hooks aren't overridden by system-level security blocks.
-
-### Zed & Continue.dev
-*   **Hook Mechanism**: **Unshielded**. These platforms primarily use MCP for context fetching (like Zed's Context7) and direct tool invocation. They currently lack a robust, deterministic post-tool shell-hook architecture comparable to Cursor or Claude Code.
-*   **Payload Schema**: N/A.
-*   **Semantic-Sift Strategy**: High risk of context flooding. Because there is no middleware interceptor, `sift_onboard` MUST inject extremely aggressive, mandatory rules into `AGENTS.md` to force the LLM to use `sift_read_file` instead of standard file readers.
-
-### Cline
-*   **Hook Mechanism**: Uses formal lifecycle hooks configured via project-specific (`.clinerules/hooks/`) or global directories.
-*   **Execution Lifecycle**: `PreToolUse` (blocking/validation), `PostToolUse` (reactive/formatting), and `Notification`.
-*   **Payload Schema**: Varies based on configuration but supports active middleware intervention (e.g., rejecting actions).
-*   **Rule Infusion**: Managed via `.clinerules`.
-*   **Semantic-Sift Strategy**: Must ensure rules injected via `sift_onboard` are prioritized. `PostToolUse` hooks can be configured to call the `semantic-sift` python binary, but must employ Content-Signature Bypasses.
-
-### JetBrains (IntelliJ IDEA, PyCharm, WebStorm)
-*   **Hook Mechanism**: Built-in MCP server (2025.2+) with plugin extension points. Connecting clients (Claude Code, Qoder) implement the actual hooks.
-*   **Execution Lifecycle**: Executes IDE-native tools like `execute_terminal_command`. Intercepted by the client's `PreToolUse`/`PostToolUse` logic.
-*   **Payload Schema**: Dependent entirely on the connecting client (e.g., Claude Code schema).
-*   **Semantic-Sift Strategy**: High risk of terminal noise (`execute_terminal_command`). If the client lacks a hook, `sift_onboard` must configure aggressive prompt rules or recommend installing a `semantic-sift` compatible client.
+*   **Hook Mechanism**: Uses a deterministic `PostToolUse` shell script configured via `~/.claude/settings.json` or `.claude/settings.json`.
+*   **Execution Lifecycle**: Supports explicit `PreToolUse` (blocking) and `PostToolUse` (reactive/formatting) hooks.
+*   **Payload Schema**: **Smart Hook**. Passes explicit context like `$CLAUDE_TOOL_NAME` via environment variables and accepts modified output via `stdout`.
+*   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array matching `"mcp__.*__.*"` to invoke the `sift_hook.py` interceptor.
 
 ### OpenClaw
-*   **Hook Mechanism**: Native plugin system using `HOOK.md` and TypeScript handlers.
-*   **Execution Lifecycle**: Extensive coverage: `before_tool_call`, `tool:after`, `agent:prompt`, and `agent:reply`.
-*   **Payload Schema**: **Smart Hook**. Rich, structured interception.
-*   **Semantic-Sift Strategy**: Highest synergy potential. A native OpenClaw plugin can intercept `tool:after` to sift output and even `agent:reply` to ensure final output is pristine.
+*   **Hook Mechanism**: Native plugin system via `api.on("tool:after")`.
+*   **Execution Lifecycle**: Extensive coverage including `tool:after` for payload modification.
+*   **Payload Schema**: **Smart Hook**. Provides rich context (e.g. `ctx.toolName`, `ctx.result`).
+*   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` generates a native `.openclaw/plugins/semantic-sift.ts` plugin wrapper that intercepts the `tool:after` event and pipes it through the Python interceptor.
 
 ### ForgeCode
 *   **Hook Mechanism**: Primarily managed via `AGENTS.md` (or `SKILL.md`) prompt directives, or internal custom MCP server logic.
@@ -100,11 +77,19 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Semantic-Sift Strategy**: `sift_onboard` must aggressively target `AGENTS.md` to establish the Auto-Sift Mandate. The system-level Compaction feature makes the `sift_chat` tool highly relevant for out-of-band summarization before ForgeCode hits its limits.
 
 ### Qwen CLI (Qwen Code)
-*   **Hook Mechanism**: Highly compatible with Claude Code/Gemini CLI. Uses deterministic shell scripts for `PreToolUse` and `PostToolUse`.
-*   **Execution Lifecycle**: Supports blocking tools via exit codes (e.g., `exit 2`).
-*   **Payload Schema**: Assumed **Smart Hook** due to its architectural shared roots with Claude Code and Gemini CLI, passing JSON via `stdin`.
-*   **Rule Infusion**: Looks for `QWEN.md` in the project root.
-*   **Semantic-Sift Strategy**: `sift_onboard` must target `QWEN.md` and configure the `.qwen/settings.json` hook definitions identically to Claude Code, ensuring Content-Signature Bypasses are respected.
+*   **Hook Mechanism**: Uses a deterministic `PostToolUse` shell script configured via `~/.qwen/settings.json` or `.qwen/settings.json`.
+*   **Execution Lifecycle**: Supports blocking tools via exit codes and modifying outputs via standard out.
+*   **Payload Schema**: **Smart Hook**. Passes explicit context like `$QWEN_TOOL_NAME` via environment variables and standard in.
+*   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` automatically injects a `PostToolUse` array identically to Claude Code to invoke the `sift_hook.py` interceptor.
+
+### Windsurf (Codeium / Cascade)
+*   **Hook Mechanism**: Cascade Hooks configured via `.windsurf/hooks.json`.
+*   **Execution Lifecycle**: Triggered via `pre_mcp_tool_use`. Uses shell exit codes (e.g., `exit 2`) to block execution.
+*   **Semantic-Sift Strategy**: Explicitly supported. `sift_onboard` injects a Security Gateway hook that automatically blocks standard MCP file readers (`read_file`, `view_file`) if the file size exceeds 1KB, advising the agent via `stderr` to use `sift_read_file` instead.
+
+### Kilo Code
+*   **Hook Mechanism**: **Unshielded**. Kilo Code lacks native deterministic shell hooks for MCP out-of-the-box.
+*   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` generates a strict `.kilocode/rules/context.md` file containing the explicit MCP Synergy Matrix and Path-Native mandates to shield the context window manually.
 
 ---
 
@@ -125,46 +110,16 @@ Middleware must never corrupt JSON or machine-readable outputs.
 Because platforms like **Zed** and **Continue** are "Unshielded" (no middleware), relying on interceptors is fundamentally flawed.
 *   **Rule**: The primary defense against context flooding is Proactive Path-Native execution. Agents must be heavily instructed via `AGENTS.md` to use `sift_read_file(path)` and `sift_analyze_file(path)` for all local I/O, shifting the token burden entirely to the server side.
 
----
+### D. Trace-Verified Reliability (OTel)
+To ensure the telemetry math is honest and debuggable across all IDEs:
+*   **Echo-Detector**: All middleware (Python/Node) uses a shared disk-based hash cache to detect if the same content was already sifted.
+*   **Chain of Custody**: Every data transformation is wrapped in an **OpenTelemetry** span, proving exactly where characters were removed in the pipeline.
 
-## 4. MCP Data Synergy Matrix (Source Analysis)
-
-While Section 2 maps the *Clients* (IDEs), this section maps the *Servers* (the data sources). Different MCP servers return wildly different data structures. Applying the wrong sifting strategy will lead to **Data Corruption** (e.g., BERT destroying JSON syntax).
-
-| MCP Server Family | Representative Tools | Primary Data Type | Vulnerability | Verified Sifting Strategy |
-|:--- |:--- |:--- |:--- |:--- |
-| **Databases** | Postgres, SQLite, MySQL | JSON-Serialized Rows | BERT destroys keys/brackets. | **Structured Data Exemption**. Skip `sift_chat`. |
-| **Communication** | Slack, Discord, Microsoft Teams | Arrays of Message Objects | Pruning removes timestamps/user IDs. | Use `sift_chat(rate=0.7)` to preserve doc-like flow. |
-| **Browsing** | Puppeteer, Playwright, Fetch | Raw HTML / DOM Blobs | 90% DOM noise (tags, scripts). | **MANDATORY** `sift_doc` to strip boilerplate. |
-| **Infrastructure** | AWS, GCP, Azure, Kubernetes | Resource Snapshots (JSON) | Pruning removes critical ARNs/IDs. | Use `sift_logs` (Heuristic) to strip ETags/MetaData. |
-| **Reasoning** | Sequential Thinking | Structured "Thought" blocks | Sifting breaks reasoning chain. | **TOTAL EXEMPTION**. Never sift reasoning steps. |
-| **Workflow** | Jira, Linear, GitHub Issues | JSON objects / MD descriptions | Pruning loses "Resolution" state. | Manual `sift_chat` only on the `description` field. |
-| **Discovery** | Serena, Investigator | Code Symbol Bodies | Hook misinterprets as "Search". | Manual `sift_chat(rate=0.7)` after symbol retrieval. |
+### E. Setup Verification (`sift_onboard`)
 
 ---
 
-## 5. Universal Orchestration Blueprints
-
-To ensure high-fidelity context across the "Chain of Context," the agent must follow these verified blueprints based on the data source:
-
-### A. The "Clean Indexing" Flow (Context-Mode Synergy)
-*   **Target**: Local Files.
-*   **Workflow**: `sift_read_file(path)` -> `mcp_context-mode_index(content)`.
-*   **Result**: Discards 90% noise *before* indexing, ensuring search results are high-density.
-
-### B. The "Schema-First" Flow (Database Synergy)
-*   **Target**: Postgres / SQLite.
-*   **Workflow**: Query returns 500 rows.
-*   **Rule**: NEVER use `sift_chat`. Use a custom prompt to "Keep headers and first 5 rows, then summarize total count."
-
-### C. The "Signal-Only" Flow (Web / Browsing Synergy)
-*   **Target**: Puppeteer / Playwright / Fetch.
-*   **Workflow**: Tool returns 50k chars of HTML.
-*   **Mandate**: Use `sift_doc` immediately. Semantic-Sift's hybrid engine is specifically tuned to incinerate CSS/JS boilerplate while keeping the text content.
-
----
-
-## 6. Master Configuration Matrix (By Software)
+## 4. Master Configuration Matrix (By Software)
 
 This section provides the exact file paths and schema requirements for each platform to ensure a zero-gap connection.
 

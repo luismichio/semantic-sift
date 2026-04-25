@@ -44,9 +44,26 @@ def main():
         raw_content = ""
         platform = "unknown"
 
-        if event_name in ["AfterTool", "PreCompress"]:
+        if os.environ.get("CLAUDE_TOOL_NAME"):
+            platform = "Claude"
+            tool_name = os.environ.get("CLAUDE_TOOL_NAME")
+            # Claude Code passes the raw tool output as a string (not a JSON structure) to stdout/stdin 
+            # if we are a basic command hook. We assume raw_input IS the content if JSON parsing fails,
+            # but since we already parsed data as JSON above, we check if it has a specific key or assume data itself is the result.
+            raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
+        elif os.environ.get("QWEN_TOOL_NAME") or ("tool_name" in data and "tool_input" in data and "context" in data):
+            platform = "Qwen"
+            tool_name = os.environ.get("QWEN_TOOL_NAME", data.get("tool_name", "unknown"))
+            # Qwen CLI sends payload directly to stdin. If raw content isn't wrapped, we fallback to the raw input.
+            raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
+        elif event_name in ["AfterTool", "PreCompress"]:
             platform = "Gemini"
+            # OpenClaw explicitly sends an 'AfterTool' event from our generated plugin, but we can differentiate it by the context keys if needed.
+            # The OpenClaw wrapper sends: { hook_event_name: "AfterTool", tool_name, tool_response: { llmContent: rawContent } }
             raw_content = data.get("tool_response", {}).get("llmContent", "")
+            if "tool_response" in data and "llmContent" in data["tool_response"] and not os.environ.get("GEMINI_SESSION_ID"):
+                # If Gemini session isn't there, but the structure matches our OpenClaw wrapper, it's likely OpenClaw
+                platform = "Gemini/OpenClaw"
         elif "tool_response" in data and "llmContent" in data["tool_response"]:
             platform = "VSCode"
             raw_content = data["tool_response"]["llmContent"]
@@ -175,12 +192,19 @@ def main():
 
             # Inject back to platform
             msg = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted)} chars of noise.]"
-            if platform == "Gemini":
+            if platform in ["Gemini", "Gemini/OpenClaw"]:
                 if "hookSpecificOutput" not in data: data["hookSpecificOutput"] = {}
                 data["hookSpecificOutput"]["additionalContext"] = msg
                 data["tool_response"]["llmContent"] = sift_notification + sifted
-            elif platform == "VSCode":
-                data["tool_response"]["llmContent"] = sift_notification + sifted
+            elif platform in ["VSCode", "Claude", "Qwen"]:
+                # Claude and Qwen act essentially identically to VSCode in terms of payload manipulation for basic JSON structures
+                if "tool_response" in data:
+                    data["tool_response"]["llmContent"] = sift_notification + sifted
+                elif "result" in data:
+                    data["result"] = f"[Sifted] {sifted}"
+                else:
+                    # If it's a pure string payload wrapped in JSON
+                    data = f"{sift_notification}{sifted}"
             elif platform == "Cursor":
                 data["result"] = f"[Sifted] {sifted}"
 
