@@ -96,6 +96,7 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 
 ### Licensing & Identity
 *   **`SIFT_CLIENT_ID`**: Defaults to `"Generic CLI"`. Identifies the host application.
+*   **Dynamic Client Identification**: The `sift_hook.py` interceptor automatically detects the platform (e.g., `"Claude"`, `"Gemini"`, `"Cursor"`) and passes it as a `client_id_override` to the telemetry system, ensuring high-fidelity reporting even if the global environment variable is unset.
 *   **`SIFT_LICENSE_KEY`**: If present, sets the `tier` payload attribute to `"Commercial"`. Otherwise, it defaults to `"Community"`. Testing/Diagnostic tools automatically override the tier to `"Internal-Testing"`.
 *   **`.sift_identity`**: Generates and stores a persistent, anonymous `uuid.uuid4()` machine ID to prevent metric duplication across sessions without storing PII.
 

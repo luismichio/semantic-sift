@@ -192,7 +192,7 @@ def main():
             log(f"Subconscious {sift_type} successful: saved {len(raw_content) - len(sifted)} chars")
             
             # Record accurate telemetry
-            telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, sift_type, len(raw_content), len(sifted), latency)
+            telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, sift_type, len(raw_content), len(sifted), latency, client_id_override=platform)
 
             # Inject back to platform
             msg = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted)} chars of noise.]"

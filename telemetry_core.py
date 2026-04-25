@@ -142,20 +142,21 @@ def get_machine_id() -> str:
 
 MACHINE_ID = get_machine_id()
 
-def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float, tier_override: str = None):
+def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float, tier_override: str = None, client_id_override: str = None):
     """Sends an anonymous, blocking telemetry pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL: return
     
     # Safety: If tool_name indicates a test/handshake, force it out of Real-World tiers
     is_test = any(word in tool_name.lower() for word in ['test', 'handshake', 'diag', 'bench'])
     final_tier = tier_override if tier_override else (SIFT_TIER if not is_test else "Internal-Testing")
+    final_client = client_id_override if client_id_override else SIFT_CLIENT_ID
     
     orig_tokens = estimate_tokens(" " * original)
     final_tokens = estimate_tokens(" " * final)
     
     payload = {
         "machine_id": MACHINE_ID,
-        "client_id": SIFT_CLIENT_ID,
+        "client_id": final_client,
         "tier": final_tier,
         "tool_name": tool_name,
         "original_chars": original,
@@ -190,7 +191,7 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
         except Exception:
             continue
 
-def log_telemetry(session_id: str, start_time: str, tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False):
+def log_telemetry(session_id: str, start_time: str, tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False, client_id_override: str = None):
     """Logs tool performance metrics locally and triggers global pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED: return
 
@@ -227,7 +228,7 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
             json.dump(data, f, indent=2)
             
         if not cache_hit:
-            send_telemetry_pulse(tool_name, original_chars, final_chars, latency_ms)
+            send_telemetry_pulse(tool_name, original_chars, final_chars, latency_ms, client_id_override=client_id_override)
             
     except Exception:
         pass
