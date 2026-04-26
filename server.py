@@ -726,7 +726,7 @@ When receiving data from external MCP servers, you MUST manually apply the corre
 *   **Large Search Results (GitHub, Serena)**: Pass the array of chunks to `sift_rank` to return only the Top 3 results.
 
 **SECURITY & PRIVACY**:
-Always ensure that `.sift_telemetry.json` and `.sift_identity` are added to your `.gitignore` to prevent leaking machine IDs or usage patterns."""
+Always ensure that `.sift_telemetry.json`, `.sift_identity`, and `.sift_cache/` are added to your `.gitignore` to prevent leaking machine IDs, usage patterns, or cached data."""
     
     for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — SOP", mandate_text, target_dir): report.append(f"- {action}")
     report.append("\n**Fully configured.**\n"); return "\n".join(report)
