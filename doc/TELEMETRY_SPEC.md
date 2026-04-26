@@ -105,6 +105,7 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 *   **Subagent Tracking (`agent_label`)**: The interceptor further "sniffs" the payload for subagent markers (e.g., `CLAUDE_AGENT_NAME`, `threadLabel`, or result prefixes like `[Explore]`) to attribute context savings to specific specialized agent threads.
 *   **`SIFT_LICENSE_KEY`**: If present, sets the `tier` payload attribute to `"Commercial"`. Otherwise, it defaults to `"Community"`. Testing/Diagnostic tools automatically override the tier to `"Internal-Testing"`.
 *   **`.sift_identity`**: Generates and stores a persistent, anonymous `uuid.uuid4()` machine ID to prevent metric duplication across sessions without storing PII.
+*   **Git Protection**: During the `sift_onboard` process, both `.sift_identity` and `.sift_telemetry.json` are automatically added to the project's `.gitignore` to prevent accidental exposure of machine IDs or usage patterns.
 
 ### The Privacy Kill-Switch
 *   **Variable**: `SIFT_TELEMETRY_DISABLED=true` (Meechi Compliance).

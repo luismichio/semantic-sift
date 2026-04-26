@@ -56,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Compression Telemetry**: Registered the `PreCompress` hook for Gemini CLI to track structural distillation ROI and monitor context lifecycle events.
 - **Smart Summarizer**: Added `perform_compaction_summary` to `sift_kernel.py` to intelligently prioritize task status, decisions, and active files when summarizing session history.
 
+### 🛡️ Automated Security & Privacy
+- **Automated `.gitignore` Protection**: Upgraded `sift_onboard` to automatically detect and update the project's `.gitignore` file, shielding `.sift_identity`, `.sift_telemetry.json`, and `.sift_cache/` from accidental version control exposure.
+- **Onboarding Security Mandate**: Integrated explicit **SECURITY & PRIVACY** instructions into the onboarding mandate, ensuring agents and users are aware of best practices for protecting local identity and telemetry data.
+
 ### Added
 - **Unified Telemetry Naming**: Removed all `hook_` prefixes to standardize events as `sift_logs`, `sift_chat`, and `sift_rank` regardless of trigger source.
 - **Sift Kernel Extraction**: Refactored core sifting and ranking logic into a standalone `sift_kernel.py` to enable decoupled testing and high-performance background execution.

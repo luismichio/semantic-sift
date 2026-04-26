@@ -111,6 +111,9 @@ When receiving data from external MCP servers, you MUST manually apply the corre
 *   **Logs/Cloud (AWS, Kubernetes, Vercel)**: Pass output to `sift_logs` to strip timestamps and ETags.
 *   **Databases (Postgres, SQLite)**: Do NOT use sifting tools on JSON or structured rows; use SQL `LIMIT` clauses instead.
 *   **Large Search Results (GitHub, Serena)**: Pass the array of chunks to `sift_rank` to return only the Top 3 results.
+
+**SECURITY & PRIVACY**:
+Always ensure that `.sift_telemetry.json` and `.sift_identity` are added to your `.gitignore` to prevent leaking machine IDs or usage patterns.
 <!-- SIFT_SECTION_END:SOP -->
 
 <!-- SIFT_SECTION_START:ORCHESTRATION -->
