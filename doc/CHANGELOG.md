@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🛠️ Infrastructure & Maintenance
+- **Encoding Correction**: Fixed corrupted `.gitignore` and `requirements.txt` files which contained mixed UTF-8 and UTF-16 encoding and non-printable characters.
+
 ### 🚀 Multi-Modal & HTML Intelligence
 - **MarkItDown Integration**: Integrated Microsoft's `MarkItDown` as a structural pre-processor. Semantic-Sift now natively supports converting **PDF, DOCX, XLSX, and PPTX** to Markdown before sifting.
 - **Subconscious HTML Normalization**: Upgraded the `sift_hook.py` interceptor to automatically detect HTML content (e.g., from web search results) and convert it to clean Markdown using MarkItDown before semantic compression.
