@@ -3,6 +3,7 @@ venv/
 .venv/
 venv312/
 .env*
+!.env.example
 
 # IDE & Tooling
 .gemini/
