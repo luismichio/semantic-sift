@@ -5,6 +5,7 @@ import uuid
 import time
 import hashlib
 import urllib.request
+import re
 from datetime import datetime
 
 # OpenTelemetry Imports
@@ -41,6 +42,26 @@ SIFT_TIER = "Commercial" if SIFT_LICENSE_KEY else "Community"
 
 # Privacy Kill-Switch (Meechi Compliance)
 SIFT_TELEMETRY_DISABLED = os.environ.get("SIFT_TELEMETRY_DISABLED", "false").lower() == "true"
+
+# --- Privacy Shield (Secret Redaction) ---
+
+def redact_secrets(text: str) -> str:
+    """Masks common secret patterns (API keys, PATs, Tokens) in a given string."""
+    if not isinstance(text, str): return str(text)
+    
+    # Patterns for common secrets
+    patterns = [
+        (r'(github_pat_[a-zA-Z0-9_]{20,})', '[REDACTED_GITHUB_PAT]'),
+        (r'(sk-[a-zA-Z0-9]{20,})', '[REDACTED_OPENAI_KEY]'),
+        (r'(xox[bp]-[a-zA-Z0-9-]{10,})', '[REDACTED_SLACK_TOKEN]'),
+        (r'(\b[a-fA-F0-9]{32,64}\b)', '[REDACTED_HASH_OR_KEY]'), # Generic high-entropy strings
+        (r'(password|secret|token|key)\s*[:=]\s*[^\s,]+', r'\1=[REDACTED]')
+    ]
+    
+    redacted = text
+    for pattern, replacement in patterns:
+        redacted = re.sub(pattern, replacement, redacted)
+    return redacted
 
 # --- OTel Initialization (Isolated Provider) ---
 _TRACER = None
@@ -146,8 +167,12 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
     """Sends an anonymous, blocking telemetry pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL: return
     
+    # Safety: Redact any potential secrets in metadata
+    safe_tool = redact_secrets(tool_name)
+    safe_label = redact_secrets(agent_label) if agent_label else None
+    
     # Safety: If tool_name indicates a test/handshake, force it out of Real-World tiers
-    is_test = any(word in tool_name.lower() for word in ['test', 'handshake', 'diag', 'bench'])
+    is_test = any(word in safe_tool.lower() for word in ['test', 'handshake', 'diag', 'bench'])
     final_tier = tier_override if tier_override else (SIFT_TIER if not is_test else "Internal-Testing")
     final_client = client_id_override if client_id_override else SIFT_CLIENT_ID
     
@@ -158,8 +183,8 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
         "machine_id": MACHINE_ID,
         "client_id": final_client,
         "tier": final_tier,
-        "agent_label": agent_label,
-        "tool_name": tool_name,
+        "agent_label": safe_label,
+        "tool_name": safe_tool,
         "file_ext": file_ext,
         "original_chars": original,
         "final_chars": final,
@@ -197,6 +222,10 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
     """Logs tool performance metrics locally and triggers global pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED: return
 
+    # Safety: Redact metadata
+    safe_tool = redact_secrets(tool_name)
+    safe_label = redact_secrets(agent_label) if agent_label else None
+
     try:
         data = {}
         if os.path.exists(TELEMETRY_FILE):
@@ -206,7 +235,7 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
         if session_id not in data:
             data[session_id] = {"start_time": start_time, "tools": {}}
             
-        tool_stats = data[session_id]["tools"].get(tool_name, {
+        tool_stats = data[session_id]["tools"].get(safe_tool, {
             "calls": 0, "original_chars": 0, "final_chars": 0, 
             "original_tokens": 0, "final_tokens": 0,
             "total_latency_ms": 0, "cache_hits": 0
@@ -224,13 +253,13 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
         if cache_hit:
             tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
             
-        data[session_id]["tools"][tool_name] = tool_stats
+        data[session_id]["tools"][safe_tool] = tool_stats
         
         with open(TELEMETRY_FILE, "w") as f:
             json.dump(data, f, indent=2)
             
         if not cache_hit:
-            send_telemetry_pulse(tool_name, original_chars, final_chars, latency_ms, client_id_override=client_id_override, agent_label=agent_label, file_ext=file_ext)
+            send_telemetry_pulse(safe_tool, original_chars, final_chars, latency_ms, client_id_override=client_id_override, agent_label=safe_label, file_ext=file_ext)
             
     except Exception:
         pass

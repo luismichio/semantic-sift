@@ -14,8 +14,10 @@ LOG_FILE = os.path.join(os.getcwd(), ".gemini", "sift_debug.log")
 def log(message):
     try:
         timestamp = time.ctime()
+        # Privacy Shield: Redact secrets before logging to disk
+        safe_message = telemetry_core.redact_secrets(message)
         with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(f"[{timestamp}] {message}\n")
+            f.write(f"[{timestamp}] {safe_message}\n")
     except:
         pass
 
