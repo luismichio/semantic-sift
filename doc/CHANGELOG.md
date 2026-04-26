@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### 🛠️ Infrastructure & Maintenance
+- **Security Cleanup**: Removed `.gemini/` and other sensitive directories from Git tracking.
+- **History Scrubbing**: Sanitized Git history to remove a compromised GitHub token while maintaining configuration integrity.
 - **Encoding Correction**: Fixed corrupted `.gitignore` and `requirements.txt` files which contained mixed UTF-8 and UTF-16 encoding and non-printable characters.
 
 ### 🚀 Multi-Modal & HTML Intelligence

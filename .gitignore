@@ -1,18 +1,37 @@
-venv/  
-.venv/  
-__pycache__/  
-*.pyc  
-.ipynb_checkpoints/  
-.DS_Store  
-*.model  
-*.safetensors  
-test_sift.py  
-.sift_telemetry.json  
-.sift_cache/  
-benchmarks/data/*.html  
-benchmarks/data/*.pdf  
-benchmarks/data/*.xlsx  
-benchmarks/data/*.docx  
-  
-# env files  
-.env* 
+# Environment
+venv/
+.venv/
+venv312/
+.env*
+
+# IDE & Tooling
+.gemini/
+.serena/
+.opencode/
+.clinerules/
+.kilocode/
+.openclaw/
+.github/hooks/
+
+# Project Specific
+.sift_identity
+.sift_telemetry.json
+.sift_cache/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# Models
+*.model
+*.safetensors
+
+# Benchmark Data
+benchmarks/data/*.html
+benchmarks/data/*.pdf
+benchmarks/data/*.xlsx
+benchmarks/data/*.docx
+
+# Tests
+test_sift.py
+.pytest_cache/
