@@ -48,6 +48,28 @@ Whether your AI tools charge **per token** or **per request**, Semantic-Sift pro
 
 ---
 
+## 🎯 High-Impact Use Cases
+
+Semantic-Sift is designed for the highest level of technical decision-making, where the source of truth is buried in massive datasets.
+
+### 📚 The Knowledge Hunter (Researchers & Architects)
+*   **The Pain**: Reading 50-page PDFs, complex Word specs, or cluttered documentation sites.
+*   **The Sift**: Uses **MarkItDown** to natively ingest `.pdf`, `.docx`, and `.xlsx`. It converts corporate "noise" into structured Markdown, allowing your agent to synthesize multiple 14MB documents in a single turn.
+
+### 🛠️ The Log Hunter (DevOps & SREs)
+*   **The Pain**: Finding a single error in 100,000 lines of HDFS or Vercel build logs.
+*   **The Sift**: The **Heuristic Sieve** incinerates timestamps and boilerplate in milliseconds. The **Subconscious Hook** automatically reranks `grep` and `search` results, so your agent only sees the 5 most relevant code blocks.
+
+### 🧠 The Context Strategist (AI Engineers)
+*   **The Pain**: LLM hallucination and reasoning degradation caused by "Lost in the Middle" syndrome.
+*   **The Sift**: By delivering 40% of the original text with 95% of the meaning, Sift acts as a **Cognitive Bridge**. It ensures your LLM's attention is focused exclusively on the technical signal, resulting in higher-quality code generation and fewer retries.
+
+### ✨ The Flow-State Architect (Vibe Coders)
+*   **The Pain**: Rapid-fire "Vibe Coding" sessions that crash once the context window fills with experimental noise and massive tool outputs.
+*   **The Sift**: Operates as a **Subconscious Filter**. It transparently cleans the background "junk" (like massive `grep` results or long console traces) without breaking your flow. The visible **Audit Header** ensures you always know what was distilled, maintaining trust while allowing your flow state to last 3x longer.
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Installation
