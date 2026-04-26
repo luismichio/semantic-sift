@@ -13,6 +13,8 @@ venv312/
 .kilocode/
 .openclaw/
 .github/hooks/
+.cursor/
+opencode.json
 
 # Project Specific
 .sift_identity
@@ -21,11 +23,6 @@ venv312/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-.DS_Store
-
-# Models
-*.model
-*.safetensors
 
 # Benchmark Data
 benchmarks/data/*.html
