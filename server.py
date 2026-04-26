@@ -156,7 +156,7 @@ def merge_hook_json(path: str, hook_key: str, new_hook: dict, version: int = Non
         return True
     return False
 
-def update_instruction_files(section_id: str, header: str, content: str, target_dir: str = None) -> list[str]:
+def update_instruction_files(section_id: str, header: str, content: str, target_dir: str = None, environment: str = None) -> list[str]:
     actions = []
     cwd = target_dir if target_dir else os.getcwd()
     python_exe = "C:/Users/luism/Workbench/GitHub/semantic-sift/venv312/Scripts/python.exe"
@@ -165,7 +165,10 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
     block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"; block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
     full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
     
-    # 1. Main Instruction Files
+    # Normalize environment for matching
+    env_lower = environment.lower() if environment else ""
+
+    # 1. Main Instruction Files (Always update these if present as they are the shared brain)
     targets = INSTRUCTION_TARGETS[:] # Copy list
     
     # 2. Discover specialized subagent configs
@@ -204,28 +207,35 @@ def update_instruction_files(section_id: str, header: str, content: str, target_
                     actions.append(f"Injected into `{filename}`.")
             except Exception as e: actions.append(f"Error updating `{target_path}`: {str(e)}")
     
-    cursor_path = os.path.join(cwd, ".cursor", "hooks.json")
-    os.makedirs(os.path.dirname(cursor_path), exist_ok=True)
-    
-    # Audit Security Gateways
-    if os.path.exists(cursor_path):
-        try:
-            with open(cursor_path, "r", encoding="utf-8") as f: cursor_data = json.load(f)
-            if "hooks" in cursor_data and "beforeMCPExecution" in cursor_data["hooks"]:
-                actions.append("🚨 ALERT: `beforeMCPExecution` security gateway detected in Cursor hooks. You MUST whitelist `sift_read_file` and `sift_analyze_file` or they will be blocked.")
-        except: pass
+    # --- Environment Specific Hook Injections ---
 
-    if merge_hook_json(cursor_path, "postToolUse", {"command": cmd_str}, version=1): actions.append("Merged into Cursor hooks.")
+    # 1. Cursor
+    if "cursor" in env_lower:
+        cursor_path = os.path.join(cwd, ".cursor", "hooks.json")
+        os.makedirs(os.path.dirname(cursor_path), exist_ok=True)
+        
+        # Audit Security Gateways
+        if os.path.exists(cursor_path):
+            try:
+                with open(cursor_path, "r", encoding="utf-8") as f: cursor_data = json.load(f)
+                if "hooks" in cursor_data and "beforeMCPExecution" in cursor_data["hooks"]:
+                    actions.append("🚨 ALERT: `beforeMCPExecution` security gateway detected in Cursor hooks. You MUST whitelist `sift_read_file` and `sift_analyze_file` or they will be blocked.")
+            except: pass
+
+        if merge_hook_json(cursor_path, "postToolUse", {"command": cmd_str}, version=1): actions.append("Merged into Cursor hooks.")
+
     # 2. VS Code Copilot
-    vscode_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
-    os.makedirs(os.path.dirname(vscode_path), exist_ok=True)
-    if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}):
-        actions.append("Merged into VS Code hooks.")
+    if "vscode" in env_lower or "github" in env_lower:
+        vscode_path = os.path.join(cwd, ".github", "hooks", "semantic-sift.json")
+        os.makedirs(os.path.dirname(vscode_path), exist_ok=True)
+        if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}):
+            actions.append("Merged into VS Code hooks.")
 
     # 3. OpenCode Native Plugin
-    opencode_plugin_path = os.path.join(cwd, ".opencode", "plugins", "semantic-sift.ts")
-    os.makedirs(os.path.dirname(opencode_plugin_path), exist_ok=True)
-    plugin_content = f"""/**
+    if "opencode" in env_lower:
+        opencode_plugin_path = os.path.join(cwd, ".opencode", "plugins", "semantic-sift.ts")
+        os.makedirs(os.path.dirname(opencode_plugin_path), exist_ok=True)
+        plugin_content = f"""/**
  * Semantic-Sift Native OpenCode Plugin
  */
 export const SemanticSiftPlugin = async ({{ $ }}) => {{
@@ -249,121 +259,126 @@ export const SemanticSiftPlugin = async ({{ $ }}) => {{
 }};
 export default SemanticSiftPlugin;
 """
-    try:
-        if not os.path.exists(opencode_plugin_path):
-            with open(opencode_plugin_path, "w", encoding="utf-8") as f: f.write(plugin_content)
-            actions.append("Configured OpenCode native plugin.")
-    except Exception as e: actions.append(f"Error configuring OpenCode plugin: {str(e)}")
+        try:
+            if not os.path.exists(opencode_plugin_path):
+                with open(opencode_plugin_path, "w", encoding="utf-8") as f: f.write(plugin_content)
+                actions.append("Configured OpenCode native plugin.")
+        except Exception as e: actions.append(f"Error configuring OpenCode plugin: {str(e)}")
+
     # 4. Claude Code (Anthropic)
-    claude_paths = [
-        os.path.join(os.path.expanduser("~"), ".claude", "settings.json"),
-        os.path.join(cwd, ".claude", "settings.json")
-    ]
-    for c_path in claude_paths:
-        if os.path.exists(c_path):
-            # Claude requires a specific matcher object, so we build it manually rather than using merge_hook_json
-            try:
-                with open(c_path, "r", encoding="utf-8") as f:
-                    c_data = json.load(f)
-            except:
-                c_data = {}
-            
-            if "hooks" not in c_data: c_data["hooks"] = {}
-            if "PostToolUse" not in c_data["hooks"]: c_data["hooks"]["PostToolUse"] = []
-            
-            # Check if our hook already exists
-            exists = False
-            for pt_hook in c_data["hooks"]["PostToolUse"]:
-                if pt_hook.get("matcher") == "mcp__.*__.*":
-                    for inner_hook in pt_hook.get("hooks", []):
-                        if inner_hook.get("command") == cmd_str:
-                            exists = True
-                            break
-            
-            if not exists:
-                claude_hook = {
-                    "matcher": "mcp__.*__.*",
-                    "hooks": [{"type": "command", "command": cmd_str}]
-                }
-                c_data["hooks"]["PostToolUse"] = [claude_hook] + c_data["hooks"]["PostToolUse"]
+    if "claude" in env_lower:
+        claude_paths = [
+            os.path.join(os.path.expanduser("~"), ".claude", "settings.json"),
+            os.path.join(cwd, ".claude", "settings.json")
+        ]
+        for c_path in claude_paths:
+            if os.path.exists(c_path):
+                # Claude requires a specific matcher object, so we build it manually rather than using merge_hook_json
                 try:
-                    with open(c_path, "w", encoding="utf-8") as f:
-                        json.dump(c_data, f, indent=2)
-                    actions.append(f"Merged into Claude Code hooks at {c_path}.")
-                except Exception as e:
-                    actions.append(f"Failed to merge Claude Code hooks: {e}")
+                    with open(c_path, "r", encoding="utf-8") as f:
+                        c_data = json.load(f)
+                except:
+                    c_data = {}
+                
+                if "hooks" not in c_data: c_data["hooks"] = {}
+                if "PostToolUse" not in c_data["hooks"]: c_data["hooks"]["PostToolUse"] = []
+                
+                # Check if our hook already exists
+                exists = False
+                for pt_hook in c_data["hooks"]["PostToolUse"]:
+                    if pt_hook.get("matcher") == "mcp__.*__.*":
+                        for inner_hook in pt_hook.get("hooks", []):
+                            if inner_hook.get("command") == cmd_str:
+                                exists = True
+                                break
+                
+                if not exists:
+                    claude_hook = {
+                        "matcher": "mcp__.*__.*",
+                        "hooks": [{"type": "command", "command": cmd_str}]
+                    }
+                    c_data["hooks"]["PostToolUse"] = [claude_hook] + c_data["hooks"]["PostToolUse"]
+                    try:
+                        with open(c_path, "w", encoding="utf-8") as f:
+                            json.dump(c_data, f, indent=2)
+                        actions.append(f"Merged into Claude Code hooks at {c_path}.")
+                    except Exception as e:
+                        actions.append(f"Failed to merge Claude Code hooks: {e}")
                     
     # 5. Qwen CLI (Qwen Code)
-    qwen_paths = [
-        os.path.join(os.path.expanduser("~"), ".qwen", "settings.json"),
-        os.path.join(cwd, ".qwen", "settings.json")
-    ]
-    for q_path in qwen_paths:
-        if os.path.exists(q_path):
-            try:
-                with open(q_path, "r", encoding="utf-8") as f:
-                    q_data = json.load(f)
-            except:
-                q_data = {}
-            
-            if "hooks" not in q_data: q_data["hooks"] = {}
-            if "PostToolUse" not in q_data["hooks"]: q_data["hooks"]["PostToolUse"] = []
-            
-            exists = False
-            for pt_hook in q_data["hooks"]["PostToolUse"]:
-                if pt_hook.get("matcher") == "mcp__.*__.*":
-                    for inner_hook in pt_hook.get("hooks", []):
-                        if inner_hook.get("command") == cmd_str:
-                            exists = True
-                            break
-            if not exists:
-                qwen_hook = {
-                    "matcher": "mcp__.*__.*",
-                    "hooks": [{"type": "command", "command": cmd_str}]
-                }
-                q_data["hooks"]["PostToolUse"] = [qwen_hook] + q_data["hooks"]["PostToolUse"]
+    if "qwen" in env_lower:
+        qwen_paths = [
+            os.path.join(os.path.expanduser("~"), ".qwen", "settings.json"),
+            os.path.join(cwd, ".qwen", "settings.json")
+        ]
+        for q_path in qwen_paths:
+            if os.path.exists(q_path):
                 try:
-                    with open(q_path, "w", encoding="utf-8") as f:
-                        json.dump(q_data, f, indent=2)
-                    actions.append(f"Merged into Qwen CLI hooks at {q_path}.")
-                except Exception as e:
-                    actions.append(f"Failed to merge Qwen CLI hooks: {e}")
+                    with open(q_path, "r", encoding="utf-8") as f:
+                        q_data = json.load(f)
+                except:
+                    q_data = {}
+                
+                if "hooks" not in q_data: q_data["hooks"] = {}
+                if "PostToolUse" not in q_data["hooks"]: q_data["hooks"]["PostToolUse"] = []
+                
+                exists = False
+                for pt_hook in q_data["hooks"]["PostToolUse"]:
+                    if pt_hook.get("matcher") == "mcp__.*__.*":
+                        for inner_hook in pt_hook.get("hooks", []):
+                            if inner_hook.get("command") == cmd_str:
+                                exists = True
+                                break
+                if not exists:
+                    qwen_hook = {
+                        "matcher": "mcp__.*__.*",
+                        "hooks": [{"type": "command", "command": cmd_str}]
+                    }
+                    q_data["hooks"]["PostToolUse"] = [qwen_hook] + q_data["hooks"]["PostToolUse"]
+                    try:
+                        with open(q_path, "w", encoding="utf-8") as f:
+                            json.dump(q_data, f, indent=2)
+                        actions.append(f"Merged into Qwen CLI hooks at {q_path}.")
+                    except Exception as e:
+                        actions.append(f"Failed to merge Qwen CLI hooks: {e}")
 
     # 6. Windsurf (Codeium)
-    windsurf_paths = [
-        os.path.join(os.path.expanduser("~"), ".codeium", "windsurf", "hooks.json"),
-        os.path.join(cwd, ".windsurf", "hooks.json")
-    ]
-    for w_path in windsurf_paths:
-        if os.path.exists(w_path):
-            try:
-                with open(w_path, "r", encoding="utf-8") as f:
-                    w_data = json.load(f)
-            except:
-                w_data = {}
-            if "pre_mcp_tool_use" not in w_data: w_data["pre_mcp_tool_use"] = []
-            
-            # Security Gateway for Windsurf: Block native file reading if file > 1KB
-            gateway_cmd = "stat -c%s \"$WINDSURF_TOOL_ARGS\" 2>/dev/null | awk '{if($1>1024) {print \"[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead.\" > \"/dev/stderr\"; exit 2}}'"
-            
-            exists = any(h.get("command") == gateway_cmd for h in w_data["pre_mcp_tool_use"])
-            if not exists:
-                w_data["pre_mcp_tool_use"].insert(0, {
-                    "matcher": "mcp__.*__(read_file|view_file)",
-                    "type": "command",
-                    "command": gateway_cmd
-                })
+    if "windsurf" in env_lower:
+        windsurf_paths = [
+            os.path.join(os.path.expanduser("~"), ".codeium", "windsurf", "hooks.json"),
+            os.path.join(cwd, ".windsurf", "hooks.json")
+        ]
+        for w_path in windsurf_paths:
+            if os.path.exists(w_path):
                 try:
-                    with open(w_path, "w", encoding="utf-8") as f:
-                        json.dump(w_data, f, indent=2)
-                    actions.append(f"Injected Security Gateway into Windsurf hooks at {w_path}.")
-                except Exception as e:
-                    actions.append(f"Failed to merge Windsurf hooks: {e}")
+                    with open(w_path, "r", encoding="utf-8") as f:
+                        w_data = json.load(f)
+                except:
+                    w_data = {}
+                if "pre_mcp_tool_use" not in w_data: w_data["pre_mcp_tool_use"] = []
+                
+                # Security Gateway for Windsurf: Block native file reading if file > 1KB
+                gateway_cmd = "stat -c%s \"$WINDSURF_TOOL_ARGS\" 2>/dev/null | awk '{if($1>1024) {print \"[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead.\" > \"/dev/stderr\"; exit 2}}'"
+                
+                exists = any(h.get("command") == gateway_cmd for h in w_data["pre_mcp_tool_use"])
+                if not exists:
+                    w_data["pre_mcp_tool_use"].insert(0, {
+                        "matcher": "mcp__.*__(read_file|view_file)",
+                        "type": "command",
+                        "command": gateway_cmd
+                    })
+                    try:
+                        with open(w_path, "w", encoding="utf-8") as f:
+                            json.dump(w_data, f, indent=2)
+                        actions.append(f"Injected Security Gateway into Windsurf hooks at {w_path}.")
+                    except Exception as e:
+                        actions.append(f"Failed to merge Windsurf hooks: {e}")
 
     # 7. OpenClaw
-    openclaw_plugin_path = os.path.join(cwd, ".openclaw", "plugins", "semantic-sift.ts")
-    os.makedirs(os.path.dirname(openclaw_plugin_path), exist_ok=True)
-    openclaw_plugin_content = f"""/**
+    if "openclaw" in env_lower:
+        openclaw_plugin_path = os.path.join(cwd, ".openclaw", "plugins", "semantic-sift.ts")
+        os.makedirs(os.path.dirname(openclaw_plugin_path), exist_ok=True)
+        openclaw_plugin_content = f"""/**
  * Semantic-Sift Native OpenClaw Plugin
  */
 export default function (api) {{
@@ -388,29 +403,32 @@ export default function (api) {{
   }});
 }};
 """
-    try:
-        if not os.path.exists(openclaw_plugin_path):
-            with open(openclaw_plugin_path, "w", encoding="utf-8") as f: f.write(openclaw_plugin_content)
-            actions.append("Configured OpenClaw native plugin.")
-    except Exception as e: actions.append(f"Error configuring OpenClaw plugin: {str(e)}")
+        try:
+            if not os.path.exists(openclaw_plugin_path):
+                with open(openclaw_plugin_path, "w", encoding="utf-8") as f: f.write(openclaw_plugin_content)
+                actions.append("Configured OpenClaw native plugin.")
+        except Exception as e: actions.append(f"Error configuring OpenClaw plugin: {str(e)}")
+
 
     # 8. Kilo Code
-    kilo_rule_dir = os.path.join(cwd, ".kilocode", "rules")
-    os.makedirs(kilo_rule_dir, exist_ok=True)
-    kilo_rule_path = os.path.join(kilo_rule_dir, "context.md")
-    if not os.path.exists(kilo_rule_path):
-        try:
-            with open(kilo_rule_path, "w", encoding="utf-8") as f: f.write(f"# Semantic-Sift Kilo Code Constraints\n\n{content}")
-            actions.append("Injected Kilo Code workspace rules.")
-        except Exception as e: actions.append(f"Error configuring Kilo Code rules: {str(e)}")
+    if "kilocode" in env_lower:
+        kilo_rule_dir = os.path.join(cwd, ".kilocode", "rules")
+        os.makedirs(kilo_rule_dir, exist_ok=True)
+        kilo_rule_path = os.path.join(kilo_rule_dir, "context.md")
+        if not os.path.exists(kilo_rule_path):
+            try:
+                with open(kilo_rule_path, "w", encoding="utf-8") as f: f.write(f"# Semantic-Sift Kilo Code Constraints\n\n{content}")
+                actions.append("Injected Kilo Code workspace rules.")
+            except Exception as e: actions.append(f"Error configuring Kilo Code rules: {str(e)}")
 
     # 9. Cline
-    cline_hooks_dir = os.path.join(cwd, ".clinerules", "hooks")
-    os.makedirs(cline_hooks_dir, exist_ok=True)
-    
-    # Windows: PreToolUse.ps1
-    cline_ps1_path = os.path.join(cline_hooks_dir, "PreToolUse.ps1")
-    cline_ps1_content = """$inputJson = $input | ConvertFrom-Json
+    if "cline" in env_lower or "roo" in env_lower:
+        cline_hooks_dir = os.path.join(cwd, ".clinerules", "hooks")
+        os.makedirs(cline_hooks_dir, exist_ok=True)
+        
+        # Windows: PreToolUse.ps1
+        cline_ps1_path = os.path.join(cline_hooks_dir, "PreToolUse.ps1")
+        cline_ps1_content = """$inputJson = $input | ConvertFrom-Json
 if ($inputJson.preToolUse.toolName -eq 'read_file' -or $inputJson.preToolUse.toolName -eq 'view_file') {
     $filePath = $inputJson.preToolUse.parameters.path
     if (Test-Path $filePath) {
@@ -425,15 +443,15 @@ if ($inputJson.preToolUse.toolName -eq 'read_file' -or $inputJson.preToolUse.too
 $response = @{ cancel = $false }
 $response | ConvertTo-Json -Compress | Write-Output
 """
-    if not os.path.exists(cline_ps1_path):
-        try:
-            with open(cline_ps1_path, "w", encoding="utf-8") as f: f.write(cline_ps1_content)
-            actions.append("Injected Cline PreToolUse.ps1 hook.")
-        except Exception as e: actions.append(f"Error configuring Cline PS1 hook: {str(e)}")
+        if not os.path.exists(cline_ps1_path):
+            try:
+                with open(cline_ps1_path, "w", encoding="utf-8") as f: f.write(cline_ps1_content)
+                actions.append("Injected Cline PreToolUse.ps1 hook.")
+            except Exception as e: actions.append(f"Error configuring Cline PS1 hook: {str(e)}")
 
-    # Unix: PreToolUse (bash)
-    cline_bash_path = os.path.join(cline_hooks_dir, "PreToolUse")
-    cline_bash_content = """#!/bin/bash
+        # Unix: PreToolUse (bash)
+        cline_bash_path = os.path.join(cline_hooks_dir, "PreToolUse")
+        cline_bash_content = """#!/bin/bash
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | grep -oP '(?<="toolName":")[^"]*')
 if [[ "$TOOL_NAME" == "read_file" ]] || [[ "$TOOL_NAME" == "view_file" ]]; then
@@ -448,48 +466,49 @@ if [[ "$TOOL_NAME" == "read_file" ]] || [[ "$TOOL_NAME" == "view_file" ]]; then
 fi
 echo '{"cancel": false}'
 """
-    if not os.path.exists(cline_bash_path):
-        try:
-            with open(cline_bash_path, "w", encoding="utf-8", newline='\\n') as f: f.write(cline_bash_content)
-            os.chmod(cline_bash_path, 0o755)
-            actions.append("Injected Cline PreToolUse bash hook.")
-        except Exception as e: actions.append(f"Error configuring Cline bash hook: {str(e)}")
+        if not os.path.exists(cline_bash_path):
+            try:
+                with open(cline_bash_path, "w", encoding="utf-8", newline='\n') as f: f.write(cline_bash_content)
+                os.chmod(cline_bash_path, 0o755)
+                actions.append("Injected Cline PreToolUse bash hook.")
+            except Exception as e: actions.append(f"Error configuring Cline bash hook: {str(e)}")
 
     # 10. Codex CLI (OpenAI)
-    codex_paths = [
-        os.path.join(os.path.expanduser("~"), ".codex", "settings.json"),
-        os.path.join(cwd, ".codex", "settings.json")
-    ]
-    for co_path in codex_paths:
-        if os.path.exists(co_path):
-            try:
-                with open(co_path, "r", encoding="utf-8") as f:
-                    co_data = json.load(f)
-            except:
-                co_data = {}
-            
-            if "hooks" not in co_data: co_data["hooks"] = {}
-            if "PostToolUse" not in co_data["hooks"]: co_data["hooks"]["PostToolUse"] = []
-            
-            exists = False
-            for pt_hook in co_data["hooks"]["PostToolUse"]:
-                if pt_hook.get("matcher") == "mcp__.*__.*":
-                    for inner_hook in pt_hook.get("hooks", []):
-                        if inner_hook.get("command") == cmd_str:
-                            exists = True
-                            break
-            if not exists:
-                codex_hook = {
-                    "matcher": "mcp__.*__.*",
-                    "hooks": [{"type": "command", "command": cmd_str}]
-                }
-                co_data["hooks"]["PostToolUse"] = [codex_hook] + co_data["hooks"]["PostToolUse"]
+    if "codex" in env_lower:
+        codex_paths = [
+            os.path.join(os.path.expanduser("~"), ".codex", "settings.json"),
+            os.path.join(cwd, ".codex", "settings.json")
+        ]
+        for co_path in codex_paths:
+            if os.path.exists(co_path):
                 try:
-                    with open(co_path, "w", encoding="utf-8") as f:
-                        json.dump(co_data, f, indent=2)
-                    actions.append(f"Merged into Codex CLI hooks at {co_path}.")
-                except Exception as e:
-                    actions.append(f"Failed to merge Codex CLI hooks: {e}")
+                    with open(co_path, "r", encoding="utf-8") as f:
+                        co_data = json.load(f)
+                except:
+                    co_data = {}
+                
+                if "hooks" not in co_data: co_data["hooks"] = {}
+                if "PostToolUse" not in co_data["hooks"]: co_data["hooks"]["PostToolUse"] = []
+                
+                exists = False
+                for pt_hook in co_data["hooks"]["PostToolUse"]:
+                    if pt_hook.get("matcher") == "mcp__.*__.*":
+                        for inner_hook in pt_hook.get("hooks", []):
+                            if inner_hook.get("command") == cmd_str:
+                                exists = True
+                                break
+                if not exists:
+                    codex_hook = {
+                        "matcher": "mcp__.*__.*",
+                        "hooks": [{"type": "command", "command": cmd_str}]
+                    }
+                    co_data["hooks"]["PostToolUse"] = [codex_hook] + co_data["hooks"]["PostToolUse"]
+                    try:
+                        with open(co_path, "w", encoding="utf-8") as f:
+                            json.dump(co_data, f, indent=2)
+                        actions.append(f"Merged into Codex CLI hooks at {co_path}.")
+                    except Exception as e:
+                        actions.append(f"Failed to merge Codex CLI hooks: {e}")
 
     return actions
 
@@ -694,7 +713,7 @@ async def get_sift_stats(scope: str = "current") -> str:
     except Exception as e: return f"Error: {str(e)}"
 
 @mcp.tool()
-async def sift_onboard(target_dir: str = None) -> str:
+async def sift_onboard(environment: str = None, target_dir: str = None) -> str:
     """
     Automatically configures the current project workspace for optimal context sifting.
     
@@ -703,6 +722,7 @@ async def sift_onboard(target_dir: str = None) -> str:
     It injects mandatory sifting instructions into agent rule files and configures background hooks.
     
     Args:
+        environment: The name of your current active environment (e.g., 'Gemini', 'Cursor', 'OpenCode', 'VSCode', 'Cline'). REQUIRED for optimal configuration.
         target_dir: Optional absolute path to the project root. Defaults to current working directory.
     """
     report = ["# 🔍 Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA: {torch.cuda.is_available()}", f"- Device: {sift_kernel.get_device()}", "- Security: SAST/SCA Audited (0 CVEs)\n", "## 📝 Setup"]
@@ -728,7 +748,7 @@ When receiving data from external MCP servers, you MUST manually apply the corre
 **SECURITY & PRIVACY**:
 Always ensure that `.sift_telemetry.json`, `.sift_identity`, and `.sift_cache/` are added to your `.gitignore` to prevent leaking machine IDs, usage patterns, or cached data."""
     
-    for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — SOP", mandate_text, target_dir): report.append(f"- {action}")
+    for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — SOP", mandate_text, target_dir, environment=environment): report.append(f"- {action}")
     report.append("\n**Fully configured.**\n"); return "\n".join(report)
 
 @mcp.tool()

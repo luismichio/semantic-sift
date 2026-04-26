@@ -96,8 +96,10 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
 ### `sift_onboard`
 **Intent**: Automatically configures the current project workspace for optimal context sifting by injecting instructions, security hooks, and shielding specialized subagent threads. It also ensures critical Semantic-Sift artifacts are protected from version control exposure.
 *   **Arguments**:
+    *   `environment` (str, default: `None`): The name of your current active environment (e.g., `'Gemini'`, `'Cursor'`, `'OpenCode'`, `'VSCode'`, `'Cline'`). **Required** for optimal automated configuration and to prevent environment bloat.
     *   `target_dir` (str, default: `None`): Optional absolute path to the project root. Defaults to the current working directory.
 *   **Logic**:
+    *   **Environment-Specific Configuration**: Only executes hook and plugin injections for the environment specified in the `environment` argument. This prevents creating unnecessary folders (like `.kilocode` or `.openclaw`) for tools not in use.
     *   **Recursive Subagent Discovery**: Scans for specialized agent folders (`.codex/agents/`, `.cursor/agents/`, `.junie/agents/`) and scoped `AGENTS.md` files in subdirectories.
     *   **Multi-Format Shielding**: Injects the Sift Mandate into Markdown, rule files, and **TOML** configurations (for Codex CLI agents).
     *   **Automated `.gitignore` Protection**: Detects existing `.gitignore` files and automatically appends rules for `.sift_identity`, `.sift_telemetry.json`, and `.sift_cache/` if not already present.
