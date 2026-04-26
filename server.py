@@ -111,6 +111,29 @@ def update_toml_config(path: str, section_id: str, content: str) -> bool:
         return True
     except: return False
 
+def update_gitignore(target_dir: str) -> str:
+    """Ensures Semantic-Sift artifacts are ignored in the target workspace."""
+    path = os.path.join(target_dir, ".gitignore")
+    if not os.path.exists(path): return "No `.gitignore` found."
+    
+    entries = [".sift_identity", ".sift_telemetry.json", ".sift_cache/"]
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        added = []
+        for entry in entries:
+            if entry not in content:
+                added.append(entry)
+        
+        if not added: return "Already properly ignored."
+        
+        with open(path, "a", encoding="utf-8") as f:
+            f.write("\n# Project Specific (Semantic-Sift)\n" + "\n".join(added) + "\n")
+        return f"Added artifacts to `.gitignore`: {', '.join(added)}"
+    except Exception as e:
+        return f"Error updating `.gitignore`: {str(e)}"
+
 def merge_hook_json(path: str, hook_key: str, new_hook: dict, version: int = None):
     """Safely merges a new hook into an existing JSON file without overwriting others."""
     data = {"hooks": {}}
@@ -684,6 +707,12 @@ async def sift_onboard(target_dir: str = None) -> str:
     """
     report = ["# 🔍 Onboarding Report\n", "## 💻 Environment", f"- Python: {sys.version.split()[0]}", f"- CUDA: {torch.cuda.is_available()}", f"- Device: {sift_kernel.get_device()}", "- Security: SAST/SCA Audited (0 CVEs)\n", "## 📝 Setup"]
     
+    cwd = target_dir if target_dir else os.getcwd()
+    
+    # 1. Update .gitignore
+    gitignore_status = update_gitignore(cwd)
+    report.append(f"- Git Protection: {gitignore_status}")
+
     # New strict mandate for Unshielded IDEs
     mandate_text = """Guidelines for high-fidelity context.
     
@@ -694,7 +723,10 @@ When receiving data from external MCP servers, you MUST manually apply the corre
 *   **Web/HTML (Puppeteer, Fetch)**: Immediately pass output to `sift_doc` to incinerate DOM noise.
 *   **Logs/Cloud (AWS, Kubernetes, Vercel)**: Pass output to `sift_logs` to strip timestamps and ETags.
 *   **Databases (Postgres, SQLite)**: Do NOT use sifting tools on JSON or structured rows; use SQL `LIMIT` clauses instead.
-*   **Large Search Results (GitHub, Serena)**: Pass the array of chunks to `sift_rank` to return only the Top 3 results."""
+*   **Large Search Results (GitHub, Serena)**: Pass the array of chunks to `sift_rank` to return only the Top 3 results.
+
+**SECURITY & PRIVACY**:
+Always ensure that `.sift_telemetry.json` and `.sift_identity` are added to your `.gitignore` to prevent leaking machine IDs or usage patterns."""
     
     for action in update_instruction_files("SOP", "# 🔍 Semantic-Sift — SOP", mandate_text, target_dir): report.append(f"- {action}")
     report.append("\n**Fully configured.**\n"); return "\n".join(report)
