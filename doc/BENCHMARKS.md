@@ -8,17 +8,17 @@ This document provides empirical evidence of the sifting engine's impact across 
 
 ## 🚀 Key Results Summary
 
-| Scenario | Reduction | Tier | Goal |
-| :--- | :--- | :--- | :--- |
-| **AWS Framework (PDF)** | **58.2%** | Multi-Modal | Prune 14MB whitepaper into core signal. |
-| **Financial Data (XLSX)** | **54.4%** | Multi-Modal | Preserve data tables in Markdown. |
-| **MCP Architecture (HTML)** | **46.5%** | Multi-Modal | Strip DOM noise (sidebars/nav/footer). |
-| **HDFS System Logs** | **32.5%** | Legacy | Prune YYMMDD timestamps & metadata. |
-| **Vercel Build Logs** | **26.6%** | Heuristic | Incinerate formatting boilerplate. |
-| **GitHub Action (CI)** | **47.5%** | Heuristic | Remove debug/group markers. |
-| **NPM Install** | **25.9%** | Heuristic | Prune progress bars/dots. |
-| **Git History** | **16.4%** | Surgical | Remove ISO-8601 timestamps. |
-| **Natural Language** | **99.9%** | Semantic | Prune linguistic filler (BERT). |
+| Scenario | Reduction | Tokens Saved | Tier | Goal |
+| :--- | :--- | :--- | :--- | :--- |
+| **AWS Framework (PDF)** | **58.2%** | **~276,450** | Multi-Modal | Prune 14MB whitepaper into core signal. |
+| **Financial Data (XLSX)** | **54.4%** | **~14,650** | Multi-Modal | Preserve data tables in Markdown. |
+| **MCP Architecture (HTML)** | **46.5%** | **~2,940** | Multi-Modal | Strip DOM noise (sidebars/nav/footer). |
+| **HDFS System Logs** | **32.5%** | **~23,200** | Legacy | Prune YYMMDD timestamps & metadata. |
+| **Vercel Build Logs** | **26.6%** | **~60** | Heuristic | Incinerate formatting boilerplate. |
+| **GitHub Action (CI)** | **47.5%** | **~150** | Heuristic | Remove debug/group markers. |
+| **NPM Install** | **25.9%** | **~20** | Heuristic | Prune progress bars/dots. |
+| **Git History** | **16.4%** | **~25** | Surgical | Remove ISO-8601 timestamps. |
+| **Natural Language** | **99.9%** | **~6,000** | Semantic | Prune linguistic filler (BERT). |
 
 ---
 
