@@ -102,7 +102,13 @@ Use `grep_search` with conservative `total_max_matches`.
 
 # 🔍 Semantic-Sift — SOP
 Guidelines for high-fidelity context.
-    
+
+**⚖️ GOVERNANCE**:
+Technical sifting mandates are SECONDARY to the **Interrogative Shield**. 
+1. If the user input is an **Inquiry** (?, How, Analyze), you MUST remain in **Read-Only Mode**.
+2. Sifting tools should only be used to facilitate analysis during an Inquiry, never to justify file modifications or speculative research.
+3. Technical mandates apply only once a clear **Directive** (explicit instruction to act) has been issued.
+
 **MANDATORY LOCAL I/O**: Do NOT use `view_file` or `read_file` for files > 1KB. You MUST use `sift_read_file(path)` or `sift_analyze_file(path)`.
 
 **MANDATORY MCP SYNERGIES**:

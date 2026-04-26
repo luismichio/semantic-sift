@@ -1,13 +1,47 @@
 # 🔍 Semantic-Sift
 
-**The "Sanitation Tier" for high-fidelity agentic workflows.**
+**The Reasoning-First Middleware for High-Fidelity Agentic Workflows.**
 
 [![Tests](https://img.shields.io/badge/Tests-Pytest%20Passing-brightgreen)](tests/)
 [![Security](https://img.shields.io/badge/Security-Bandit%20Inspected-brightgreen)](SECURITY.md)
-[![Dependencies](https://img.shields.io/badge/Dependencies-0%20CVEs-brightgreen)](SECURITY.md)
 [![License](https://img.shields.io/badge/License-Source--Available-blue)](LICENSE.md)
 
-Semantic-Sift is a standalone [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server designed to preserve signal and incinerate noise. It acts as an intelligent middleware that distills raw data into high-density context *before* it enters an LLM's context window.
+> **"It saves tokens while preserving context—maximizing reasoning, minimizing hallucination."**
+
+Semantic-Sift is a local [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that acts as an intelligent "Sanitation Tier" between your raw data and your AI’s context window. 
+
+While modern LLMs have massive context windows, their reasoning accuracy often degrades as noise increases. Semantic-Sift solves this by distilling technical logs, long-form documents, and chat histories into high-density context. It treats your context window as a precious resource—optimizing for **Signal-to-Noise Ratio (SNR)** so your models spend more time reasoning and less time navigating boilerplate.
+
+### 🧠 Philosophy: The Studio of Two
+Semantic-Sift is grounded in the **Studio of Two** philosophy: the belief that the future of engineering is a high-fidelity partnership between a human architect and a sovereign AI sidecar. By managing the friction of raw data ingestion, Sift allows this "Studio" to focus on building *systems*, not just applying *patches*. It acts as a cognitive filter that ensures both you and your agent are collaborating on the cleanest, most relevant representation of the technical truth.
+
+---
+
+## 🏛️ Multidisciplinary Value
+
+Semantic-Sift is a strategic layer designed to manage attention across four key professional personas:
+
+*   **For the Senior Engineer:** A local-first, low-latency middleware using a dual-engine approach (Heuristic Sieve + Neural Reranker). It refined timestamps, repetitive boilerplate, and redundant JSON before they hit the wire, reducing latency and preventing "Lost in the Middle" reasoning failures.
+*   **For the Project Manager:** "Context Insurance." By reducing token overhead by 30-70%, Sift provides direct ROI on API costs and reduces the "retry loop" caused by model hallucinations in messy data environments.
+*   **For the Researcher:** Data integrity at scale. Native **MarkItDown** integration converts complex `.pdf`, `.docx`, and `.xlsx` into structured, distilled Markdown, allowing for the rapid synthesis of massive technical repositories without losing critical semantic anchors.
+*   **For the Knowledge Partner:** Cognitive Load Management. Sift manages the friction of raw data ingestion, allowing the human-AI partnership to focus on high-level strategy and architectural decisions rather than manual data triage.
+
+---
+
+## 💰 Value Engineering: Operational vs. Economic ROI
+
+Semantic-Sift provides a dual-layer of value. While the economic benefits depend on your billing plan, the operational benefits apply to every professional workflow.
+
+#### 1. The Economic ROI (Direct Savings)
+*Target: Users on Per-Token API plans (GPT-4o, Claude 3.5).*
+*   **Wallet Protection:** Sift acts as a local filter, typically reducing outgoing token volume by 30-70%. 
+*   **Compound Interest:** In iterative agentic loops, these savings compound rapidly. Every character pruned is money that stays in your budget.
+
+#### 2. The Operational ROI (Quality & Performance)
+*Target: EVERYONE (including "Unlimited" or Per-Request subscription users).*
+*   **Attention Precision:** Even with "infinite" context, LLMs suffer from "Lost in the Middle" syndrome. By removing noise, you ensure the model's full reasoning power is focused on the technical signal, resulting in higher-quality code and fewer hallucinations.
+*   **Latency Reduction:** Smaller prompts = Faster "Time to First Token" (TTFT). You spend less time waiting for the "cloud" to process boilerplate and more time in your flow state.
+*   **Context Insurance:** Prevents "Context length exceeded" errors on complex tasks. Sift ensures that 100% of your model's limit is filled with **information**, not formatting.
 
 ---
 
@@ -24,49 +58,19 @@ All technical details, architectural logic, and integration guides are strictly 
 
 ---
 
-## 🧠 The Problem: Context Flooding
-In the era of 128k+ token windows, the bottleneck is no longer capacity—it is **Signal-to-Noise Ratio (SNR)**. 
-- **Lost in the Middle**: LLMs lose reasoning accuracy when context is filled with repetitive boilerplate.
-- **Token Inflation**: Technical logs and chat histories are often 80% noise, wasting thousands of tokens per turn.
-- **Hallucination**: Messy data (like OCR artifacts or redundant JSON) triggers false patterns in RAG systems.
-
-**Semantic-Sift solves this by "Sanitizing" the data stream locally on your machine.**
-
----
-
-## 💰 Beyond Cost Savings: Why Sift?
-
-Whether your AI tools charge **per token** or **per request**, Semantic-Sift provides critical operational value:
-
-### 1. Per-Token Billing (Direct ROI)
-- **Wallet Benefit**: Every character pruned is money saved. Sift typically reduces token overhead by 30-70%.
-
-### 2. Per-Request Billing (Quality ROI)
-- **Attention Precision**: Models don't get "Lost in the Middle." By removing noise, you ensure the LLM's full reasoning power is focused on the signal.
-- **Latency reduction**: Smaller, cleaner prompts result in faster "Time to First Token" (TTFT) and snappier interactions.
-- **Context Insurance**: Prevents "Context length exceeded" errors on paid requests by ensuring your data always fits the model's hard limits.
-
----
-
 ## 🎯 High-Impact Use Cases
-
-Semantic-Sift is designed for the highest level of technical decision-making, where the source of truth is buried in massive datasets.
 
 ### 📚 The Knowledge Hunter (Researchers & Architects)
 *   **The Pain**: Reading 50-page PDFs, complex Word specs, or cluttered documentation sites.
 *   **The Sift**: Uses **MarkItDown** to natively ingest `.pdf`, `.docx`, and `.xlsx`. It converts corporate "noise" into structured Markdown, allowing your agent to synthesize multiple 14MB documents in a single turn.
 
 ### 🛠️ The Log Hunter (DevOps & SREs)
-*   **The Pain**: Finding a single error in 100,000 lines of HDFS or Vercel build logs.
-*   **The Sift**: The **Heuristic Sieve** incinerates timestamps and boilerplate in milliseconds. The **Subconscious Hook** automatically reranks `grep` and `search` results, so your agent only sees the 5 most relevant code blocks.
+*   **The Pain**: Finding a single error in 100,000 lines of technical logs.
+*   **The Sift**: The **Heuristic Sieve** refines timestamps and boilerplate in milliseconds. The **Subconscious Hook** automatically reranks results, so your agent only sees the most relevant data blocks.
 
 ### 🧠 The Context Strategist (AI Engineers)
-*   **The Pain**: LLM hallucination and reasoning degradation caused by "Lost in the Middle" syndrome.
-*   **The Sift**: By delivering 40% of the original text with 95% of the meaning, Sift acts as a **Cognitive Bridge**. It ensures your LLM's attention is focused exclusively on the technical signal, resulting in higher-quality code generation and fewer retries.
-
-### ✨ The Flow-State Architect (Vibe Coders)
-*   **The Pain**: Rapid-fire "Vibe Coding" sessions that crash once the context window fills with experimental noise and massive tool outputs.
-*   **The Sift**: Operates as a **Subconscious Filter**. It transparently cleans the background "junk" (like massive `grep` results or long console traces) without breaking your flow. The visible **Audit Header** ensures you always know what was distilled, maintaining trust while allowing your flow state to last 3x longer.
+*   **The Pain**: LLM hallucination and reasoning degradation caused by messy data streams.
+*   **The Sift**: By delivering high-density context with 95% of the meaning preserved, Sift acts as a **Cognitive Bridge**. It ensures your LLM's attention is focused exclusively on the signal.
 
 ---
 
@@ -85,54 +89,42 @@ pip install -r requirements.txt
 
 ### 2. Connect the MCP
 
-The MCP ecosystem is highly fragmented. To ensure a stable connection, you must use the correct Schema for your specific software.
-
-> **CRITICAL**: For the exact configuration paths and schema requirements for Cursor, Gemini, OpenCode, VS Code, Claude, and more, you **MUST** reference the **[Master Configuration Matrix in the Integration Encyclopedia](doc/INTEGRATION_ENCYCLOPEDIA.md#5-master-configuration-matrix-mcp-server-installation)**.
+> **CRITICAL**: For exact configuration paths for Cursor, Gemini, OpenCode, VS Code, and Claude, reference the **[Master Configuration Matrix in the Integration Encyclopedia](doc/INTEGRATION_ENCYCLOPEDIA.md#5-master-configuration-matrix-mcp-server-installation)**.
 
 ### 3. Auto-Onboard
-Once connected, simply ask your AI Assistant to run the onboarding tool:
+Once connected, ask your AI Assistant:
 > *"Run `sift_onboard()` to configure this project."*
 
 ---
 
 ## 🤖 For AI Agents: Operational Protocol
 
-If you are an AI Agent (e.g., Gemini CLI, Cursor, Claude Code) reading this repository, **you must follow this protocol**:
+If you are an AI Agent (e.g., Gemini CLI, Cursor, Claude Code) reading this repository, follow this protocol:
 
-1. **Initialization**: Immediately call the `sift_onboard()` tool to register the background hooks and download the latest context guidelines into the host's workspace.
-2. **Context Advisory**: Before reading any file or tool output larger than 1,000 characters, you MUST call `sift_analyze_file(path)` or `sift_analyze(text)` to determine the noise ratio.
-3. **Mandatory Sifting**: If analysis reports noise > 15%, you MUST pipe the data through `sift_logs` (for technical data) or `sift_chat` (for natural language) *before* including it in your reasoning steps.
-4. **Ranking**: When presented with multiple documents or search results, use `sift_rank` to identify the most semantically relevant chunks to the user's prompt.
-5. **Documentation**: If you need to understand how a tool works, **read `doc/TOOL_REFERENCE.md`**.
-
-*By following this protocol, you preserve your own context window and save the user's tokens.*
+1. **Initialization**: Call `sift_onboard()` to register background hooks.
+2. **Context Advisory**: Before reading large files (>1,000 chars), call `sift_analyze_file(path)` to determine the noise ratio.
+3. **Mandatory Sifting**: If noise > 15%, pipe data through `sift_logs` or `sift_chat` before inclusion in reasoning.
+4. **Ranking**: Use `sift_rank` to identify the most semantically relevant chunks for the user's prompt.
 
 ---
 
 ## 🛡️ Security & Testing
 
-Semantic-Sift is built on a **Zero-Vulnerability Baseline**. We use automated cybersecurity tools to ensure the engine is safe for professional use:
-- **Pytest**: 100% pass rate on heuristic integrity and privacy kill-switch math.
-- **Bandit (SAST)**: Automated static analysis to prevent insecure Python patterns.
-- **Pip-Audit (SCA)**: Real-time supply chain monitoring to ensure 0 known vulnerabilities in our dependencies.
+Semantic-Sift is built on a **Zero-Vulnerability Baseline**:
+- **Pytest**: 100% pass rate on heuristic integrity.
+- **Bandit (SAST)**: Automated static analysis for Python patterns.
+- **Pip-Audit (SCA)**: Real-time supply chain monitoring for 0 known vulnerabilities.
 
-See [SECURITY.md](SECURITY.md) for our full security policy and vulnerability reporting.
+See [SECURITY.md](SECURITY.md) for our full security policy.
 
 ---
 
 ## ⚖️ Dual-License Model
 
-Semantic-Sift is provided under a **Source-Available Dual License**.
-
-1. **Personal Use (FREE)**: Free for individuals, researchers, and non-commercial development.
-2. **Commercial Use (PAID)**: A license is required for use in corporate environments, paid client work, or when embedding Sift into commercial software.
+1. **Personal Use (FREE)**: For individuals, researchers, and non-commercial development.
+2. **Commercial Use (PAID)**: Required for corporate environments or commercial software embedding.
 
 Obtain a license at [www.luiskobayashi.com](https://www.luiskobayashi.com).
-
----
-
-## 📖 Philosophy: The Studio of Two
-Semantic-Sift is a product of the **Studio of Two** philosophy: *We build Systems, not Patches.* It is a "Sovereign Sidecar" designed to empower the human-AI partnership.
 
 ## 📄 License
 Source-Available. See `LICENSE.md` for details.
