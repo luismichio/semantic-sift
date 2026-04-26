@@ -1,310 +1,585 @@
-Skip to main content ] content - area ) 
- Model Context Protocol home page! light logo ] mintcdn 2BMHnlNW5OqOohXZ? fit max format 85 & s = a5ac61ce77858fb1ddaf6de761c39499 dark logo ]? max format 2BMHnlNW5OqOohXZ 85 s = 1227cb7feb8344f9f6288c6b5b0a6d80 
+function a ( p ) null return + p p. charAt ( 0? + 
+ function u ( p ) null return p + p charAt length - 1 return p slice ( 0 1 p 
+ function i ( p ) null return p + p 6 < = p. length substring - index return p substring ( 0 length - 6 index p return " return p 
+ p = location. pathname split (? 
+ p b p = 0 p indexOf + p = p. substring b length 
+ p = a ( p p = u ( p ) p = i ( p p index? 
+ document. documentElement. setAttribute ( data - current - path " p ) 
+ function ( a, b ) c = document. getElementById ( banner "? innerText d = 0 localStorage length e = localStorage. key ( d if? endsWith ( a localStorage. getItem ( e = c return void document. documentElementsetAttribute b hidden document b visible c = 0 localStorage length + d localStorage key c d? endsWith localStorage getItem d document b hidden b visible catch a b hidden 
+ bannerDismissed 
+ data - banner - state 
+ primary 9 9 11 
+ 250 250 250 
+ dark 9 9 11 
+ 255 255 255 
  
- Blog modelcontextprotocol 
- GitHub ] 
- Navigation 
- MCP 
- Architecture overview 
- Documentation Extensions Specification specification 2025 - 11 - 25 Registry 
+ 14 14 16 
+ gray - 50 243 243 243 
+ - 100 238 238 238 
+ - 200 222 222 222 
+ 300 206 206 206 
+ - 400 158 158 158 
+ 500 112 112 112 
+ - 600 80 80 80 
+ - 700 62 62 62 
+ - 800 37 37 37 
+ - 900 23 23 23 
+ - 950 10 10 10 
+ antialiased text - gray - 500 dark : - gray - 400 self next _ spush ( 0 suppressHydrationWarning children " function ( a, b, c, d ) var e f, g = mint d linden d? sidebar - content h = e = d f navbar - transition maple e & f + - maple f [ i, j ] = ( ( ) = switch ( d ) case almond return scroll - mt 2. 5rem. 5rem luma return scroll - mt 6rem sequoia return 8. 5rem mt 11rem default return scroll - mt 9. 5rem 12rem function k ( document. documentElement classList. add ( i function l ( a ) document getElementById? setProperty top rem function m ( a )? setProperty height calc 100vh - $ a rem function n ( a, b )! a & & b | a & b? k ( document documentElementclassList. remove ( j ) a b document. documentElement add j ) remove i ) o = document documentElement getAttribute data - banner - state p = null o? visible o b switch ( d mint l ( c ), n ( a, p ) palm aspen sequoia l ( c ) m ( c ) n ( a, p ) luma k ( linden l ( c ) p k ( almond k ( l ( c ) m ( c ) q = function ( a = document. createElement style return a. appendChild ( document createTextNode document. head. appendChild a function window. getComputedStyle ( document body ) setTimeout removeChild 1 requestAnimationFrame? a a 1 window. scrollY > 50 document. getElementById ( h )?setAttribute data - - opaque q function m ( a, b, c ) d = document. documentElement getAttribute data - banner - state e = 2. 5 null? visible d f = 3 g = 4 h = e + g + f switch c mint palm aspen f = 2. 5 g 3. 5 h = e + f + g luma g = 3 h = e + g linden 4 h = e + g almond g = 3. 5 h = e + g sequoia f = 3 g 3 h = e + g + f return h true false mint script content - area sr - only focus text background - light dark outline - primary main content script function j ( a, b, c, d ) window. matchMedia max - width : 1024px ) ) matches d document. documentElement. style. setProperty ( c, " 0px " ) document. documentElementsetAttribute ( data - assistant - state closed " d localStorage. setItem a false " return e = localStorage getItem a ) null = e ) document. documentElement setProperty c 0px " data - assistant - state closed return f = JSON. parse ( e ) g = localStorage getItem b ) h = null g? JSON parse g 368 document. documentElement setProperty c f? h + px " 0px " setAttribute data - assistant - state f? open closed catch a ) document documentElement setProperty c 0px " setAttribute data - assistant - state closed 
+ chat - assistant - sheet - open 
+ sheet - width 
  
- MCP? intro 
- MCP 
- Architecture learn 
- Servers server - concepts 
  
- Versioning 
- Develop with MCP 
- Connect to local MCP servers connect - local - servers 
-Connect to remote MCP Servers ] docs develop / connect - remote servers ) 
- Build with Agent Skills ] develop / build - with - agent - skills 
- Build an MCP server ] develop / build - server ) 
- Clients 
- SDKs ] docs / sdk ) 
- Security 
- Developer tools 
- MCP Inspector ] docs tools inspector 
- Debugging ] docs tools / debugging 
- Examples 
- Example Clients clients ) 
- Servers examples 
+ Mintlify theme 
  
- Scope scope ) 
- Concepts of MCP concepts - of mcp 
- Participants participants 
- Layers layers 
- Data layer data - layer 
- Transport layer layer 
- Data Layer Protocol data - layer protocol 
- Lifecycle management 
- Primitives primitives 
- Notifications notifications 
- Example example 
- Data Layer data - layer 2 
- Understanding Initialization Exchange 
- in AI Applications 
- Tool Discovery Request 
- Response 
+ 500 
  
- Tool Execution Request execution 
- Key Elements of Tool Execution tool 
-Understanding Tool Execution Response tool - execution response 
- Works in AI Applications ai applications - 3 
- Understanding Tool List Change Notifications list change notifications 
- Key Features of MCP Notifications - of mcp - notifications 
- Client Response to Notifications client - response - to notifications 
- Why Notifications Matter 
- AI Applications applications 4 
- MCP 
- Architecture overview 
- Copy page 
  
- Model Context Protocol ( MCP discusses scope core concepts example core concept 
- MCP SDKs abstract concerns developers data layer protocol ] section useful. MCP servers provide context to AI application 
- specific implementation details refer to documentation for language - specific SDK ] docs sdk 
+ 400 
  
- Model Context Protocol includes projects 
- MCP Specification implementation requirements for clients servers 
- MCP SDKs for different programming languages implement MCP 
- MCP Development Tools developing MCP servers clients MCP Inspector 
- MCP Reference Server Implementationsmodelcontextprotocol servers Reference implementations MCP servers 
- MCP focuses on protocol context exchange dictate 
- AI applications use LLMs context 
- concepts - of - mcp 
- participants 
- MCP follows client - server architecture MCP host AI application Claude establishes connections to MCP servers MCP host one MCP client each maintains dedicated connection MCP server 
- Local MCP servers STDIO serve single MCP client remote MCP servers Streamable HTTP transport serve many MCP clients 
- key participants 
- Host AI application coordinates manages MCP clients 
- Client maintains connection MCP server obtains context 
- program provides context MCP clients 
- Visual Studio Code acts MCP host Studio Code establishes connection to MCP server Sentry MCP server runtime instantiates MCP client connection 
- connects to another MCP server local filesystem server modelcontextprotocol runtime instantiates additional MCP client object 
-MCP server refers program context data 
- MCP servers execute locally or remotely 
- Claude Desktop launches filesystem 
- server ] 
- runs locally on same machine uses STDIO 
+ Fix code block line highlight color 
+ 
+ 250 
+ 
+ 
+ Add automatic section numbers headings table of contents items 
+ enable - section - numbers 
+ 
+ 
+ 
+ 
+ contents 
+counter - reset h2 - counter h3 - counter h4 - h5 - h6 - counter 
+ 
+ - area h2 
+ 0 
+ counter - increment h2 - counter 
+ - set h3 - counter h4 - h5 - h6 
+ 
+ content - area h3 
+ 1 
+ counter - increment h3 - counter 
+ - set h4 - counter h5 - h6 
+ 
+ - area h4 
+ 2 
+ counter - increment h4 - counter 
+ - set h5 - counter h6 - 
+ 
+ - area h5 
+ h5 
+ 3 
+ counter - increment h5 - counter 
+ - set h6 - counter 
+ 
+ - area h6 
+ 
+ 4 
+ h6 - 
+ 
+ 
+ 
+ 
+ area h2 
+ 0 
+ counter h2 - counter ) 
+ 
+ - h3 
+ 1 
+ counter h2 - counter ) h3 - 
+ 
+ - h4 
+ 2 
+ counter h2 - counter )counter ( h3 - counter ) counter h4 - counter 
+ 
+ 
+ content - area h5 id before 
+ content - area h5 
+ table contents depth 3 
+ counter ( h2 - counter ) counter h3 - counter h4 - counter 
+ h5 - counter 
+ 
+ content - area h6 id ] before 
+ content - area h6 
+ table contents 4 
+ content counter ( h2 - counter ) counter h3 - counter h4 - counter 
+ h5 - counter counter h6 - counter ) 
+ 
+ 
+ schema reference 
+ 
+ none 
+ 
+ Vertical margins 
+ 
+ 
+ 
+ 
+ 0 
+ 
+ 
+ 
+ 
+ h2, h3 
+ margin : 0 
+ 
+ type h2 h3 
+ margin - top calc var mt 
+ 
+ h2 + type h3 
+ margin - top var 
+ 
+ Type definition code 
+ tsd signature 
+ margin var 0 0 0 
+ 
+ 
+ 
+ 
+ 
+ margin 0 
+ 
+is ( p, ul ol pre ) 
+ margin - top var ( - - mt - lg ) 
+ 
+ 
+ var mt - sm ) 
+ 
+ 
+ Example block 
+ 
+ margin var ( - - mt - lg 0 0 0 
+ 
+ var mt - sm 
+ scroll - margin calc 8rem + 1. 5rem var ( - - mt - sm ) 
+ 
+ 
+ 
+ 
+ is p, ul ) 
+ margin - top 0 
+ 
+ 
+ 
+ 
+ margin var ( - - mt - lg ) 0 0 0 
+ 
+ comment 
+ margin top var ( - - mt - sm ) 
+ 
+ 
+ type - declaration 
+ 
+ 4 
+ margin var ( mt - md 0 0 0 
+ 
+ 
+ 
+ 
+ var mt - sm 0 0 0 
+ 
+ 
+ 
+ 
+ 
+ comment 
+ alias 
+ interface 
+ 
+ family var mono ) 
+ size 0. 875em 
+ 
+ 
+ Code blocks 
+ signature 
+ tag code 
+ Mintlify 
+border 1px solid 
+ color light - dark rgb var 950 rgba 255 255 255 1 
+ - radius 1rem 
+ padding 1rem 0. 875rem 
+ background color inherit 
+ 
+ font - family var mono 
+ - size 0. 875rem 
+ line - height 1. 5rem 
+ 
+ Type definition 
+ 
+ 
+ - weight normal 
+ bottom none 
+ text decoration underline 
+ 
+ 2px 
+ 
+ 
+ 
+ pointer events none 
+ color inherit 
+ 
+ 
+ keyword 
+ light - dark rgb ( 207, 34, 46 ) # 9CDCFE 
+ 
+ 
+ - dark rgb 149, 56, 0 ) 4EC9B0 
+ 
+ 
+ light - dark rgb ( 5, 80 174 DCDCAA 
+ 
+ 
+ 
+ 
+ 
+ 
+ - weight 600 
+ style italic 
+ 
+ 
+ 
+ 
+ light - dark rgb ( 17, 99, 41 9CDCFE 
+ 
+ 3 
+light - dark rgb ( 10, 48, 105 ) # CE9178 ) 
+ 
+ hl - 5 
+ rgb 5, 80, 174 ) # 569CD6 ) 
+ 
+ 
+ Copy button 
+ 
+ display none 
+ 
+ 
+ See links 
+ tag 
+ trailing 
+ 4 " 
+ 
+ 
+ anchor link 
+ tsd anchor - icon 
+ display none 
+ 
+ single link display inline heading 
+ has p 
+ 4 
+ 
+ 
+ 
+ 
+ 
+ 
+ doc comments 
+ 
+ none 
+ 
+ border 
+ 
+ border - top light - dark rgb ( var ( - - gray - 950 ) /. 05 ) rgba ( 255 255 255 / 0. 1 ) 
+ padding - top var ( - - mt - md ) 
+ 
+ 
+ " 3 " 
+ font - family var - mono ) 
+ - weight : 700 
+ 
+ 
+ type declaration 
+ margin - left 1. 25rem 
+ 
+ Sub - members 
+ tsd - type - declaration 
+Templated heading Type Declaration 
+ data typedoc 4 " 
+ display none 
+ 
+ Name type 
+ 5 " 
+ font - family var - mono 
+ - size 0. 875rem 
+ - weight 500 
+ width fit - content 
+ padding 0. 125em 0. 5em 
+ background - color light - dark rgb 100 5 rgb 
+ tsd - tag 
+ display none 
+ 
+ 
+ 
+ Example 
+ tag 
+ padding left 0. 5rem 
+ 
+ sources 
+ display none 
+ 
+ 
+ Anchor links 
+ anchor - icon 
+ border : 0 
+ padding 0 0. 5rem 
+ color rgb 500 5 
+ 
+ 500 
+ 
+ 
+ 
+ 
+ 
+ 
+ none 
+ 
+ 
+ Types index properties 
+ - declaration 
+ 
+ 
+ display none 
+ 
+ Templated heading Type Declaration 
+ data typedoc - h 4 " 
+ none 
+ 
+ Index property 
+ 5 " 
+ font - family var - mono ) 
+ font - weight 700 
+ 
+ 
+ 
+copyright footer 
+ 
+ margin - top 2rem 
+ padding - top 1. 5rem 
+ border - top 1px light - dark rgb var gray - 950 rgba ( 255 255. 1 
+ text - align center 
+ font - size 0. 875rem 
+ color rgb var gray - 500 
+ line - height 1. 5 
+ 
+ color inherit 
+ text - decoration underline 
+ hover 
+ rgb var gray - 700 
+ 
+ 
+ 
+ data - as p MCP SDKs layer protocol MCP servers context AI application 
+ p SDK 
+ h2 class flex whitespace - pre - wrap font - semibold scope absolute tabindex - 1 ml - 10 flex items - center opacity border - 0 group hover 100 outline group header w - 6 h rounded - md flex items - center justify - center shadow - text - gray - 400 white bg - background - brightness 135 dark ring - 1 brightness 150 bg white ring 400 30 700 / 25 400 / 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 - 24 - 24h72c61. 9 112 - 50. 1 - 13. 24 71 160zM184 232H392c13. 3 10 path svg div span cursor - pointer 
+ p Model Context Protocol includes projects span 
+ 
+ href modelcontextprotocolio specification latest target blank rel noreferrer class link " MCP Specification outlines implementation requirements clients servers 
+ class link " href docs sdk " MCP SDKs programming languages MCP 
+ MCP Development Tools MCP servers target blank rel noreferrer link " 
+ target blank rel noreferrer link " MCP Reference Server Implementations implementations MCP servers 
+ 
+ class callout my - 4 px - 5 py - 4 overflow - hidden rounded border - blue - 200 bg - 50 900 600 / 20 data callout type note " class mt - 0. 5 w - 4 data component callout - icon " svg width 14 viewBox fill currentColor class size - 4 text - blue - 800 dark - blue - 300 Note " path fill - rule evenodd M7 1. 3C10. 14 1. 3 12. 7 3. 86 12. 7 7C12. 7 1014 10. 14 12. 7 7C5. 48908 12. 6974 4. 0408 12 096 2. 97241 11. 0276C1. 90403 9. 9592 1. 30264 8. 51092 1. 7C1. 3. 86 3. 86 3ZM7 0C3 10 9H6V11H8V9Z path > svg > div class text - prose dark prose - invert min - w - 0 w - full bg - - text - current current blue - 800 dark text - 300 data callout - content p " MCP protocol context exchange dictate 
+ applications LLMs context span div 
+h2 class flex whitespace pre - wrap group font - semibold id concepts - of - mcp div class absolute tabindex - 1 " href concepts - of - mcp class - ml - 10 flex items center opacity border group hover 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items - center justify text - gray - 400 dark group focus border svg xmlns org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 112 112h72c13. 24H160C71. 256zm576 - 71 160 - 160 160H344c - 13. 3 - 24 - 10 7 - - 24s10 24h72c61. 112 - 50 1 - 137 - 24 - 24s10 24h72c88. 4 0 71. 160zM184 232H392c13. 3 10. 7 - 24H184c - 13 path svg div span cursor - pointer " Concepts MCP h2 
+ h3 class flex whitespace - pre - wrap group font " id participants " div absolute tabindex - 1 " participants - ml - 10 flex items - center opacity - border group 100 div class w - 6 h - 6 rounded - md flex items - center shadow - text - gray - 400 dark 400 svg xmlns org fill gray height 12px " viewBox = 0 0 576 512 " path d = M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24 24s - 10 7 - 24H160C98. 1 144 48 194. 256s50112 112 112h72c13. 3 24 10. 7 - 24H160C71. 6 416 0 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 0 - 24 - 10. 7 24s10 24h72c61. 112 - 50 112 - 112s 112H344c - 13. 24s10. 24h72c88. 4 160 71. 6 160 160zM184 232H392c13. 3 10 - 10 24H184c - 13. " path svg div span cursor - pointer " 
+ p " MCP client - server architecture host AI application establishes connections MCP servers MCP host one MCP client each server maintains dedicated connection 
+ Local MCP servers STDIO transport serve single MCP client remote MCP servers Streamable HTTP transport serve many MCP clients 
+span data - as = " p " > key participants in MCP architecture span > 
+ ul 
+ li strong MCP Host AI application coordinates manages MCP clients 
+ strong MCP Client component maintains connection to MCP server obtains context from MCP 
+ MCP Server strong program provides context to MCP clients 
+ 
+ span data - as = p " > Visual Studio Code acts as MCP host establishes connection to MCP server href docs sentry io Sentry MCP server instantiates MCP client object connection to MCP server 
+ connects to another MCP server instantiates additional MCP client object maintain connection span 
+ template data - dgst BAILOUT _ TO CLIENT _ SIDE RENDERING " 
+ span data - as = p " strong MCP server refers program serves context data 
+ MCP servers can execute locally or remotely 
+ Claude Desktop launches href = githubmodelcontextprotocol servers tree main src filesystem target = blank " rel noreferrer class link filesystem 
+ server 
+ runs locally same machine uses STDIO 
  transport local MCP server official 
- Sentry MCP server ] docs mcp runs on 
+ href docs sentry product sentry mcp target blank rel noreferrer class link Sentry MCP server runs 
  Sentry platform uses Streamable HTTP transport 
  remote MCP server 
- 
+ h3 class flex whitespace - pre - wrap group font - semibold id layers " div class absolute tabindex - 1 layers class - ml - 10 flex items - center opacity - 0 border - 0 - 100 outline - div class w - 6 h - 6 flex items center justify center shadow text - gray - 400 dark group focus border svg xmlns w3. org 2000 svg fill = gray " height 12px viewBox = 0 0 576 512 " path d = M0 256C0 167. 6 716 96 160 96h72c13. 3 24 10 - 24H160C98. 1 144 194 256s50. 1 112 112 112h72c13. 10 - 24H160C71. 6 416 344 256zm576 88. - 71. 6 160 - 160H344c - 13. 3 24 10 7 24s10. 24 24h72c61. 112 - 50 112s 112H344c - 13 10 24s10 24 24h72c88 71 160zM184 232H392c13. 3 24 10. 7 24s - 10 24H184c - 13 24z " path svg div span cursor - pointer 
  two layers 
- Defines JSON - RPC protocol for client - server communication lifecycle management core primitives tools resources prompts notifications 
- Transport layer communication mechanisms channels data exchange transport - specific connection establishment message framing authorization 
- inner 
  
- implements JSON - RPC 2. 0 ] exchange protocol message structure semantics 
+ JSON - RPC protocol client - server communication lifecycle management core primitives 
+ communication mechanisms data exchange transport - specific connection establishment message framing authorization 
+ 
+ data inner outer 
+h4 class flex whitespace pre - wrap group font - semibold data - layer div class absolute tabindex - 1 href data - layer class - ml - 10 flex items center opacity border group hover 100 outline label Navigate header div class w - 6 h - 6 rounded - md flex items center justify shadow text gray - 400 dark group svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98 112 112h72c13. 24H160C71. 6 416 256zm576 - 160 - 160 160H344c - 13. 3 0 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13. 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 7 24 24H184c - 13. 3 24s10 " path svg div span class cursor - pointer " Data layer 
+ data - as " p " implements href = jsonrpc org target " blank link " JSON - RPC 2. 0 exchange protocol message structure semantics 
  includes 
- Lifecycle management connection initialization capability negotiation connection termination between clients servers 
- features core functionality tools for AI actions resources context data prompts for interaction templates 
- sample LLM elicit input log messages 
-Utility features Supports capabilities notifications real - time updates progress tracking long - running operations 
- transport - layer Transport layer 
- manages communication channels authentication between clients servers handles connection establishment message framing secure communication MCP 
- supports two transport mechanisms 
- Uses standard input streams direct process communication optimal performance no network overhead 
- Streamable HTTP transport Uses HTTP POST for client server messages Server - Sent Events streaming enables remote server communication supports standard HTTP authentication methods bearer tokens API keys custom headers recommends OAuth authentication tokens 
- abstracts communication details JSON - RPC 2. 0 message format 
- data - layer protocol 
- schema semantics between MCP clients servers context 
- uses JSON - RPC 2. 0 ] underlying RPC protocol Client servers send requests respond Notifications when no response required 
- lifecycle - management 
- stateful protocol requires lifecycle management negotiate capabilities client server support information in specification showcases initialization sequence 
-# primitives ) Primitives 
- MCP primitives important MCP define clients servers specify contextual information with AI applications range actions 
- MCP defines three core primitives expose 
- Executable functions AI applications actions file operations API calls database queries 
+ 
+ Lifecycle management connection initialization capability negotiation termination 
+ Server features core functionality AI actions context data prompts interaction templates 
+ sample LLM input log messages 
+ Utility Supports capabilities notifications real - time updates progress tracking long - running operations 
+ 
+h4 class flex whitespace pre - wrap group font - semibold transport - layer div class absolute tabindex - 1 href transport - layer class - ml - 10 flex items center opacity border group hover 100 outline label Navigate header div class w - 6 h - 6 rounded - md flex items center justify shadow text gray - 400 dark group svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98 112 112h72c13. 24H160C71. 6 416 256zm576 - 160 - 160 160H344c - 13. 3 0 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13. 37 - 24 24 - 24h72c88. 4 0 160 71. 160zM184 232H392c13. 3 24 10. 7 24s - 10. 7 24H184c - 13. 3 " path cursor - pointer Transport layer 
+ p manages communication channels authentication handles connection establishment message framing secure communication MCP 
+ MCP supports transport mechanisms 
+ 
+ Uses standard input streams communication performance no network overhead 
+ Streamable HTTP transport HTTP POST client - server messages Server - Sent Events streaming enables remote server communication supports HTTP authentication methods bearer tokens API keys custom headers MCP recommends OAuth authentication tokens 
+ 
+ transport abstracts communication details JSON - RPC 2. 0 message format 
+h3 class flex whitespace pre - wrap group font - semibold data - layer protocol div class absolute tabindex - 1 " href data - layer protocol class - ml - 10 flex items center opacity border group hover 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items - center justify text gray - 400 dark group svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 - 71 160 - 160 160H344c - 13. 3 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160zM184 232H392c13. 3 24 10. 7 24s - 10. 7 24H184c - 13. 3 " path svg div span cursor - pointer " Data Layer Protocol span h3 
+ data - as p " schema semantics MCP clients servers. Developers find data layer href primitives link " context clients. 
+ data - p " MCP href = jsonrpc org target link JSON - RPC 2. 0 underlying RPC protocol Client servers send requests respond. no response required. span > 
+h4 class flex whitespace pre - wrap group font - semibold lifecycle - management div class absolute tabindex - 1 " href lifecycle - management class - ml - 10 flex items center opacity border group 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items center justify shadow text gray - 400 dark svg xmlns org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 88 - 71 160 - 160 160H344c - 13. 3 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13. 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 7 24 - 24H184c - 13. 3 24s10. 7 24z " path svg div span cursor - pointer " Lifecycle management span h4 
+ data - p " MCP button data - state closed stateless Streamable HTTP transport span tooltip underline decoration - - offset - 4 - gray - 400 dark : - gray - 500 " stateful protocol lifecycle management negotiate data - state closed Features operations gray - 400 dark gray - 500 capabilities client server support information class link " lifecycle example showcases initialization sequence span 
+h4 class flex whitespace pre - wrap group font - semibold id primitives div class absolute tabindex - 1 href primitives class - ml - 10 flex items center opacity border group hover opacity 100 outline label Navigate header div class w - 6 h - 6 rounded - md flex items - center justify shadow text - gray - 400 dark group svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 - 160 - 160 160H344c - 13. 3 0 - 24 - 10 7 24s10 24h72c61. 9 112 - 50. 1 112H344c - 13 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 7 24 - 24 24H184c - 13. 3 0 - 24 10. 7 - 24s10. 7 - - 24z " > path > svg div span class cursor - pointer " Primitives span h4 
+ data - p " > MCP primitives important define clients servers specify contextual information with AI applications range actions 
+ p " MCP defines three core primitives 
+ 
+ Executable functions AI actions file operations API calls database queries 
  Resources contextual information AI file contents database records API responses 
- Prompts Reusable templates structure interactions with language models system prompts few - shot examples 
- primitive type methods for discovery retrieval execution 
- MCP clients use methods discover primitives client list tools execute design allows listings dynamic 
- consider MCP server context about database expose tools for querying prompt few - shot examples 
- details server primitives concepts 
- defines primitives expose allow authors build richer interactions 
- Sampling Allows servers request language model completions from AI application authors access model - independent not include language SDK sampling method request language model completion AI application 
- Elicitation Allows servers request additional informationuseful when server authors want information ask confirmation use elicitation create method request additional information 
- Logging Enables servers send log messages debugging monitoring 
- client primitives concepts 
- offers cross - cutting utility primitives requests 
- Tasks Durable execution wrappers deferred result retrieval status tracking for MCP requests computations workflow automation batch processing multi - step operations 
+ Reusable templates structure interactions with language models system prompts examples 
  
- supports real - time notifications dynamic updates send tool update notifications Notifications sent as JSON - RPC 2. 0 notification messages enable MCP servers provide real - time updates 
+ " primitive type methods for discovery retrieval execution tools 
+ MCP clients code list methods discover available primitives client list tools execute design allows listings dynamic 
+span data - as = " p " > consider MCP server context about database expose tools for querying resource schema prompt examples span 
+ data - p " server primitives class = link " docs learn server - concepts server concepts span 
+ data p " MCP defines primitives em > clients expose primitives allow MCP build richer interactions span 
  
- data - layer 2 
- step by walkthrough MCP client - server interaction data layer protocol lifecycle sequence tool operations notifications using JSON - RPC 2. 0 messages 
+ strong Sampling Allows servers request language model completions from client AI application want access language model stay model - independent not include language model SDK MCP use code > sampling / createMessage method request language model completion AI application li 
+ Elicitation request additional information more information confirmation action request additional information 
+ Logging Enables send log messages for debugging monitoring 
  
- Initialization Lifecycle Management 
- begins with lifecycle management capability negotiation handshake client sends initialize request establish connection negotiate features 
+ data - p " client primitives class = " link " docs learn client - concepts " client concepts 
+ p " protocol offers cross - cutting utility primitives augment requests span 
  
+li strong Tasks Experimental Durable execution wrappers deferred result retrieval status tracking MCP requests expensive computations workflow automation batch processing multi - step operations 
  
- 
- 
- 
- 
- 
-params " 
- protocolVersion 2025 - 06 - 18 
- capabilities 
- elicitation 
- 
- clientInfo 
- name example - client 
- version 1. 0. 0 
- 
- 
- 
- 
- understanding initialization exchange Initialization Exchange 
- key MCP lifecycle management 
- Protocol Version Negotiation protocolVersion 2025 - 06 - 18 ensures client server compatible protocol versions prevents communication errors mutually compatible version not negotiated connection terminated 
- Capability Discovery capabilities allows declare features primitives tools resources prompts notifications efficient communication avoiding unsupported operations 
- Identity Exchange clientInfo serverInfo identification versioning information debugging compatibility 
- capability negotiation demonstrates MCP primitives Client Capabilities 
- elicitation " client declares work user interaction requests 
- Server Capabilities 
- tools " listChanged server supports tools primitive tools list changed notifications changes 
- supports resources primitive 
- initialization client sends notification 
- Notification 
-
- 
- jsonrpc 2. 0 
- method notifications initialized 
+ h4 class flex whitespace - pre - wrap group font - semibold id notifications absolute tabindex - 1 notifications - ml - 10 flex items - center opacity 100 outline Navigate header w - 6 h - 6 flex items center justify shadow text gray - 400 dark group svg xmlns gray height 12px viewBox 0 0 576 512 " path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - - 24H160C98. 1 256s50 112h72c13. 3 - 24H160C71. 6 416 0 344. 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13- 24 - 24h72c61. - 112H344c - 13 24h72c88. 160zM184 232H392c13. 24H184c - path svg div span class cursor - pointer " Notifications span h4 
+ - p " protocol supports real - time notifications dynamic updates update notifications Notifications JSON - RPC 2. 0 notification messages MCP servers real - time updates 
+ h2 class flex whitespace - pre - wrap group font - semibold example div class absolute tabindex = " - 1 " href example - ml - 10 flex items - center opacity - 0 border - 0 group hover - 100 focus outline - Navigate header div w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : - white / 50 bg - background - brightness - 1dark ring 1 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50 - 13 24 24h72c88 71. 160zM184 232H392c13. 3 10 - path svg div span class cursor - pointer " Example h2 > 
+h3 class flex whitespace pre - wrap group font - semibold data - layer - 2 div class absolute tabindex - 1 " href data - layer - 2 class - ml - 10 flex items center opacity border group hover 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items - center justify text gray - 400 group border svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 160 - 160 160H344c - 13. 3 - 24 - 10 7 24s10 7 24h72c61. 9 112 - 50 1 112H344c - 13 37 - 24 24 - 24h72c88. 4 71 160zM184 232H392c13. 3 10. 7 - 10. 24H184c - 13. 3 path svg div span cursor - pointer " Data Layer h3 
+ data - p " step - walkthrough MCP client - server interaction data layer protocol lifecycle sequence tool operations notifications JSON - RPC 2. 0 messages 
+ line " color : # 116329 ; dark # 9CDCFE & quot jsonrpc color 1F2328 # D4D4D4 0A3069 # CE9178 quot 2. 0 1F2328 D4D4D4 
+span line " color # 116329 ; - shiki - dark # 9CDCFE " quot id color # 1F2328 shiki - dark # D4D4D4 color # 0550AE dark # B5CEA8 " 1F2328 # D4D4D4 
+ line " color # 116329 - dark # 9CDCFE quot ; method color # 1F2328 # D4D4D4 color # 0A3069 ; shiki - dark # CE9178 quot initialize 1F2328 D4D4D4 
+ line " color # 116329 - dark # 9CDCFE quot ; params quot color # 1F2328 - dark # D4D4D4 
+span class line " color # 116329 ; - shiki - dark : # 9CDCFE " & quot ; protocolVersion color 1F2328 dark # D4D4D4 color # 0A3069 ; shiki - dark : # CE9178 " quot ; 2025 - 06 - 18 quot color # 1F2328 dark D4D4D4 
+ line " color # 116329 ; - dark # 9CDCFE quot capabilities color 1F2328 dark # D4D4D4 
+ line " color 116329 9CDCFE quot elicitation 1F2328 D4D4D4 
+ line " color # 1F2328 dark D4D4D4 
+ line " color # 116329 ; - dark # 9CDCFE " quot ; clientInfo quot color 1F2328 ; dark # D4D4D4 
+span line " color # 116329 ; - shiki - dark # 9CDCFE " quot name color # 1F2328 # D4D4D4 color # 0A3069 dark # CE9178 quot example client color # 1F2328 shiki - dark # D4D4D4 
+ line " color # 116329 dark # 9CDCFE quot version color # 1F2328 # D4D4D4 color # 0A3069 # CE9178 quot 1. 0. 0 
+ line " color # 1F2328 - dark # D4D4D4 
+ line " color # 1F2328 dark # D4D4D4 
+ line " color # 1F2328 ; shiki - dark # D4D4D4 
+code pre div class print hidden data - fade overlay true style fade color light # ffffff dark # 0B0C0E data - state inactive orientation horizontal role tabpanel aria - labelledby radix - R ljildinpfcqcf9babsnpfdb trigger - 1 tabindex - 1 w full relative rounded xt h4 class flex whitespace - pre - wrap group font - semibold understanding initialization - exchange absolute tabindex - 1 - ml - 10 flex items - center opacity 0 border group 100 aria - label Navigate to header " div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : text - white / 50 bg - background - dark dark brightness - 135 dark ring - 1 brightness 150 bg white ring 400 30 700 / 25 400 / 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 9 112 - 50. 1 - 13. 3 - 24 71 160zM184 232H392c13. 3 10 path div span cursor - pointer Initialization Exchange p initialization process key MCP s lifecycle management span ol > 
+ li 
+span data - as = " p " > strong Protocol Version Negotiation strong code protocolVersion field 2025 - 06 - 18 ensures client server compatible protocol versions prevents communication errors when different versions. If mutually compatible version not negotiated connection should terminated span > 
  
  
- applications AI Applications 
- AI application MCP client manager establishes connections servers stores capabilities application uses information servers functionality tools resources prompts real - time updates 
- Pseudo - code AI application initialization 
+ span data - as = p " > strong Capability Discovery strong capabilities object allows declare features including href = # primitives class link " primitives handle tools resources prompts features href notifications enables efficient communication avoiding unsupported operations span 
  
  
- async stdio _ client server config 
- ClientSession 
- init response = await session initialize 
+ p Identity Exchange clientInfo serverInfo objects provide identification versioning information for debugging compatibility purposes 
  
- app register mcp server 
- set server ready 
- 
- 
- Tool Discovery 
- connection client discover tools tools / list request fundamental to MCP tool discovery mechanism understand tools 
- 
- 
- 
- 
- jsonrpc 2. 0 
- id 
- method tools list 
- 
- 
- understanding - tool - discovery - request Tool Discovery Request 
- simple no parameters 
- 
- contains tools array comprehensive metadata tool array - structure allows expose multiple tools maintaining clear boundaries tool object includes key fields 
-name unique identifier for tool within server namespace primary key for tool execution follow clear naming pattern calculator _ arithmetic 
- title human - readable display name for tool 
- description Detailed explanation of tool when 
+ p capability negotiation demonstrates MCP primitives p Client Capabilities strong 
+ quot elicitation client declares work with user interaction requests receive code elicitation create method calls 
+ span data - as p " > strong Server Capabilities strong 
+code & quot ; tools server supports tools primitive send tools list changed notifications changes 
+ quot ; resources ; supports resources primitive handle list read methods 
+ data - as p " initialization client sends notification div class code - block mt - 5 mb - 8 not - rounded - 2xl group min - w - 0 print print - color - text - gray - 950 - - 50 div class flex text - gray - 400 text - xs rounded - t - 14px leading - 6 font - medium pl - 4 pr - 2. 5 py - 1 code - block - header flex - grow - 0 flex items - center gap - 1. 5 text - gray - 700 dark 300 min - w - 0 header filename truncate min - w - 0 Notification flex - 1 flex items - center justify - end gap - 1print hidden div z - 10 select none data state closed button h - 26px w - 26px flex items center justify rounded md backdrop blur group copy button data contents svg width 18 viewBox fill none xmlns w3 org 2000 svg class w - 4 h - text - gray - 400 group path d M14. 25 5. 25H7. 25C6. 14543 25V14. 25 15. 3546 currentColor 1 path M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 96397 3. 45603 2. 80197L10. 38 1. 77297C11. 313 1. 63397 12. 19 2. 16297 12. 528 3. 00097 currentColor width 1stroke linecap round linejoin round path svg button div class w - 0 min - full max - w full py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg - transparent transition height ] duration 300 ease - - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 " style font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language json numberOfLines 4 " span line " color # 1F2328 dark D4D4D4 span 
+span line " color # 116329 ; shiki - dark # 9CDCFE " quot jsonrpc color # 1F2328 # D4D4D4 color # 0A3069 shiki - dark # CE9178 quot 2. color # 1F2328 dark D4D4D4 
+ line " color # 116329 shiki - dark # 9CDCFE quot method color # 1F2328 dark D4D4D4 color 0A3069 # CE9178 quot notifications 
+ line " color # 1F2328 ; shiki - dark # D4D4D4 
+code pre div print hidden data - fade overlay true aria style fade - color light # ffffff ; dark # 0B0C0E div h4 class flex whitespace - pre - wrap group font - semibold " id works in - ai applications div absolute tabindex - 1 href class - ml - 10 flex items center opacity border - 0 group hover opacity 100 outline - group link aria Navigate header div w - 6 h - 6 rounded - md flex items center justify shadow text - gray - 400 dark white brightness svg xmlns w3 org 2000 svg fill gray height 12px " viewBox 0 0 576 512 " path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10 7 24s - 10. 7 - 24H160C98. 1 112h72c13. 3 0 - 24H160C71. 6 416 0 344256zm576 0c0 88. - 71 160 - 160 160H344c - 13 24 - 10 24 - 24s10. 24h72c61 112 - 50 112H344c - 13 24h72c88 71 160zM184 232H392c13. 24H184c 13 path span cursor - pointer " AI Applications - p application MCP client manager establishes connections servers stores capabilities functionality tools resources prompts real - time updates div code - block mt - 5 mb - 8 rounded - 2xl print print - color text - gray - 950 - 0 5 numberOfLines 7 python div class flex text - gray - 400 text - xs rounded - t - 14px ] leading - 6 font - medium pl - 4 pr - 2. 5 py - 1 data - component - code - block - header " div flex - grow - 0 items - center gap - 1text - gray - 700 300 min - w - 0 data code - block header filename truncate min - w - 0 Pseudo - code AI application initialization flex - 1 items center justify end gap 1. print hidden z - 10 select none closed button h - 26px flex items center justify md backdrop blur group copy button contents svg width 18 viewBox fill none xmlns http www w3. org 2000 svg class w - 4 h - 4 text - gray - 400 group - hover copy button text gray - 500 - white 40 60 path M14. 25 5. 25H7. 25C6. 14543 5. 25 25 14543 7 25V14. 25C5. 25 15 3546 1. 5 linecap round M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 9639745603 80197L10 38 77297C11 313 63397 12 19. 16297 12 528 3. 00097 stroke currentColor width 1. 5 linecap round linejoin path div class w - min py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 style font - variant ligatures none height auto background color # ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff # 0B0C0E # 1f2328 D4D4D4 language python numberOfLines 7 span line " color # 6E7781 # 6A9955 Pseudo Code 
+span class line " color # CF222E dark # C586C0 " async CF222E C586C0 color # 1F2328 dark # D4D4D4 " stdio _ client ( server _ config ) color CF222E dark # C586C0 color # 1F2328 # D4D4D4 read write 
+ span class line " color # CF222E dark # C586C0 async color CF222E C586C0 1F2328 D4D4D4 ClientSession ( read write ) color CF222E # C586C0 color # 1F2328 shiki - dark # D4D4D4 session : span 
+span class line " color # 1F2328 ; dark # D4D4D4 init _ response color # CF222E D4D4D4 color CF222E # C586C0 await 1F2328 D4D4D4 session. initialize ( 
+ line " color # CF222E # C586C0 color 1F2328 D4D4D4 init _ response. capabilities tools 
+ line " color # 1F2328 D4D4D4 app. register _ mcp _ server session color # 953800 shiki - dark # 9CDCFE supports tools color # CF222E D4D4D4 color # 0550AE dark # 569CD6 " color # 1F2328 D4D4D4 
+ line " color # 1F2328 dark # D4D4D4 app. set _ server _ ready ( session 
+span class line " color # 116329 ; shiki - dark # 9CDCFE " quot ; jsonrpc color # 1F2328 dark # D4D4D4 color # 0A3069 ; - dark # CE9178 " quot 2. color # 1F2328 ; dark # D4D4D4 
+ line " color # 116329 dark # 9CDCFE quot ; id color # 1F2328 dark # D4D4D4 color # 0550AE ; shiki - dark # B5CEA8 " 1F2328 D4D4D4 
+ line " color # 116329 dark # 9CDCFE quot method color # 1F2328 # D4D4D4 color # 0A3069 dark # CE9178 " quot 
+ line " color # 1F2328 ; - dark # D4D4D4 
+code pre div class print hidden data - fade overlay true style fade color light ffffff dark # 0B0C0E div data - state inactive orientation horizontal role tabpanel aria labelledby radix - R llildinpfcqcf9babsnpfdb trigger - 1 tabindex - 1 class w full relative rounded xt h4 class flex whitespace - pre - wrap group font - semibold understanding tool - discovery - request absolute tabindex - 1 href - ml - 10 flex items - center opacity 0 border 100 aria - label Navigate to header div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : text - white / 50 dark bg - background - dark dark brightness - 1dark ring - 1 brightness 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. 1 - 13. 3 24 71 160zM184 232H392c13. 3 10 path svg div span class cursor - pointer " Tool Discovery Request span data p " code tools list request simple no parametersspan h4 class flex whitespace pre - wrap group font - semibold understanding tool discovery response div class absolute tabindex - 1 " href understanding - ml - 10 flex items center opacity border group hover 100 outline group Navigate header div class w - 6 h - 6 rounded - md flex items - center justify shadow text - gray - 400 dark group focus border svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 1 256s50 112 112h72c13. 24H160C71. 6 256zm576 88 - 71. 160 - 160 160H344c - 13. 3 0 - 24 - 10. 7 - 24h72c61. 112 - 50 1 - 133 0 - 24 - 10. 7 - 24 - 24s10 - 24h72c88. 4 0 160 71. 6 160 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 24H184c - 13. 3 24s10 24z " > path > svg div span class = " cursor - pointer " Tool Discovery Response span h4 data - as = " p " response contains code > tools array comprehensive metadata tool. array structure allows expose multiple tools clear boundaries. data - as = p " tool object includes key fields : 
+ unique identifier tool namespace primary key for tool execution clear naming pattern calculator _ arithmetic 
+ human - readable display name 
+ description explanation tool 
  inputSchema JSON Schema defines expected input parameters type validation clear documentation about required optional parameters 
- applications AI Applications 
- fetches available tools from MCP servers combines into unified tool registry allows LLM to understand actions generates tool calls 
- Pseudo - code for AI application tool discovery 
+ul h4 class flex whitespace pre - wrap group font - semibold id ai applications - 2 div class absolute tabindex - 1 " href applications 2 class - ml - 10 flex items - center opacity border group 100 outline header div class w - 6 h - 6 rounded - md flex items - center justify center shadow - text - gray - 400 white brightness group focus primary svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 1 256s50 112 112h72c13. 24H160C71. 6 416 344 256zm576 0c0 88 - 71. 160 - 160 160H344c - 13. 3 0 - 24 - 10 24h72c61.- - 112H344c - 13 24 10 24s10 24h72c88 160zM184 232H392c13. 10 path svg div span cursor - pointer " AI Applications data - p " AI application fetches tools MCP combines unified tool registry allows LLM understand actions generates tool div code - block mt - 5 mb - 8 rounded - 2xl print print - color text - gray - 950 bg - 50 p - 0. 5 numberOfLines python div flex text - gray - 400 text - xs rounded - t - 14px ] leading - 6 font - medium pl - 4 pr - 2. 5 py - 1 data - component code - block - header " div flex - grow - 0 items - center gap - 1text - gray - 700 300 min - w - 0 data code - block header filename truncate min - w - 0 Pseudo - code AI application tool discovery flex - 1 items center justify end gap 1. print hidden z - 10 select none closed button h - 26px flex items center justify md backdrop blur group copy button contents svg width 18 viewBox fill none xmlns http www w3. org 2000 svg class w - 4 h - 4 text - gray - 400 group - hover copy button text gray - 500 - white 40 60 path M14. 25 5. 25H7. 25C6. 14543 5. 25 25 14543 7 25V14. 25C5. 25 15 3546 1. 5 linecap round M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 9639745603 80197L10 38 77297C11 313 63397 12 19. 16297 12 528 3. 00097 stroke currentColor width 1. 5 linecap round linejoin path div class w - min py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg - transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 font - variant ligatures none height auto background color # ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language python 6 span line " color # 6E7781 # 6A9955 Pseudo - code MCP Python SDK patterns 
+span class line " color # 1F2328 ; shiki - dark # D4D4D4 available _ tools color # CF222E D4D4D4 1F2328 
+ line " color # CF222E # C586C0 color # 1F2328 D4D4D4 session color # CF222E C586C0 color # 1F2328 shiki dark # D4D4D4 app. mcp _ server _ sessions ( ) 
+ line " color 1F2328 D4D4D4 tools _ response color # CF222E D4D4D4 CF222E C586C0 await color 1F2328 D4D4D4 session. list _ tools ( 
+ line " color # 1F2328 ; shiki - dark # D4D4D4 available _ tools. extend ( tools _ response. tools ) 
+span line color # 1F2328 ; shiki - dark # D4D4D4 conversation register available tools 
+ line " color # 116329 ; shiki - dark # 9CDCFE color 1F2328 dark D4D4D4 color # 0A3069 shiki - dark # CE9178 quot color # 1F2328 shiki dark D4D4D4 
+ line color # 116329 shiki - dark # 9CDCFE quot color 1F2328 dark D4D4D4 color # 0550AE shiki - dark # B5CEA8 color # 1F2328 shiki - dark D4D4D4 
+span class line " color # 116329 ; - shiki - dark # 9CDCFE " quot method color # 1F2328 shiki - dark # D4D4D4 color # 0A3069 - dark # CE9178 quot tools color # 1F2328 shiki - dark # D4D4D4 
+ line " color # 116329 - dark # 9CDCFE quot params color 1F2328 - dark D4D4D4 
+ line " color # 116329 - dark # 9CDCFE quot name color 1F2328 dark D4D4D4 color 0A3069 dark CE9178 quot weather current color 1F2328 dark D4D4D4 
+ line " color # 116329 ; shiki - dark # 9CDCFE quot arguments quot color # 1F2328 ; shiki - dark # D4D4D4 
+span line " color # 116329 ; - shiki - dark # 9CDCFE " quot ; location color # 1F2328 D4D4D4 color # 0A3069 dark # CE9178 quot San Francisco color # 1F2328 shiki - dark # D4D4D4 
+ line " color # 116329 dark # 9CDCFE quot ; units quot color # 1F2328 D4D4D4 color # 0A3069 CE9178 quot imperial quot 
+ line " color # 1F2328 shiki - dark # D4D4D4 
+ line " color # 1F2328 dark # D4D4D4 
+ line " color # 1F2328 - dark # D4D4D4 
+code pre div class print hidden data - fade overlay true style color light ffffff dark 0B0C0E data - state inactive orientation horizontal role tabpanel aria labelledby radix - R _ 15nildinpfcqcf9babsnpfdb trigger - 1 tabindex - 1 class w full rounded xt h4 class flex whitespace - pre - wrap group font - semibold id key - elements - of tool - execution absolute tabindex - 1 href key - ml - 10 flex items - center opacity 0 border 100 aria - label Navigate to header " div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : - white / 50 dark bg - background - dark brightness - 1dark ring - 1 brightness 150 bg white ring 400 30 700 25 400 60 white 20 group focus border 2 primary light svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. - 13. 3 24 71 160zM184 232H392c13. 3 path svg div span class cursor - pointer Tool Execution data p " request structure includes components span > ol > 
+ li > 
+span data - as p " strong name match tool name from discovery response weather _ current ensures server identify tool 
  
- MCP SDK 
- available tools 
  
- tools response 
+ span data - as p " arguments Contains input parameters tool inputSchema 
  
- 
- 
- 
- Tool Execution 
- client can execute tool using tools / call method demonstrates MCP primitives after tools client invoke with appropriate arguments 
- tool execution request Tool Execution Request 
- follows structured format safety clear communication between client server proper tool name from discovery response 
- Tool Call Request 
- 
- 
- 
-0 
- id " 3 
- method tools / call 
- params 
- name weather _ current 
- arguments 
  location San Francisco 
  units imperial 
  
  
  
+ span data - as p " JSON - RPC Structure Uses JSON - RPC 2. 0 format unique code id request - response correlation 
  
- key - elements - tool execution Tool Execution 
- request structure includes components 
- name match tool name discovery response weather _ current ensures server identify tool 
- arguments Contains input parameters tool inputSchema 
- location San Francisco parameter 
- units imperial 
- JSON - RPC Structure 2. 0 format request - response correlation 
- understanding tool execution response Tool Execution 
- demonstrates MCP flexible content system 
- content Array return array content objects rich multi - format responses text images resources 
- Content Types object field plain text content supports content types 
- Structured Output response provides actionable information AI application context for language model interactions 
- execution pattern allows invoke server functionality receive structured responses conversations language models 
- AI Applications 
-language model tool conversation AI application intercepts call routes to MCP server executes returns results back to LLM enables LLM access real - time data perform actions external world 
- 
- Pseudo - code for AI application tool execution 
- handle tool _ call conversation tool name arguments 
- session = app 
- result = 
- add tool result 
+ h4 class flex whitespace - pre - wrap group font - semibold understanding tool execution response div absolute tabindex - 1 - ml - 10 flex items - center opacity - 0 border - 0 group - 100 outline - 0 Navigate header div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : text - white 50 dark bg - background - brightness - 135 dark ring 1 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. 1 112H344c - 13. 3 24 71 160zM184 232H392c13. 3 path div span cursor - pointer Tool Execution Response data p demonstrates MCP flexible content system span ol > 
+ li 
+span data - as p " > strong content Array Tool responses return content objects rich multi - format responses text images resources 
  
  
- Real - time Updates ( Notifications 
- MCP supports - notifications inform about changes without requested notification system keeps MCP connections synchronized responsive 
- understanding tool - list change notifications 
- tools change existing tools modified unavailable notify connected clients 
+ span data - as p " Content Types object code > type field plain text content MCP supports content types cases span 
  
  
+ span data - as p " Structured Output response provides actionable information AI application context for language model interactions 
+ 
+ p " execution pattern allows AI applications invoke server functionality receive structured responses h4 class flex whitespace - pre - wrap group font - semibold id how - - works - in - ai applications - 3 div absolute tabindex - 1 - ml - 10 flex items - center opacity - 0 100 Navigate div class w - 6 h - 6 md flex items - center justify - shadow - sm text - gray - 400 dark : text - white 50 dark bg background 1dark ring 1 150 white 400 30 700 25 400 60 group focus border svg xmlns org 2000 gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10 24s - 24H160C98. 1 144 256s50. 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50 - 13 24 24h72c88 71. 160zM184 232H392c13. 3 10 7 24H184c -7 - 24 24 - 24z path svg div a span cursor - pointer AI Applications span h4 data - as p " language model AI application intercepts call routes MCP server executes returns results LLM LLM access real - time data actions external span div code - block mt - 5 mb - 8 rounded - 2xl group min - w - 0 print print text - gray - 950 5 python div data - floating buttons true absolute top - 3 right - 4 flex items - center gap - 1. 5 print hidden z - 10 select - none data state closed button h - 26px ] w - flex items - center svg width 18 viewBox 0 fill none w3 org 2000 svg class w - 4 h - 4 text - gray - 400 group - hover - 500 dark white / 40 60 path d M14. 25 5. 25H7. 25C6. 14543 5. 25 5. 25 614543 5. 25 7. 25V14. 25C5 25 15 3546 16 25 14 15 3546 currentColor 1. 5 round M2. 80103 11. 998L1 77203 5. 07397C1 61003 3 98097 2 36403 2 96397 3 45603 2 80197L10 38 1. 77297C11. 313 1. 63397 12. 19 2. 16297 12. 528 3. 00097 currentColor 1. 5 round w - - full - py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded - 2xl bg - white overflow x auto scrollbar data - component part code - block - root tabindex 0 font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language python 5 span line " color # 6E7781 # 6A9955 Pseudo - code AI application tool execution 
+span class line " color : # CF222E ; shiki - dark # 569CD6 " async color # CF222E ; shiki dark # 569CD6 " color # 8250DF ; shiki dark # DCDCAA " handle _ tool _ call color # 1F2328 ; dark # D4D4D4 color 1F2328 # 9CDCFE conversation color 1F2328 D4D4D4 color 1F2328 9CDCFE tool _ name color 1F2328 D4D4D4 9CDCFE arguments 1F2328 D4D4D4 
+ span line " color # 1F2328 D4D4D4 session color # CF222E # D4D4D4 1F2328 D4D4D4 app. find _ mcp _ session _ for _ tool ( tool _ name ) 
+span line " color # 1F2328 ; shiki - dark # D4D4D4 result color CF222E D4D4D4 CF222E C586C0 color 1F2328 dark D4D4D4 session call tool arguments 
+ line " color # 1F2328 shiki - dark D4D4D4 conversation add _ tool _ result content 
+ line " color # 116329 shiki - dark # 9CDCFE quot jsonrpc color 1F2328 dark D4D4D4 color # 0A3069 ; shiki - dark # CE9178 quot color # 1F2328 shiki - dark D4D4D4 
+span line color # 116329 ; shiki - dark # 9CDCFE color # 1F2328 dark # D4D4D4 color # 0A3069 shiki - dark # CE9178 quot notifications tools list 
+ line color # 1F2328 shiki - dark D4D4D4 
+ print hidden data - fade overlay true color ffffff # 0B0C0E h4 flex whitespace - pre - wrap group font - semibold key - features - of - mcp notifications absolute tabindex - 1 - ml - 10 flex items - center opacity 100 label Navigate to header div w - 6 h - 6 rounded - md flex items - center justify - shadow - sm text - gray - 400 dark text - white / 50 dark bg - background - dark - 1dark ring 1 brightness 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. 1 - 13 24 71 160zM184 232H392c13. 3 path svg div span class cursor - pointer " Features MCP Notifications span h4 ol > 
+ 
+span data - p " No Response Required id field follows JSON - RPC 2. 0 notification semantics no response expected span 
  
  
+ data - p " Capability - Based notification sent by servers code during initialization Step 1 
  
  
+ data - p " Event - Driven server decides notifications state changes MCP connections dynamic responsive 
  
- key features Features MCP Notifications 
- No Response Required follows JSON - RPC 2. 0 notification semantics no response expected sent 
- Capability - Based notification sent by servers listChanged " during initialization 
-Event - Driven server decides notifications based on state changes MCP connections dynamic responsive 
- client - response - to notifications to Notifications 
- client reacts requesting updated tool list refresh cycle understanding of tools 
- 
- 
- 
- 
- 
- 
- 
- 
- why - notifications 
- notification system crucial 
- Dynamic Environments Tools based on server state dependencies user permissions 
- Efficiency Clients poll for changes notified when updates 
- Consistency clients accurate information about server capabilities 
+ h4 class flex whitespace pre - wrap group font semibold client - response to notifications div class absolute tabindex - 1 - ml - 10 flex items - center opacity 0 border 100 Navigate header div w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark text - white 50 dark bg background brightness 135 dark ring - 1 brightness 150 bg white ring 400 30 700 / 25 400 / 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50 - 13. 3 24 71 160zM184 232H392c13. 3 path svg div span class cursor - pointer " Response Notifications span h4 data p " notification client reacts updated tool listrefresh cycle client tools div code - block mt - 5 mb - 8 rounded - 2xl group min - w - 0 print print color text - gray - 950 bg 50 950 0. 5 numberOfLines flex text - gray - 400 text xs rounded t - 14px leading font medium pl - 4 pr - 2. 5 py - 1 code block header flex - grow - items - center gap 1. 5 text gray - 700 300 min w 0 header filename truncate min - w - 0 Request flex - 1 items - center justify - end gap - 1. 5 print hidden z - 10 select - none data state closed button h - 26px w - flex items - center justify - center rounded md backdrop blur group copy button svg width 18 viewBox fill none xmlns http www. w32000 svg class w - 4 h - text - gray 400 group hover copy button 500 dark white 40 60 path M14. 25 5. 25H7 25C6 14543 3546 currentColor 1. 5 round round M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 96397 3. 45603 2. 80197L10. 38 1. 77297C11. 313 1. 63397 12 19 2. 16297 12. 528 3. 00097 currentColor 1. 5 round svg button div class w - 0 min - w - full max - w - full py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg - transparent transition height ] duration 300 ease - - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 " style font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language json numberOfLines 5 " span line " color # 1F2328 dark D4D4D4 span 
+span class line " color # 116329 ; shiki - dark # 9CDCFE " quot ; jsonrpc color # 1F2328 dark # D4D4D4 color # 0A3069 ; - dark # CE9178 " quot 2. 0 color # 1F2328 dark # D4D4D4 
+ line " color # 116329 dark # 9CDCFE quot ; id color 1F2328 dark # D4D4D4 color # 0550AE ; shiki - dark # B5CEA8 " 4 1F2328 D4D4D4 
+ line " color # 116329 dark # 9CDCFE quot method color # 1F2328 # D4D4D4 color # 0A3069 dark # CE9178 " quot 
+ line " color # 1F2328 ; - dark # D4D4D4 
+code pre div print hidden data - fade overlay true aria style fade - color light # ffffff dark # 0B0C0E " div h4 class flex whitespace - pre - wrap group font - semibold why - notifications - matter absolute tabindex - 1 href class - ml - 10 flex items - center opacity border - 0 group hover opacity - 100 focus outline - group link aria label Navigate to header w - 6 h - 6 rounded - md flex items center justify shadow text - gray - 400 dark svg xmlns w3. org 2000 svg fill gray height 12px " viewBox 0 0 576 512 " path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - - 24H160C98. 1 112h72c13. 3 - 24H160C71. 6 416 0 344256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 0 - 24 - 10. 7 - 24 - 24s10. 7 - 24h72c61. 9 112 - 50. 1 - 112s - 112H344c - 13. 3 0 24 - 10 24h72c88. 4 160 71. 160zM184 232H392c13. 3 10 - 10 24H184c - 13. 3 " path svg span class cursor - pointer " Notifications p notification system crucial 
+ Dynamic Environments server state dependencies user permissions 
+ changes 
+ Consistency server capabilities 
  Real - time Collaboration AI applications changing contexts 
- notification pattern extends to MCP primitives real - time synchronization 
- 
- application receives notification about changed tools refreshes tool registry updates LLM capabilities ensures ongoing conversations access to current tools LLM adapt to new functionality 
- 
- Pseudo - code for AI application notification 
- handle tools changed notification ( session 
- response 
- app. update _ available _ tools 
- 
-notify new capabilities 
- 
- page helpful? 
- 
- MCP? docs intro Servers docs learn server concepts 
- 
- github com modelcontextprotocol
+ - = p " notification pattern extends MCP primitives real - time synchronization clients serversspan h4 class flex whitespace pre - wrap group font - semibold id ai applications - 4 div class absolute tabindex - 1 " href applications 4 - ml - 10 flex items - center opacity border group 100 outline header div class w - 6 h - 6 rounded - md flex items - center justify shadow - text - gray - 400 white brightness group focus svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 1 256s50 112 112h72c13. 24H160C71. 6 416 344 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 0 - 24 - 10 24h72c61.- 112 - 112H344c - 13. 3 24 10 24s10 24h72c88 160zM184 232H392c13. 3 10 24H184c 13 path svg div span class cursor - pointer " AI Applications data - as p " AI application notification refreshes tool registry updates LLM capabilities ensures conversations access current tools LLM adapt functionality span div class code - block mt - 5 mb - 8 - 2xl group min - w - 0 print print - color - gray - 950 dark 50 numberOfLines = 6 language python " div data - floating - buttons true " class absolute top - 3 right - 4 flex items - center gap - 1print hidden div z - 10 select none data state closed button h - 26px w - 26px flex items center justify rounded md backdrop blur group copy button data contents svg width 18 viewBox fill none xmlns w3 org 2000 svg class w - 4 h - text - gray - 400 group path d M14. 25 5. 25H7. 25C6. 14543 25V14. 25 15. 3546 currentColor 1 path M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 96397 3. 45603 2. 80197L10. 38 1. 77297C11. 313 1. 63397 12. 19 2. 16297 12. 528 3. 00097 currentColor width 1stroke linecap round linejoin path svg button div div class w - 0 min - full max - w py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded 2xl bg - white overflow x auto scrollbar data - component part code - block - root tabindex 0 font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff # 0B0C0E # 1f2328 D4D4D4 language python 6 span line " color # 6E7781 # 6A9955 Pseudo - code AI application notification handling 
+span class line " color CF222E ; shiki - dark # 569CD6 " async color CF222E 569CD6 " color # 8250DF ; shiki dark # DCDCAA " handle _ tools _ changed notification color # 1F2328 ; dark # D4D4D4 color 1F2328 # 9CDCFE session 1F2328 D4D4D4 
+ line " color # 1F2328 D4D4D4 tools _ response color CF222E D4D4D4 CF222E C586C0 await color 1F2328 D4D4D4 session. list _ tools ( 
+ line " color # 1F2328 D4D4D4 app. update _ available tools session response tools 
+ line " color # CF222E ; shiki dark # C586C0 " color # 1F2328 dark # D4D4D4 app. conversationactive ( span 
+ line span color 1F2328 shiki dark D4D4D4 app. conversation notify _ llm new capabilities span 
+ body html
