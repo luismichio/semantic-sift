@@ -74,6 +74,12 @@ This document tracks identified challenges, real-world usage observations, and p
 
 - [ ] **Tauri Sidecar / ONNX Port**: Bundle Semantic-Sift as a Tauri sidecar. The neural model (LLMLingua-2 / BERT) would be exported to ONNX and loaded via ONNX Runtime, eliminating the PyTorch/Python dependency for desktop distribution. WebGPU would serve as the acceleration backend in the WebView context.
 
+- [ ] **Standalone Binary Distribution (PyInstaller / Nuitka)**: Compile the server and hook into a single self-contained executable so users without a Python environment can run Semantic-Sift. Would unblock the Tauri sidecar path and simplify onboarding significantly.
+
+- [ ] **npm Distribution**: Investigate whether Semantic-Sift can be published as an npm package. Options include: (a) a thin npm wrapper that installs and invokes the Python binary, (b) a full JS/TS reimplementation of the heuristic sieve for Node-native use, or (c) an MCP-compatible JS server wrapping a compiled binary via Nuitka/PyInstaller. Feasibility depends on the binary compilation milestone above.
+
+- [ ] **Custom Slash Commands per CLI**: Register `/sift`, `/sift-analyze`, and related commands in the config of each supported CLI tool (Gemini CLI, OpenCode, Codex CLI, Claude CLI, etc.) so users can invoke sift tools directly from the chat prompt without relying solely on the automatic hook. Would be wired into `sift_onboard` as an additional injection target.
+
 ---
 
 ## 🔗 Out of Scope (Tracked in Meechi)
