@@ -71,5 +71,11 @@ This document tracks identified challenges, real-world usage observations, and p
 ---
 
 ## ⚪ Long-term Vision
-- [ ] **WebGPU/ONNX Port**: Native browser execution for the Meechi PWA.
-- [ ] **Subconscious Entropy Mapping**: Use the BERT attention maps to "highlight" high-signal segments in the UI.
+
+- [ ] **Tauri Sidecar / ONNX Port**: Bundle Semantic-Sift as a Tauri sidecar. The neural model (LLMLingua-2 / BERT) would be exported to ONNX and loaded via ONNX Runtime, eliminating the PyTorch/Python dependency for desktop distribution. WebGPU would serve as the acceleration backend in the WebView context.
+
+---
+
+## 🔗 Out of Scope (Tracked in Meechi)
+
+- **Subconscious Entropy Mapping**: Use BERT attention maps to highlight high-signal segments in the Meechi PWA UI. Depends on the ONNX port above. → Tracked in [meechi.me](https://meechi.me).
