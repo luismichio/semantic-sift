@@ -2,7 +2,7 @@
 
 **The Reasoning-First Middleware for High-Fidelity Agentic Workflows.**
 
-[![Tests](https://img.shields.io/badge/Tests-Pytest%20Passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-40%20Passing-brightgreen)](tests/)
 [![Security](https://img.shields.io/badge/Security-Bandit%20Inspected-brightgreen)](SECURITY.md)
 [![License](https://img.shields.io/badge/License-Source--Available-blue)](LICENSE.md)
 
@@ -77,24 +77,21 @@ All technical details, architectural logic, and integration guides are strictly 
 ## 🚀 Quick Start
 
 ### 1. Installation
-Clone the repository and install the dependencies:
+Clone the repository and install:
 ```bash
 git clone https://github.com/luismichio/semantic-sift.git
 cd semantic-sift
-py -3.12 -m venv venv312
-.\venv312\Scripts\activate
-pip install torch --index-url https://download.pytorch.org/whl/cu121
-pip install -r requirements.txt
-```
-
-Or install as a package after cloning:
-```bash
 pip install .
 ```
 
-For full semantic/reranking features, install neural extras:
+For full semantic/reranking features (LLMLingua, Transformers, sentence-transformers):
 ```bash
 pip install .[neural]
+```
+
+For development tools (mypy, pytest):
+```bash
+pip install .[dev]
 ```
 
 ### 2. Connect the MCP
@@ -111,10 +108,11 @@ Once connected, ask your AI Assistant:
 
 If you are an AI Agent (e.g., Gemini CLI, Cursor, Claude Code) reading this repository, follow this protocol:
 
-1. **Initialization**: Call `sift_onboard()` to register background hooks.
+1. **Initialization**: Call `sift_onboard()` to register background hooks. Use `sift_onboard(dry_run=True)` to preview all planned actions without writing any files.
 2. **Context Advisory**: Before reading large files (>1,000 chars), call `sift_analyze_file(path)` to determine the noise ratio.
-3. **Mandatory Sifting**: If noise > 15%, pipe data through `sift_logs` or `sift_chat` before inclusion in reasoning.
+3. **Mandatory Sifting**: If noise > 15%, pipe data through `sift_logs` or `sift_chat` before inclusion in reasoning. For documents, use `sift_doc(text, rate=0.4)` — adjust `rate` (0.1–0.9) to trade compression depth against fidelity.
 4. **Ranking**: Use `sift_rank` to identify the most semantically relevant chunks for the user's prompt.
+5. **Extraction**: When distilling PDFs or scraped content, use `sift_extraction(content, show_diff=True)` to see exactly what was removed and verify faithfulness.
 
 ---
 
@@ -130,9 +128,13 @@ Privacy and telemetry controls:
 - Set `SIFT_TELEMETRY_URL=https://your-endpoint` to route metadata pulses to your own endpoint.
 - Set `SIFT_PULSE_RATE_LIMIT_S=10` (default) to control async telemetry pulse frequency.
 
+Security controls:
+- Set `SIFT_ALLOW_GLOBAL_READS=true` to permit `sift_read_file` / `sift_analyze_file` outside the workspace root (path traversal guard is on by default).
+
 Performance controls:
 - Set `SIFT_HOOK_TIMEOUT_MS=3000` to cap hook semantic latency before heuristic fallback.
 - Set `SIFT_MODEL_READY_WAIT_MS=1200` to control semantic model warm-up wait time before returning heuristic-mode output.
+- Set `SIFT_COMPACTION_FIDELITY_THRESHOLD=0.3` (default) to control the vocabulary-overlap threshold below which a low-fidelity compaction warning is emitted.
 
 Hook logging controls:
 - Set `SIFT_LOG_FILE` to override the hook log path (default: `.gemini/sift_debug.log`).

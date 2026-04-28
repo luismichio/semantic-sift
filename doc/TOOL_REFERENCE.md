@@ -1,6 +1,6 @@
 # Semantic-Sift: FastMCP Tool Reference
 
-This document provides the exhaustive operator's manual for all FastMCP tools exposed by the Semantic-Sift server (`server.py`). It details the specific arguments, default values, routing logic, and expected outputs for each tool.
+This document provides the exhaustive operator's manual for all FastMCP tools exposed by the Semantic-Sift server. The root `server.py` is a thin entrypoint; all tool implementations live in `semantic_sift/tools.py`. It details the specific arguments, default values, routing logic, and expected outputs for each tool.
 
 ---
 
@@ -9,7 +9,7 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
 ### `sift_read_file`
 **Intent**: Reads a local file directly from disk and applies the appropriate distillation pipeline before returning the output. This is the primary ingestion tool designed to bypass standard IDE file-reading limitations and prevent context flooding.
 *   **Arguments**:
-    *   `path` (str): The absolute or relative path to the local file to read.
+    *   `path` (str): The absolute or relative path to the local file to read. Paths outside the workspace root are blocked by default — set `SIFT_ALLOW_GLOBAL_READS=true` to permit reads from anywhere.
     *   `rate` (float, default: `0.5`): The compression target used when the Semantic Engine is engaged. Lower is more aggressive.
     *   `type` (str, default: `"auto"`): The specific sifter pipeline to force. Options are `"logs"`, `"chat"`, `"doc"`, `"extraction"`, or `"auto"`.
 *   **Routing & Multi-Modal Logic**:
@@ -51,21 +51,23 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
     *   `text` (str): The prose or chat history string to be semantically condensed.
     *   `rate` (float, default: `0.5`): The compression target. `0.3` = Aggressive (save 70%), `0.5` = Balanced, `0.7` = Gentle (save 30%).
 *   **Logic**: Routes directly to `sift_kernel.perform_semantic_sift` which utilizes the `llmlingua` SLM.
-*   **Output**: The compressed text string.
+*   **Output**: The compressed text string. If vocabulary overlap between the input and output falls below the `SIFT_COMPACTION_FIDELITY_THRESHOLD` (default `0.3`), a `[Semantic-Sift: Low fidelity compaction detected...]` warning is appended to alert the caller that meaning may have been lost.
 
 ### `sift_doc`
 **Intent**: Performs a hybrid two-stage distillation on long documentation files.
 *   **Arguments**:
     *   `text` (str): The raw content of the documentation file.
-*   **Logic**: Routes directly to `sift_kernel.perform_doc_sift`. It applies the heuristic sieve to remove structural formatting (footers/headers/page numbers) and then applies semantic compression at a hardcoded rate of `0.4`.
+    *   `rate` (float, default: `0.4`): Compression target for the semantic stage. Adjust upward (e.g., `0.6`) to preserve more detail in dense technical papers; adjust downward for more aggressive size reduction.
+*   **Logic**: Routes directly to `sift_kernel.perform_doc_sift`. It applies the heuristic sieve to remove structural formatting (footers/headers/page numbers) and then applies semantic compression at the given `rate`.
 *   **Output**: The distilled document string.
 
 ### `sift_extraction`
 **Intent**: Refines raw extractions from OCR or PDF parsing tools (like Docling or LiteParse).
 *   **Arguments**:
     *   `content` (str): The raw string output from an extraction tool.
-*   **Logic**: Routes directly to `sift_kernel.perform_extraction_cleaning`. Applies specific regex patterns to strip metadata debris (e.g., copyright notices, page counts) and then protects Markdown structure by applying semantic compression at a gentler hardcoded rate of `0.7`.
-*   **Output**: The refined Markdown string.
+    *   `show_diff` (bool, default: `False`): When `True`, appends a `--- REMOVED CONTENT ---` section to the output showing exactly which text was stripped. Use this to verify faithfulness before trusting the distilled result.
+*   **Logic**: Routes directly to `sift_kernel.perform_extraction_cleaning`. Applies specific regex patterns to strip metadata debris (e.g., copyright notices, page counts) and then protects Markdown structure by applying semantic compression at a gentler rate of `0.7`.
+*   **Output**: The refined Markdown string, optionally followed by the faithfulness diff section.
 
 ---
 
@@ -96,8 +98,9 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
 ### `sift_onboard`
 **Intent**: Automatically configures the current project workspace for optimal context sifting by injecting instructions, security hooks, and shielding specialized subagent threads. It also ensures critical Semantic-Sift artifacts are protected from version control exposure.
 *   **Arguments**:
-    *   `environment` (str, default: `None`): The name of your current active environment (e.g., `'Gemini'`, `'Cursor'`, `'OpenCode'`, `'VSCode'`, `'Cline'`). **Required** for optimal automated configuration and to prevent environment bloat.
+    *   `environment` (str, default: `None`): The name of your current active environment (e.g., `'Gemini'`, `'Cursor'`, `'OpenCode'`, `'VSCode'`, `'Cline'`). Recommended for optimal automated configuration and to prevent environment bloat.
     *   `target_dir` (str, default: `None`): Optional absolute path to the project root. Defaults to the current working directory.
+    *   `dry_run` (bool, default: `False`): When `True`, reports all planned actions (files that would be modified, hooks that would be injected) without writing any files. Use this to preview the impact before committing to a full onboard.
 *   **Logic**:
     *   **Environment-Specific Configuration**: Only executes hook and plugin injections for the environment specified in the `environment` argument. This prevents creating unnecessary folders (like `.kilocode` or `.openclaw`) for tools not in use.
     *   **Recursive Subagent Discovery**: Scans for specialized agent folders (`.codex/agents/`, `.cursor/agents/`, `.junie/agents/`) and scoped `AGENTS.md` files in subdirectories.
@@ -120,3 +123,5 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
     *   Provides a per-tool breakdown of savings.
     *   Respects the `SIFT_TELEMETRY_DISABLED` kill-switch.
 *   **Output**: A formatted string detailing the client identity, tier, aggregate metrics, and the specific per-tool breakdown of tokens saved and cache hits.
+
+> **Note**: Token counts are estimated at 4 chars/token. Actual billed tokens vary by model and content type. For precise billing data, consult your API provider dashboard.

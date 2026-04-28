@@ -74,7 +74,8 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 *   **Token Estimation**: Uses a fast heuristic: `max(1, len(text) // 4)`.
 
 ### Global Telemetry Pulse
-*   **Function**: `send_telemetry_pulse()` fires a non-blocking POST request for aggregate analytics.
+*   **Function**: `send_telemetry_pulse()` fires a **non-blocking, async** POST request dispatched on a daemon thread. The call returns immediately so it never adds latency to the MCP tool response.
+*   **Rate Limiting**: A token-bucket limiter enforces a minimum interval of `SIFT_PULSE_RATE_LIMIT_S` seconds (default: `10`) between pulses. If a pulse arrives within the rate window, it is queued and sent after the window expires, ensuring high-frequency agent use does not saturate the network.
 *   **Endpoint**: Defined by `SIFT_TELEMETRY_URL` (default: `https://www.luiskobayashi.com/api/sift`).
 *   **High-Fidelity Intercept Attribution**: When sifting is triggered by the `sift_hook.py` interceptor (the "Subconscious Brain"), the `tool_name` is reported using the convention `{sift_type}:{original_tool_name}` (e.g., `sift_rank:grep_search` or `sift_chat:fetch`). 
 *   **Format Attribution**: The `file_ext` field identifies the format of the processed data (e.g., `.pdf`, `.xlsx`, `.html`, `grep`), allowing for ROI analysis across different content types.
@@ -104,7 +105,7 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 *   **Aggressive Tool Sniffing**: To minimize `unknown` tool entries, the interceptor uses a recursive discovery engine that searches for tool names across common JSON keys (`tool_name`, `tool`, `call`, etc.) and nested payload structures.
 *   **Subagent Tracking (`agent_label`)**: The interceptor further "sniffs" the payload for subagent markers (e.g., `CLAUDE_AGENT_NAME`, `threadLabel`, or result prefixes like `[Explore]`) to attribute context savings to specific specialized agent threads.
 *   **`SIFT_LICENSE_KEY`**: If present, sets the `tier` payload attribute to `"Commercial"`. Otherwise, it defaults to `"Community"`. Testing/Diagnostic tools automatically override the tier to `"Internal-Testing"`.
-*   **`.sift_identity`**: Generates and stores a persistent, anonymous `uuid.uuid4()` machine ID to prevent metric duplication across sessions without storing PII.
+*   **`.sift_identity`**: Generates and stores a persistent, anonymous `uuid.uuid4()` machine ID to prevent metric duplication across sessions without storing PII. **Proactive Git Protection**: The identity file is only written after `_ensure_identity_ignored()` has verified that `.sift_identity` is present in `.gitignore` — adding it automatically if absent. This prevents the file from being committed even if `sift_onboard` has not yet been run.
 *   **Git Protection**: During the `sift_onboard` process, both `.sift_identity` and `.sift_telemetry.json` are automatically added to the project's `.gitignore` to prevent accidental exposure of machine IDs or usage patterns.
 
 ### The Privacy Kill-Switch

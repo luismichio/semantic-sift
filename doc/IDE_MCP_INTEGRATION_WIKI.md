@@ -196,10 +196,11 @@ This section provides the exact file paths and schema requirements for each plat
 ```json
 "semantic-sift": {
   "type": "stdio",
-  "command": "C:/path/to/venv312/Scripts/python.exe",
-  "args": ["C:/path/to/server.py"]
+  "command": "python",
+  "args": ["/path/to/semantic-sift/server.py"]
 }
 ```
+> Use `python3` on Linux/macOS or the full path to your interpreter if `python` is not on PATH. No venv path required — `pip install .` makes the package available to whichever interpreter you point to.
 
 ### B. Local Array Schema (OpenCode, Kilo Code)
 **MANDATORY**: Combine executable and script into one `command` array. **Do not use `args` key.**
@@ -207,8 +208,8 @@ This section provides the exact file paths and schema requirements for each plat
 "semantic-sift": {
   "type": "local",
   "command": [
-    "C:/path/to/venv312/Scripts/python.exe",
-    "C:/path/to/server.py"
+    "python",
+    "/path/to/semantic-sift/server.py"
   ]
 }
 ```
