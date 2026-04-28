@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 - **OpenCode Platform Detection**: Fixed `sift_hook.py` incorrectly classifying OpenCode tool calls as `Gemini` in telemetry. Both platforms emit `hook_event_name: "AfterTool"`, but the OpenCode native plugin always includes a top-level `tool_args` key which Gemini never sends. The `AfterTool` branch now checks for `tool_args` first and routes to `OpenCode`; payloads without it fall through to the existing Gemini path. Two regression tests added in `tests/test_hook_routing.py`.
+- **Telemetry Secret-Type Metadata Leakage**: `telemetry_core.py` was logging type-specific redaction labels (`[REDACTED_GITHUB_PAT]`, `[REDACTED_OPENAI_KEY]`, `[REDACTED_SLACK_TOKEN]`) into `.sift_telemetry.json` and remote pulses. Even though the raw secret was masked, the label itself reveals secret type, which tool surfaces it, and frequency. Added `redact_secrets_for_telemetry()` which normalises all labels to a generic `[REDACTED]`. The descriptive labels are preserved in local debug logs (`sift_hook.py`) where the operator owns the output.
 
 ### 🛠️ Runtime Portability & Safety Hardening
 - **Runtime Hook Command**: Removed hardcoded local interpreter and script paths from `server.py`; hook commands are now derived from `sys.executable` and `server.py`-relative `sift_hook.py` at runtime.

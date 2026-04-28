@@ -28,45 +28,63 @@ def test_sieve_removes_multiple_timestamps_per_line():
 
 def test_secret_redaction_logic():
     from telemetry_core import redact_secrets
-    
-    # Test GitHub PAT
+
+    # Test GitHub PAT — descriptive label for local logs
     assert redact_secrets("my key is ***REDACTED***") == "my key is [REDACTED_GITHUB_PAT]"
-    
-    # Test OpenAI Key
+
+    # Test OpenAI Key — descriptive label for local logs
     assert redact_secrets("sk-abcdefghijklmnopqrstuvwxyz0123456789") == "[REDACTED_OPENAI_KEY]"
-    
+
     # Test Password pattern
     assert redact_secrets("password: my_secret_pass") == "password=[REDACTED]"
     assert redact_secrets("token = some_token_123") == "token=[REDACTED]"
-    
+
     # Test that normal text is untouched
     assert redact_secrets("This is a normal sentence.") == "This is a normal sentence."
 
+
+def test_secret_redaction_for_telemetry_generic_label():
+    from telemetry_core import redact_secrets_for_telemetry
+
+    pat = "***REDACTED***"
+    # Must NOT reveal the secret type in the telemetry stream
+    result = redact_secrets_for_telemetry(f"sift_chat:grep {pat}")
+    assert result == "sift_chat:grep [REDACTED]"
+    assert "GITHUB" not in result
+    assert "PAT" not in result
+
+    # OpenAI key — generic label
+    assert redact_secrets_for_telemetry("sk-abcdefghijklmnopqrstuvwxyz0123456789") == "[REDACTED]"
+
+    # Password pattern — key name kept, value masked
+    assert redact_secrets_for_telemetry("password: my_secret_pass") == "password=[REDACTED]"
+
+    # Normal text untouched
+    assert redact_secrets_for_telemetry("sift_chat:read_file") == "sift_chat:read_file"
+
 def test_telemetry_does_not_log_content_secrets():
     import telemetry_core
-    import os
     import json
-    
-    # We want to ensure that log_telemetry only logs counts, not content
-    # and that tool_name is redacted if it accidentally contains a secret
-    session_id = "test-session"
+    import uuid
+
+    # Use a unique session ID to avoid collisions with stale test data in the telemetry file
+    session_id = f"test-pat-redaction-{uuid.uuid4().hex}"
     start_time = "now"
     pat = "***REDACTED***"
     secret_tool = f"sift_chat:grep {pat}"
-    
-    # Ensure any previous data for this session is cleared or use a unique session
+
     telemetry_core.log_telemetry(session_id, start_time, secret_tool, 1000, 500, 10.0)
-    
+
     with open(telemetry_core.TELEMETRY_FILE, "r") as f:
         data = json.load(f)
-        
-    # Check if the secret tool name was logged and if it was REDACTED
+
     assert session_id in data
-    # The tool name should have been redacted
-    redacted_tool = "sift_chat:grep [REDACTED_GITHUB_PAT]"
+    # Generic label — no secret-type hint
+    redacted_tool = "sift_chat:grep [REDACTED]"
     assert redacted_tool in data[session_id]["tools"]
-    # Ensure the raw PAT is NOT in the file at all
-    with open(telemetry_core.TELEMETRY_FILE, "r") as f:
-        raw_log = f.read()
-    assert pat not in raw_log
+
+    # Scope raw-string checks to this session only, not the whole file
+    session_json = json.dumps(data[session_id])
+    assert pat not in session_json
+    assert "GITHUB_PAT" not in session_json
 

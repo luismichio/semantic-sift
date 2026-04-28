@@ -59,23 +59,46 @@ def _rate_limit_seconds() -> float:
 
 # --- Privacy Shield (Secret Redaction) ---
 
+_SECRET_PATTERNS: list[tuple[str, str]] = [
+    (r'github_pat_[a-zA-Z0-9_]{20,}', '[REDACTED_GITHUB_PAT]'),
+    (r'sk-[a-zA-Z0-9]{20,}', '[REDACTED_OPENAI_KEY]'),
+    (r'xox[bp]-[a-zA-Z0-9-]{10,}', '[REDACTED_SLACK_TOKEN]'),
+    (r'\b[a-fA-F0-9]{32,64}\b', '[REDACTED_HASH_OR_KEY]'),
+    (r'(password|secret|token|key)\s*[:=]\s*[^\s,]+', r'\1=[REDACTED]'),
+]
+
+# Patterns rewritten to use a generic [REDACTED] label — no secret-type hint.
+_SECRET_PATTERNS_GENERIC: list[tuple[str, str]] = [
+    (r'github_pat_[a-zA-Z0-9_]{20,}', '[REDACTED]'),
+    (r'sk-[a-zA-Z0-9]{20,}', '[REDACTED]'),
+    (r'xox[bp]-[a-zA-Z0-9-]{10,}', '[REDACTED]'),
+    (r'\b[a-fA-F0-9]{32,64}\b', '[REDACTED]'),
+    (r'(password|secret|token|key)\s*[:=]\s*[^\s,]+', r'\1=[REDACTED]'),
+]
+
+
 def redact_secrets(text: str) -> str:
-    """Masks common secret patterns (API keys, PATs, Tokens) in a given string."""
-    if not isinstance(text, str): return str(text)
-    
-    # Patterns for common secrets
-    patterns = [
-        (r'(github_pat_[a-zA-Z0-9_]{20,})', '[REDACTED_GITHUB_PAT]'),
-        (r'(sk-[a-zA-Z0-9]{20,})', '[REDACTED_OPENAI_KEY]'),
-        (r'(xox[bp]-[a-zA-Z0-9-]{10,})', '[REDACTED_SLACK_TOKEN]'),
-        (r'(\b[a-fA-F0-9]{32,64}\b)', '[REDACTED_HASH_OR_KEY]'), # Generic high-entropy strings
-        (r'(password|secret|token|key)\s*[:=]\s*[^\s,]+', r'\1=[REDACTED]')
-    ]
-    
-    redacted = text
-    for pattern, replacement in patterns:
-        redacted = re.sub(pattern, replacement, redacted)
-    return redacted
+    """Masks secret patterns with descriptive labels. Use for local debug logs only."""
+    if not isinstance(text, str):
+        return str(text)
+    result = text
+    for pattern, replacement in _SECRET_PATTERNS:
+        result = re.sub(pattern, replacement, result)
+    return result
+
+
+def redact_secrets_for_telemetry(text: str) -> str:
+    """Masks secret patterns with a generic [REDACTED] label.
+
+    Use this in all telemetry paths (remote pulses, .sift_telemetry.json) to
+    avoid leaking secret-type metadata to observers of the telemetry stream.
+    """
+    if not isinstance(text, str):
+        return str(text)
+    result = text
+    for pattern, replacement in _SECRET_PATTERNS_GENERIC:
+        result = re.sub(pattern, replacement, result)
+    return result
 
 # --- OTel Initialization (Isolated Provider) ---
 _TRACER = None
@@ -204,10 +227,12 @@ def _send_telemetry_pulse_now(tool_name: str, original: int, final: int, latency
     """Sends an anonymous telemetry pulse immediately (internal)."""
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL: return
     
-    # Safety: Redact any potential secrets in metadata
-    safe_tool = redact_secrets(tool_name)
-    safe_label = redact_secrets(agent_label) if agent_label else None
-    
+    # Safety: Redact any potential secrets in metadata.
+    # Use generic [REDACTED] label (not type-specific) to avoid leaking
+    # secret-type hints to telemetry observers.
+    safe_tool = redact_secrets_for_telemetry(tool_name)
+    safe_label = redact_secrets_for_telemetry(agent_label) if agent_label else None
+
     # Safety: If tool_name indicates a test/handshake, force it out of Real-World tiers
     is_test = any(word in safe_tool.lower() for word in ['test', 'handshake', 'diag', 'bench'])
     final_tier = tier_override if tier_override else (SIFT_TIER if not is_test else "Internal-Testing")
@@ -290,9 +315,9 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
     """Logs tool performance metrics locally and triggers global pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED: return
 
-    # Safety: Redact metadata
-    safe_tool = redact_secrets(tool_name)
-    safe_label = redact_secrets(agent_label) if agent_label else None
+    # Safety: Redact metadata. Generic label only — no secret-type hints in stored logs.
+    safe_tool = redact_secrets_for_telemetry(tool_name)
+    safe_label = redact_secrets_for_telemetry(agent_label) if agent_label else None
 
     try:
         data = {}
