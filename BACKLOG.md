@@ -13,12 +13,12 @@ This document tracks identified challenges, real-world usage observations, and p
 - [ ] **Adaptive Thresholds**: Implement dynamic thresholds in `sift_analyze` (e.g., triggering at 500 chars for high-noise logs but keeping 2000+ for high-signal source code).
 - [ ] **Foundational Sanitization**: Implement a non-semantic "comment stripper" for foundational files (`AGENTS.md`) that preserves instructions but reduces character count without violating the "Never Sift" rule.
 
-### 2. `sift_onboard` Auto-Detection
-**Observation**: `apply_onboarding()` requires `environment` as a mandatory positional argument. Calling the MCP tool without it throws a `TypeError`. The function should auto-detect the environment from the running process tree or fall back to a safe default.
+### 2. `sift_onboard` Environment Auto-Detection
+**Observation**: The MCP tool already accepts `environment: str | None = None` (no crash). However when `None` is passed, `apply_onboarding()` receives `""` and proceeds without inferring the actual environment — so injection targets for the current IDE are silently skipped. The direct Python call (`apply_onboarding()`) still requires `environment` as a positional arg and will `TypeError` if called without it.
 
 **Proposed Solutions**:
-- [ ] **Environment Auto-Detection**: Inspect `sys.argv`, `os.environ`, and parent process name to infer environment (`opencode`, `cursor`, `claude`, etc.) when not explicitly provided.
-- [ ] **MCP Tool Default**: Make `environment` optional in the MCP-exposed `sift_onboard` tool with `None` triggering auto-detection.
+- [ ] **Environment Auto-Detection in `apply_onboarding`**: Inspect `sys.argv`, `os.environ`, and parent process name (via `psutil` or `/proc`) to infer environment (`opencode`, `cursor`, `claude`, etc.) when `environment` is empty/None. Fall back to `"generic"`.
+- [ ] **Make `environment` keyword-only with default `None`** in `apply_onboarding()` signature to prevent direct-call `TypeError`.
 
 ---
 
@@ -29,6 +29,42 @@ This document tracks identified challenges, real-world usage observations, and p
 - [ ] **Automatic Rate Adjustment**: Dynamically adjust compression rates based on the observed "Meaning Loss" telemetry.
 
 ---
+
+## 🔵 Suggested Improvements
+
+### Platform Detection Refactor
+**Observation**: `sift_hook.py` platform detection is 8+ `elif` branches. As more CLIs are added (Gemini CLI, Codex CLI, slash commands) this becomes a maintenance liability.
+- [ ] **Registry Pattern**: Replace `elif` chain with a list of `PlatformDetector` objects each implementing `matches(data, event_name, env) -> bool`. New platforms register themselves without touching the routing logic.
+
+### Telemetry File Pruning
+**Observation**: `.sift_telemetry.json` grows unbounded. Old sessions accumulate indefinitely.
+- [ ] **TTL-based pruning**: On each `log_telemetry` call, prune sessions older than a configurable `SIFT_TELEMETRY_TTL_DAYS` (default 90). Zero disk impact on normal usage.
+
+### VSCode Platform Detection Tightening
+**Observation**: The VSCode branch (`"tool_response" in data and "llmContent" in data["tool_response"]`) is a structural catch-all — any unrecognised IDE with a similar payload silently becomes `"VSCode"` in telemetry.
+- [ ] Add a tighter discriminator (e.g. `VSCODE_IPC_HOOK` env var) or emit a `"Unknown"` platform label with a warning log when falling through.
+
+### `sift_analyze` Confidence Score
+**Observation**: `sift_analyze` returns a binary recommendation (sift / don't sift). A `0.0–1.0` confidence score would allow smarter routing — auto-sift above 0.8, prompt user between 0.5–0.8, skip below 0.5. Feeds directly into the Analytical Feedback Loop item.
+- [ ] Return `confidence` float alongside the recommendation.
+
+### Per-File-Extension Compression Profiles
+**Observation**: `rate` is a single global float. Different file types warrant different compression aggressiveness (logs vs. source code vs. markdown).
+- [ ] Support a `.sift_profiles.json` in the workspace defining per-extension defaults (e.g. `{"*.log": 0.2, "*.ts": 0.6, "*.md": 0.8}`). Hook picks the profile automatically from `file_ext` (already tracked in telemetry).
+
+### `get_sift_stats` Markdown Table Output
+**Observation**: `.sift_telemetry.json` contains rich data but `get_sift_stats` returns a raw summary. A structured markdown table of compression ratios, latency, and platform distribution would make the data visible directly in-IDE.
+- [ ] Add a `format: "markdown" | "json"` param to `get_sift_stats`; default to markdown table.
+
+### `sift_rank` Configurable Default
+**Observation**: `sift_rank` exposes `top_n` in the MCP tool but `AGENTS.md` SOP hardcodes "Top 3". The server-side default is also hardcoded.
+- [ ] Add `SIFT_RANK_TOP_N` env var (default `3`) respected by the tool when `top_n` is not explicitly passed.
+
+### PyPI Publish
+**Observation**: `pyproject.toml` is already in place. Publishing to PyPI would allow `pip install semantic-sift` and significantly lower the adoption barrier. Also a prerequisite for the npm wrapper path.
+- [ ] Publish to PyPI. Add a GitHub Actions workflow for automated release on tag push.
+
+
 
 ## 🟢 Completed (Phase 2: Production Hardening — FIX_PLAN_5_STAR)
 - [x] **Runtime Hook Portability**: Hook command derived from `sys.executable` at runtime; no hardcoded paths.
