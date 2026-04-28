@@ -118,12 +118,18 @@ def main() -> None:
             agent_label = data.get("context", {}).get("agent_name")
             raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
         elif event_name in ["AfterTool", "PreCompress"]:
-            platform = "Gemini"
-            # Subagent detection for Gemini/OpenClaw
-            agent_label = data.get("hookSpecificOutput", {}).get("threadLabel") or data.get("sessionId")
-            raw_content = data.get("tool_response", {}).get("llmContent", "")
-            if "tool_response" in data and "llmContent" in data["tool_response"] and not os.environ.get("GEMINI_SESSION_ID"):
-                platform = "Gemini/OpenClaw"
+            # OpenCode native plugin sends tool_args alongside tool_name; Gemini never does.
+            if "tool_args" in data:
+                platform = "OpenCode"
+                tool_name = data.get("tool_name", tool_name)
+                raw_content = data.get("tool_response", {}).get("llmContent", "")
+            else:
+                platform = "Gemini"
+                # Subagent detection for Gemini/OpenClaw
+                agent_label = data.get("hookSpecificOutput", {}).get("threadLabel") or data.get("sessionId")
+                raw_content = data.get("tool_response", {}).get("llmContent", "")
+                if "tool_response" in data and "llmContent" in data["tool_response"] and not os.environ.get("GEMINI_SESSION_ID"):
+                    platform = "Gemini/OpenClaw"
         elif "tool_response" in data and "llmContent" in data["tool_response"]:
             platform = "VSCode"
             raw_content = data["tool_response"]["llmContent"]

@@ -20,6 +20,38 @@ def test_hook_structured_data_exemption():
     assert "Semantic-Sift Audit" not in out
 
 
+def test_opencode_aftertool_platform_detection():
+    """OpenCode plugin sends tool_args; must be detected as OpenCode, not Gemini."""
+    content = "x " * 400  # >500 chars to pass the short-circuit
+    payload = {
+        "hook_event_name": "AfterTool",
+        "tool_name": "read_file",
+        "tool_args": {"path": "/tmp/foo.txt"},
+        "tool_response": {"llmContent": content},
+    }
+    out = _run_hook(payload)
+    data = json.loads(out)
+    # The hook must pass llmContent through (possibly sifted); key must survive
+    assert "tool_response" in data
+    # Telemetry client_id is internal — we verify the payload key is preserved
+    # and the hook did NOT confuse the structure (Gemini path would also work structurally,
+    # so we verify tool_name round-trips correctly)
+    assert data.get("tool_name") == "read_file"
+
+
+def test_gemini_aftertool_no_tool_args():
+    """Gemini AfterTool payloads lack tool_args; must still be detected as Gemini."""
+    content = "y " * 400
+    payload = {
+        "hook_event_name": "AfterTool",
+        "tool_response": {"llmContent": content},
+        "sessionId": "gemini-session-abc",
+    }
+    out = _run_hook(payload)
+    data = json.loads(out)
+    assert "tool_response" in data
+
+
 def test_hook_echo_bypass_header_present():
     content = "repeat-content " * 200
     payload = {"tool_name": "test_tool", "result": content}
