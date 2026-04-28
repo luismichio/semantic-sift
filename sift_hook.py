@@ -3,25 +3,69 @@ import json
 import os
 import re
 import time
+import logging
+from logging.handlers import RotatingFileHandler
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 # Import Core Logic & Telemetry
 import telemetry_core
 import sift_kernel
 
 # Logging configuration
-LOG_FILE = os.path.join(os.getcwd(), ".gemini", "sift_debug.log")
+LOG_FILE = os.environ.get("SIFT_LOG_FILE", os.path.join(os.getcwd(), ".gemini", "sift_debug.log"))
+LOG_LEVEL = os.environ.get("SIFT_LOG_LEVEL", "WARNING").upper()
 
-def log(message):
+
+def _build_logger() -> logging.Logger:
+    logger = logging.getLogger("semantic_sift_hook")
+    if logger.handlers:
+        return logger
+
+    log_dir = os.path.dirname(LOG_FILE)
+    if log_dir:
+        os.makedirs(log_dir, exist_ok=True)
+    handler = RotatingFileHandler(LOG_FILE, maxBytes=5_000_000, backupCount=2, encoding="utf-8")
+    formatter = logging.Formatter("[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(getattr(logging, LOG_LEVEL, logging.WARNING))
+    logger.propagate = False
+    return logger
+
+
+LOGGER = _build_logger()
+
+def log(message: str) -> None:
     try:
-        timestamp = time.ctime()
         # Privacy Shield: Redact secrets before logging to disk
         safe_message = telemetry_core.redact_secrets(message)
-        with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(f"[{timestamp}] {safe_message}\n")
-    except:
-        pass
+        LOGGER.debug(safe_message)
+    except (OSError, ValueError):
+        return
 
-def main():
+
+def _get_hook_timeout_seconds() -> float:
+    raw = os.environ.get("SIFT_HOOK_TIMEOUT_MS", "3000")
+    try:
+        timeout_ms = max(100, int(raw))
+    except ValueError:
+        timeout_ms = 3000
+    return timeout_ms / 1000.0
+
+
+def _semantic_sift_with_timeout(content: str, rate: float, timeout_s: float) -> tuple[str | None, bool]:
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(sift_kernel.perform_semantic_sift, content, rate)
+    try:
+        result = future.result(timeout=timeout_s)
+        executor.shutdown(wait=False, cancel_futures=False)
+        return result, False
+    except TimeoutError:
+        future.cancel()
+        executor.shutdown(wait=False, cancel_futures=True)
+        return None, True
+
+def main() -> None:
     raw_input = ""
     try:
         # 1. Read JSON from stdin
@@ -170,6 +214,8 @@ def main():
             # 3. Subconscious Routing Intelligence
             sifted = None
             sift_type = "none"
+            is_html = False
+            timed_out_semantic = False
             
             # --- A. Auto-Ranking (Search Tools) ---
             if any(x in tool_name.lower() for x in ['search', 'grep', 'find']):
@@ -199,20 +245,38 @@ def main():
                     if md_converter:
                         try:
                             log(f"Normalizing HTML to Markdown for {tool_name}")
-                            import tempfile
-                            with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w", encoding="utf-8") as tf:
-                                tf.write(raw_content)
-                                temp_path = tf.name
-                            result = md_converter.convert(temp_path)
-                            working_content = result.text_content
-                            os.remove(temp_path)
+                            import io
+                            if hasattr(md_converter, "convert_stream"):
+                                result = md_converter.convert_stream(io.StringIO(raw_content), file_extension=".html")
+                                working_content = result.text_content
+                            else:
+                                import tempfile
+                                temp_path = None
+                                try:
+                                    with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w", encoding="utf-8") as tf:
+                                        tf.write(raw_content)
+                                        temp_path = tf.name
+                                    result = md_converter.convert(temp_path)
+                                    working_content = result.text_content
+                                finally:
+                                    if temp_path and os.path.exists(temp_path):
+                                        os.remove(temp_path)
                         except Exception as e:
                             log(f"HTML Normalization failed: {e}")
 
                 if (is_prose or has_md_ext or is_html) and len(working_content) > 3000:
                     log(f"Auto-Semantic sifting prose from {tool_name}")
-                    sifted = sift_kernel.perform_semantic_sift(working_content, rate=0.6)
-                    sift_type = "sift_chat"
+                    timeout_s = _get_hook_timeout_seconds()
+                    semantic_output, timed_out_semantic = _semantic_sift_with_timeout(working_content, rate=0.6, timeout_s=timeout_s)
+                    if timed_out_semantic:
+                        log(f"Semantic timeout for {tool_name} after {timeout_s:.2f}s. Falling back to heuristic sieve.")
+                        fallback = sift_kernel.apply_heuristic_sieve(raw_content)
+                        if len(fallback) < len(raw_content):
+                            sifted = "[Semantic-Sift: Heuristic Fallback - timeout]\n" + fallback
+                            sift_type = "sift_logs"
+                    elif semantic_output:
+                        sifted = semantic_output
+                        sift_type = "sift_chat"
 
             # --- C. Auto-Heuristic (Default / Logs) ---
             if not sifted:

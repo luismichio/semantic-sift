@@ -6,7 +6,7 @@ echo.
 
 set PYTHONPATH=.
 
-echo "[1/3] Running Unit Tests (Logic & Privacy)..."
+echo "[1/4] Running Unit Tests (Logic & Privacy)..."
 pytest tests/
 if %errorlevel% neq 0 (
     echo "❌ Unit tests failed!"
@@ -15,7 +15,7 @@ if %errorlevel% neq 0 (
 echo "✅ Tests Passed."
 echo.
 
-echo "[2/3] Running Static Security Scan (Bandit)..."
+echo "[2/4] Running Static Security Scan (Bandit)..."
 bandit -r server.py sift_hook.py telemetry_core.py -ll
 if %errorlevel% neq 0 (
     echo "❌ Security vulnerabilities found!"
@@ -24,13 +24,22 @@ if %errorlevel% neq 0 (
 echo "✅ Code Secure."
 echo.
 
-echo "[3/3] Auditing Dependencies (Pip-Audit)..."
+echo "[3/4] Auditing Dependencies (Pip-Audit)..."
 pip-audit
 if %errorlevel% neq 0 (
     echo "❌ Vulnerable dependencies detected!"
     exit /b %errorlevel%
 )
 echo "✅ Dependencies Clean."
+echo.
+
+echo "[4/4] Running Type Checks (mypy)..."
+mypy server.py sift_kernel.py sift_hook.py telemetry_core.py semantic_sift
+if %errorlevel% neq 0 (
+    echo "❌ Type checking failed!"
+    exit /b %errorlevel%
+)
+echo "✅ Type checks passed."
 echo.
 
 echo ==========================================

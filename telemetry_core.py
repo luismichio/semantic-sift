@@ -6,6 +6,8 @@ import time
 import hashlib
 import urllib.request
 import re
+import threading
+import logging
 from datetime import datetime
 
 # OpenTelemetry Imports
@@ -16,7 +18,6 @@ try:
     from opentelemetry.sdk.resources import Resource
     OTEL_AVAILABLE = True
 except ImportError:
-    import logging
     # Mock trace if not available
     class MockTracer:
         def start_as_current_span(self, name, *args, **kwargs):
@@ -42,6 +43,19 @@ SIFT_TIER = "Commercial" if SIFT_LICENSE_KEY else "Community"
 
 # Privacy Kill-Switch (Meechi Compliance)
 SIFT_TELEMETRY_DISABLED = os.environ.get("SIFT_TELEMETRY_DISABLED", "false").lower() == "true"
+
+_PULSE_LOCK = threading.Lock()
+_PULSE_LAST_SENT: dict[str, float] = {}
+_PULSE_PENDING: dict[str, tuple[str, int, int, float, str | None, str | None, str | None, str | None]] = {}
+LOGGER = logging.getLogger("semantic_sift.telemetry")
+
+
+def _rate_limit_seconds() -> float:
+    raw = os.environ.get("SIFT_PULSE_RATE_LIMIT_S", "10")
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return 10.0
 
 # --- Privacy Shield (Secret Redaction) ---
 
@@ -106,13 +120,15 @@ def check_echo(text: str) -> bool:
                 return True
             else:
                 os.remove(echo_path) # Expired
-        except: pass
+        except (OSError, ValueError) as exc:
+            LOGGER.debug("Failed reading echo marker '%s': %s", echo_path, exc)
     
     # Record current hash to disk
     try:
         with open(echo_path, "w") as f:
             f.write(str(now + 30)) # 30s TTL
-    except: pass
+    except OSError as exc:
+        LOGGER.debug("Failed writing echo marker '%s': %s", echo_path, exc)
     return False
 
 # --- Audit Header Logic ---
@@ -147,24 +163,45 @@ def estimate_tokens(text: str) -> int:
     if not text: return 0
     return max(1, len(text) // 4)
 
+
+def _ensure_identity_ignored() -> None:
+    gitignore_path = os.path.join(os.getcwd(), ".gitignore")
+    try:
+        content = ""
+        if os.path.exists(gitignore_path):
+            with open(gitignore_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+
+        if IDENTITY_FILE not in content:
+            prefix = "\n" if content and not content.endswith("\n") else ""
+            with open(gitignore_path, "a", encoding="utf-8") as f:
+                f.write(f"{prefix}{IDENTITY_FILE}\n")
+    except OSError as exc:
+        LOGGER.debug("Failed ensuring identity ignore entry in '.gitignore': %s", exc)
+
 # Generate or load persistent anonymous Machine ID
 def get_machine_id() -> str:
     if SIFT_TELEMETRY_DISABLED: return "anonymous-user"
+    _ensure_identity_ignored()
     path = os.path.join(os.getcwd(), IDENTITY_FILE)
     if os.path.exists(path):
         try:
-            with open(path, "r") as f: return f.read().strip()
-        except: pass
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                return f.read().strip()
+        except OSError as exc:
+            LOGGER.debug("Failed reading identity file '%s': %s", path, exc)
     new_id = str(uuid.uuid4())
     try:
-        with open(path, "w") as f: f.write(new_id)
-    except: pass
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(new_id)
+    except OSError as exc:
+        LOGGER.debug("Failed writing identity file '%s': %s", path, exc)
     return new_id
 
 MACHINE_ID = get_machine_id()
 
-def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float, tier_override: str = None, client_id_override: str = None, agent_label: str = None, file_ext: str = None):
-    """Sends an anonymous, blocking telemetry pulse (skipped if disabled)."""
+def _send_telemetry_pulse_now(tool_name: str, original: int, final: int, latency: float, tier_override: str | None = None, client_id_override: str | None = None, agent_label: str | None = None, file_ext: str | None = None) -> None:
+    """Sends an anonymous telemetry pulse immediately (internal)."""
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL: return
     
     # Safety: Redact any potential secrets in metadata
@@ -218,7 +255,38 @@ def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: flo
         except Exception:
             continue
 
-def log_telemetry(session_id: str, start_time: str, tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False, client_id_override: str = None, agent_label: str = None, file_ext: str = None):
+
+def send_telemetry_pulse(tool_name: str, original: int, final: int, latency: float, tier_override: str | None = None, client_id_override: str | None = None, agent_label: str | None = None, file_ext: str | None = None) -> None:
+    """Queues an anonymous telemetry pulse and sends it asynchronously with rate limiting."""
+    if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL:
+        return
+
+    key = f"{client_id_override or SIFT_CLIENT_ID}:{tool_name}"
+    now = time.time()
+    interval = _rate_limit_seconds()
+
+    with _PULSE_LOCK:
+        last_sent = _PULSE_LAST_SENT.get(key, 0.0)
+        if interval > 0 and (now - last_sent) < interval:
+            _PULSE_PENDING[key] = (tool_name, original, final, latency, tier_override, client_id_override, agent_label, file_ext)
+            return
+        _PULSE_LAST_SENT[key] = now
+
+    def _worker(payload):
+        _send_telemetry_pulse_now(*payload)
+        if interval <= 0:
+            return
+        with _PULSE_LOCK:
+            pending = _PULSE_PENDING.pop(key, None)
+            if pending:
+                _PULSE_LAST_SENT[key] = time.time()
+        if pending:
+            _send_telemetry_pulse_now(*pending)
+
+    payload = (tool_name, original, final, latency, tier_override, client_id_override, agent_label, file_ext)
+    threading.Thread(target=_worker, args=(payload,), daemon=True, name="semantic-sift-pulse").start()
+
+def log_telemetry(session_id: str, start_time: str, tool_name: str, original_chars: int, final_chars: int, latency_ms: float, cache_hit: bool = False, client_id_override: str | None = None, agent_label: str | None = None, file_ext: str | None = None) -> None:
     """Logs tool performance metrics locally and triggers global pulse (skipped if disabled)."""
     if SIFT_TELEMETRY_DISABLED: return
 
@@ -262,4 +330,4 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
             send_telemetry_pulse(safe_tool, original_chars, final_chars, latency_ms, client_id_override=client_id_override, agent_label=safe_label, file_ext=file_ext)
             
     except Exception:
-        pass
+        LOGGER.exception("Failed to write telemetry record for tool '%s'", safe_tool)

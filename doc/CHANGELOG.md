@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🛠️ Runtime Portability & Safety Hardening
+- **Runtime Hook Command**: Removed hardcoded local interpreter and script paths from `server.py`; hook commands are now derived from `sys.executable` and `server.py`-relative `sift_hook.py` at runtime.
+- **Startup Validation**: Added explicit startup guard that fails fast with a clear error when `sift_hook.py` is not found next to `server.py`.
+- **Workspace Path Guard**: Added `resolve_safe_path(...)` in `sift_kernel.py` and integrated it into `sift_read_file` and `sift_analyze_file` to block out-of-workspace path traversal by default.
+- **Controlled Override**: Added `SIFT_ALLOW_GLOBAL_READS=true` environment override for advanced workflows that intentionally read files outside the workspace.
+- **Packaging Bootstrap**: Added `pyproject.toml` with a `semantic-sift` console entry point and updated quick-start docs with package install instructions.
+- **Windsurf Windows Gateway**: Replaced Linux-only Windsurf file-size guard command with platform-aware command generation that supports Windows (`pwsh`) and POSIX shells.
+- **Security Policy Expansion**: Rewrote `SECURITY.md` with concrete telemetry schema, privacy controls (`SIFT_TELEMETRY_DISABLED`, `SIFT_TELEMETRY_URL`), and local artifact handling guidance.
+- **Hook Timeout Fallback**: Added `SIFT_HOOK_TIMEOUT_MS` guard in `sift_hook.py`; semantic hook execution now times out safely and falls back to heuristic sifting with explicit fallback marker.
+- **Model Warm-Up Guardrails**: Added background semantic model warm-up on server startup with bounded wait (`SIFT_MODEL_READY_WAIT_MS`) and automatic heuristic-mode fallback during cold starts.
+- **Async Telemetry Pulses**: Refactored telemetry pulse dispatch to non-blocking background threads with configurable rate limiting (`SIFT_PULSE_RATE_LIMIT_S`) to avoid tool-call latency coupling.
+- **Hook Log Rotation**: Replaced raw append logging in `sift_hook.py` with rotating file logs and configurable path/verbosity (`SIFT_LOG_FILE`, `SIFT_LOG_LEVEL`).
+- **Identity Git Protection**: `telemetry_core.py` now proactively ensures `.sift_identity` is listed in `.gitignore` before creating/updating machine identity.
+- **Doc Sift Rate Control**: Exposed `rate` parameter on `sift_doc` and propagated it to kernel doc sifting for precision-sensitive workflows.
+- **Onboarding Dry-Run**: Added `dry_run` support to `sift_onboard` so users can preview file/hook changes without applying writes.
+- **Stats Accuracy Note**: `get_sift_stats` now includes explicit disclaimer that token counts are 4 chars/token estimates and may differ from provider billing.
+- **In-Memory HTML Path**: `sift_hook.py` now prefers `MarkItDown.convert_stream(...)` for HTML normalization and falls back to temp-file conversion with guaranteed cleanup.
+- **Telemetry Reference Doc**: Added `doc/TELEMETRY.md` with endpoint overrides, payload schema, privacy guarantees, and retention/deletion contact.
+- **Gateway Regression Test**: Added tests validating Windsurf gateway command generation for both Windows (`pwsh`) and POSIX shell paths.
+- **Neural Extras Packaging**: Added optional `neural` dependency group in `pyproject.toml` and documented `pip install .[neural]` in README.
+- **Phase-3 Module Scaffold**: Added `semantic_sift/` package wrappers (`server`, `kernel`, `telemetry`, `hook`) plus extraction placeholders (`tools`, `onboarding`, `hook_injector`) to enable staged `server.py` decomposition without runtime breakage.
+- **Server Decomposition (Step 2)**: Split monolithic `server.py` responsibilities into `semantic_sift/tools.py`, `semantic_sift/onboarding.py`, and `semantic_sift/hook_injector.py`, and reduced root `server.py` to a thin FastMCP entrypoint.
+- **Coverage Expansion (Phase 3)**: Added focused test modules for semantic kernel behavior, ranking behavior, hook routing/exemptions, server tool registration behavior, onboarding flow, and telemetry identity/rate-limit paths.
+- **Typing & CI Gate**: Added `mypy` development dependency and configuration in `pyproject.toml`, included `py.typed` marker, and extended `scripts/audit.bat` to run static type checks as part of the security/quality audit pipeline.
+- **Exception Handling Hardening**: Replaced remaining silent telemetry exception-swallowing paths with targeted exception handling and structured logger diagnostics in `telemetry_core.py`.
+- **Type Hint Expansion**: Added/expanded function annotations across `sift_kernel.py`, `sift_hook.py`, `semantic_sift/tools.py`, and `semantic_sift/hook_injector.py` as groundwork for stricter static analysis.
+- **Exception Scope Tightening**: Replaced additional broad catches in kernel/hook paths with narrower exception classes and diagnostic-safe fallbacks.
+- **Injector Error Narrowing**: Tightened exception classes across `semantic_sift/hook_injector.py` and `semantic_sift/onboarding.py` for JSON I/O, filesystem operations, and pattern updates to reduce masked failures.
+- **Extraction Diff View**: Added `show_diff` support to `sift_extraction` via `perform_extraction_cleaning(..., show_diff=True)` with a `--- REMOVED CONTENT ---` section for source-fidelity review.
+- **Compaction Fidelity Signal**: Added vocabulary-overlap scoring in `perform_compaction_summary` with threshold control (`SIFT_COMPACTION_FIDELITY_THRESHOLD`) and low-fidelity warning injection.
+
 ### 🛠️ Infrastructure & Maintenance
 - **Security Cleanup**: Removed `.gemini/` and other sensitive directories from Git tracking.
 - **History Scrubbing**: Sanitized Git history to remove a compromised GitHub token while maintaining configuration integrity.

@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semantic-sift"
+version = "0.1.0"
+description = "Reasoning-first MCP middleware for context distillation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE.md" }
+authors = [
+  { name = "Luis Kobayashi" }
+]
+dependencies = [
+  "mcp",
+  "numpy",
+  "opentelemetry-api",
+  "opentelemetry-sdk",
+  "markitdown"
+]
+
+[project.optional-dependencies]
+neural = [
+  "llmlingua",
+  "torch",
+  "transformers",
+  "sentence-transformers"
+]
+
+dev = [
+  "mypy"
+]
+
+[project.scripts]
+semantic-sift = "server:main"
+
+[tool.setuptools]
+py-modules = ["server", "sift_kernel", "sift_hook", "telemetry_core"]
+
+[tool.setuptools.packages.find]
+include = ["semantic_sift*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_return_any = false
+warn_unused_configs = true

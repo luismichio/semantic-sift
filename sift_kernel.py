@@ -3,6 +3,9 @@ import os
 import time
 import json
 import hashlib
+import threading
+import difflib
+from typing import Any
 import telemetry_core
 
 # Cache Configuration
@@ -13,19 +16,49 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 DEVICE = "cpu"
 _DEVICE = None
 _MARKITDOWN = None
+_COMPRESSOR = None
+_MODEL_READY = threading.Event()
+_MODEL_WARMUP_STARTED = False
+_MODEL_WARMUP_LOCK = threading.Lock()
+_MODEL_WARMUP_ERROR = None
 
-def get_device():
+
+def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
+    """Resolve a file path and enforce workspace-bound access by default."""
+    requested_path = os.path.realpath(os.path.abspath(os.path.expanduser(path)))
+
+    if os.environ.get("SIFT_ALLOW_GLOBAL_READS", "false").lower() == "true":
+        return requested_path
+
+    root = workspace_root or os.environ.get("SIFT_WORKSPACE_ROOT") or os.getcwd()
+    root_path = os.path.realpath(os.path.abspath(os.path.expanduser(root)))
+
+    try:
+        in_workspace = os.path.commonpath([requested_path, root_path]) == root_path
+    except ValueError:
+        in_workspace = False
+
+    if not in_workspace:
+        return (
+            f"Error: Access denied for path '{path}'. "
+            "Use a file path inside the current workspace or set "
+            "SIFT_ALLOW_GLOBAL_READS=true to override."
+        )
+
+    return requested_path
+
+def get_device() -> str:
     global _DEVICE, DEVICE
     if _DEVICE is None:
         try:
             import torch
             _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-        except:
+        except ImportError:
             _DEVICE = "cpu"
         DEVICE = _DEVICE
     return _DEVICE
 
-def get_markitdown():
+def get_markitdown() -> Any | None:
     global _MARKITDOWN
     if _MARKITDOWN is None:
         try:
@@ -35,6 +68,38 @@ def get_markitdown():
             _MARKITDOWN = None
     return _MARKITDOWN
 
+
+def _build_prompt_compressor() -> Any:
+    from llmlingua import PromptCompressor
+    return PromptCompressor(
+        model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
+        use_llmlingua2=True,
+        device_map=get_device()
+    )
+
+
+def _warm_up_models() -> None:
+    global _COMPRESSOR, _MODEL_WARMUP_ERROR
+    try:
+        _COMPRESSOR = _build_prompt_compressor()
+    except (ImportError, RuntimeError, OSError, ValueError) as e:
+        _MODEL_WARMUP_ERROR = str(e)
+    finally:
+        _MODEL_READY.set()
+
+
+def start_model_warmup() -> None:
+    global _MODEL_WARMUP_STARTED
+    if _MODEL_WARMUP_STARTED:
+        return
+
+    with _MODEL_WARMUP_LOCK:
+        if _MODEL_WARMUP_STARTED:
+            return
+        _MODEL_WARMUP_STARTED = True
+        thread = threading.Thread(target=_warm_up_models, daemon=True, name="semantic-sift-model-warmup")
+        thread.start()
+
 def get_file_hash(path: str) -> str:
     """Generates a stable hash for a file's content."""
     try:
@@ -43,7 +108,7 @@ def get_file_hash(path: str) -> str:
             for byte_block in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
-    except:
+    except OSError:
         return hashlib.sha256(path.encode()).hexdigest()
 
 def ensure_markdown_content(path: str) -> str:
@@ -73,7 +138,7 @@ def ensure_markdown_content(path: str) -> str:
         with open(cache_path, "w", encoding="utf-8", errors="replace") as f:
             f.write(content)
         return content
-    except Exception as e:
+    except (OSError, AttributeError, RuntimeError, ValueError) as e:
         return f"Error converting {ext} file: {str(e)}"
 
 def load_raw_text(path: str) -> str:
@@ -85,11 +150,11 @@ def load_raw_text(path: str) -> str:
         try:
             with open(path, "r", encoding="latin-1") as f:
                 return f.read()
-        except Exception as e:
+        except OSError as e:
             return f"Error reading file (latin-1 fallback failed): {str(e)}"
     except FileNotFoundError:
         return f"Error: File not found at {path}"
-    except Exception as e:
+    except OSError as e:
         return f"Error reading file: {str(e)}"
 
 def load_file_content(path: str) -> str:
@@ -118,7 +183,7 @@ def apply_heuristic_sieve(text: str) -> str:
 
 # --- Core Semantic Logic ---
 
-def get_cache_key(tool_name: str, text: str, **kwargs) -> str:
+def get_cache_key(tool_name: str, text: str, **kwargs: Any) -> str:
     payload = f"{tool_name}:{text}:{json.dumps(kwargs, sort_keys=True)}"
     return hashlib.sha256(payload.encode()).hexdigest()
 
@@ -128,7 +193,7 @@ def check_cache(key: str) -> str | None:
         with open(cache_path, "r", encoding="utf-8", errors="replace") as f: return f.read()
     return None
 
-def set_cache(key: str, result: str):
+def set_cache(key: str, result: str) -> None:
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
     with open(cache_path, "w", encoding="utf-8", errors="replace") as f: f.write(result)
 
@@ -137,14 +202,25 @@ def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
     cache_key = get_cache_key("sift_chat", text, rate=rate)
     if cached := check_cache(cache_key): return cached
     
+    start_model_warmup()
+    wait_ms_raw = os.environ.get("SIFT_MODEL_READY_WAIT_MS", "1200")
     try:
-        from llmlingua import PromptCompressor
-        compressor = PromptCompressor(
-            model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank", 
-            use_llmlingua2=True, 
-            device_map=get_device()
-        )
-        results = compressor.compress_prompt(
+        wait_ms = max(0, int(wait_ms_raw))
+    except ValueError:
+        wait_ms = 1200
+
+    if not _MODEL_READY.wait(wait_ms / 1000.0):
+        fallback = apply_heuristic_sieve(text)
+        return "[Semantic-Sift: Models warming up - heuristic mode active]\n" + (fallback if fallback else text)
+
+    if _COMPRESSOR is None:
+        fallback = apply_heuristic_sieve(text)
+        if _MODEL_WARMUP_ERROR:
+            return f"[Semantic-Sift: Semantic model unavailable - heuristic mode active]\n{fallback if fallback else text}"
+        return fallback if fallback else text
+
+    try:
+        results = _COMPRESSOR.compress_prompt(
             [text], 
             rate=rate, 
             force_tokens=['\n', '?'], 
@@ -154,7 +230,7 @@ def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
         result = results.get('compressed_prompt', text)
         set_cache(cache_key, result)
         return result
-    except Exception as e:
+    except (AttributeError, RuntimeError, ValueError, TypeError) as e:
         return f"Error: {str(e)}"
 
 def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tuple[float, str]]:
@@ -165,13 +241,13 @@ def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tu
         scores = model.predict([[query, doc] for doc in documents])
         scored_docs = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)[:top_n]
         return scored_docs
-    except Exception:
+    except (ImportError, RuntimeError, ValueError):
         return []
 
-def perform_doc_sift(text: str) -> str:
+def perform_doc_sift(text: str, rate: float = 0.4) -> str:
     """Hybrid sifting for long documentation."""
     cleaned = apply_heuristic_sieve(text)
-    return perform_semantic_sift(cleaned, rate=0.4)
+    return perform_semantic_sift(cleaned, rate=rate)
 
 def perform_compaction_summary(text: str) -> str:
     """Sifts session history for structural compaction snapshots."""
@@ -182,14 +258,54 @@ def perform_compaction_summary(text: str) -> str:
     
     # We use a very aggressive rate for compaction (0.2) to save massive space
     summary = perform_semantic_sift(text, rate=0.2)
+
+    # Fidelity signal: vocabulary overlap between original and compressed text
+    fidelity_score = calculate_vocabulary_overlap(text, summary)
+    raw_threshold = os.environ.get("SIFT_COMPACTION_FIDELITY_THRESHOLD", "0.3")
+    try:
+        fidelity_threshold = max(0.0, min(1.0, float(raw_threshold)))
+    except ValueError:
+        fidelity_threshold = 0.3
+
+    if fidelity_score < fidelity_threshold:
+        summary = (
+            summary
+            + f"\n\n[Semantic-Sift: Low fidelity compaction detected - vocabulary overlap: {fidelity_score:.1%}. "
+            "Consider reviewing session manually.]"
+        )
     
     if context_hint:
         return f"## Structural Snapshot\n{context_hint}\n\n## Semantic Summary\n{summary}"
     return summary
 
-def perform_extraction_cleaning(content: str) -> str:
+def calculate_vocabulary_overlap(original: str, compressed: str) -> float:
+    """Returns vocabulary overlap ratio between original and compressed text."""
+    original_words = set(re.findall(r"\w+", original.lower()))
+    if not original_words:
+        return 1.0
+    compressed_words = set(re.findall(r"\w+", compressed.lower()))
+    return len(original_words & compressed_words) / len(original_words)
+
+
+def perform_extraction_cleaning(content: str, show_diff: bool = False) -> str:
     """Sifts raw OCR/Docling extractions."""
     refined = content
     for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']:
         refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
-    return perform_semantic_sift(refined, rate=0.7)
+
+    cleaned = perform_semantic_sift(refined, rate=0.7)
+    if not show_diff:
+        return cleaned
+
+    diff_lines = list(
+        difflib.unified_diff(
+            content.splitlines(),
+            cleaned.splitlines(),
+            fromfile="original",
+            tofile="sifted",
+            lineterm="",
+        )
+    )
+    removed_lines = [line[1:] for line in diff_lines if line.startswith("-") and not line.startswith("---")]
+    removed_section = "\n".join(removed_lines) if removed_lines else "(No explicit line removals detected.)"
+    return cleaned + "\n\n--- REMOVED CONTENT ---\n" + removed_section

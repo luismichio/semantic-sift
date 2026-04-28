@@ -87,6 +87,16 @@ pip install torch --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
 ```
 
+Or install as a package after cloning:
+```bash
+pip install .
+```
+
+For full semantic/reranking features, install neural extras:
+```bash
+pip install .[neural]
+```
+
 ### 2. Connect the MCP
 
 > **CRITICAL**: For exact configuration paths for Cursor, Gemini, OpenCode, VS Code, and Claude, reference the **[Master Configuration Matrix in the Integration Encyclopedia](doc/INTEGRATION_ENCYCLOPEDIA.md#5-master-configuration-matrix-mcp-server-installation)**.
@@ -115,7 +125,22 @@ Semantic-Sift is built on a **Zero-Vulnerability Baseline**:
 - **Bandit (SAST)**: Automated static analysis for Python patterns.
 - **Pip-Audit (SCA)**: Real-time supply chain monitoring for 0 known vulnerabilities.
 
+Privacy and telemetry controls:
+- Set `SIFT_TELEMETRY_DISABLED=true` to disable telemetry entirely.
+- Set `SIFT_TELEMETRY_URL=https://your-endpoint` to route metadata pulses to your own endpoint.
+- Set `SIFT_PULSE_RATE_LIMIT_S=10` (default) to control async telemetry pulse frequency.
+
+Performance controls:
+- Set `SIFT_HOOK_TIMEOUT_MS=3000` to cap hook semantic latency before heuristic fallback.
+- Set `SIFT_MODEL_READY_WAIT_MS=1200` to control semantic model warm-up wait time before returning heuristic-mode output.
+
+Hook logging controls:
+- Set `SIFT_LOG_FILE` to override the hook log path (default: `.gemini/sift_debug.log`).
+- Set `SIFT_LOG_LEVEL` (`DEBUG`, `INFO`, `WARNING`, `ERROR`) to control hook log verbosity.
+
 See [SECURITY.md](SECURITY.md) for our full security policy.
+
+Telemetry schema and endpoint details are documented in [doc/TELEMETRY.md](doc/TELEMETRY.md).
 
 ---
 
