@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Bug Fixes
+- **Negative token savings in compaction**: `perform_compaction_summary` previously duplicated priority lines (Decision/Status/File/Task markers) — they appeared in both the `## Structural Snapshot` header and the `## Semantic Summary` body. On short inputs this caused the output to be longer than the input (negative savings). Priority lines are now stripped from the text before semantic compression; if stripping leaves nothing to compress, the Snapshot is returned alone with no Summary section. (`sift_kernel.py`)
+
 ### 🏗️ Code Quality & Professionalism
 - **Version floor pins**: All `pyproject.toml` core dependencies now have floor version pins (`mcp>=1.0`, `numpy>=1.24`, `opentelemetry-api>=1.20`, `opentelemetry-sdk>=1.20`, `markitdown>=0.1`, `psutil>=5.9`). Silent breakage on future releases is no longer possible.
 - **`requirements.txt` aligned**: Neural deps (`llmlingua`, `torch`, `transformers`, `sentence-transformers`) moved to comments pointing to `pip install .[neural]`. Core deps now match `pyproject.toml` with version pins.

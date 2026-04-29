@@ -253,16 +253,40 @@ def perform_doc_sift(text: str, rate: float = 0.4) -> str:
     return perform_semantic_sift(cleaned, rate=rate)
 
 def perform_compaction_summary(text: str) -> str:
-    """Sifts session history for structural compaction snapshots."""
-    # Heuristically find 'Decision', 'Status', 'File' markers to prioritize them
-    # before semantic compression
+    """Sifts session history for structural compaction snapshots.
+
+    Priority lines (Decision/Status/File/Task markers) are extracted first and
+    placed in a Structural Snapshot header.  They are stripped from the text
+    passed to semantic compression so they appear exactly once in the output,
+    preventing duplicate-line overhead that causes negative token savings.
+
+    If stripping priority lines leaves nothing meaningful to compress, the
+    Structural Snapshot alone is returned — no Semantic Summary section is
+    emitted — guaranteeing the output is never longer than the input.
+    """
+    # Heuristically find 'Decision', 'Status', 'File', 'Task' markers
     priorities = re.findall(r'(?:Decision|Status|File|Task).*?:.*', text, re.IGNORECASE)
     context_hint = "\n".join(priorities) if priorities else ""
 
-    # We use a very aggressive rate for compaction (0.2) to save massive space
-    summary = perform_semantic_sift(text, rate=0.2)
+    # Strip priority lines from the source before semantic compression
+    priority_set = set(priorities)
+    remaining_lines = [
+        line for line in text.splitlines()
+        if line.strip() not in priority_set
+    ]
+    text_for_summary = "\n".join(remaining_lines).strip()
 
-    # Fidelity signal: vocabulary overlap between original and compressed text
+    # If nothing remains after stripping, the snapshot IS the full summary —
+    # skip semantic compression entirely to guarantee no negative savings.
+    if not text_for_summary:
+        if context_hint:
+            return f"## Structural Snapshot\n{context_hint}"
+        return text
+
+    # Aggressive rate for compaction (0.2) to save maximum space
+    summary = perform_semantic_sift(text_for_summary, rate=0.2)
+
+    # Fidelity signal: vocabulary overlap against the original full text
     fidelity_score = calculate_vocabulary_overlap(text, summary)
     raw_threshold = os.environ.get("SIFT_COMPACTION_FIDELITY_THRESHOLD", "0.3")
     try:
