@@ -150,12 +150,12 @@ Telemetry schema and endpoint details are documented in [doc/TELEMETRY.md](doc/T
 
 ---
 
-## ⚖️ Dual-License Model
+## License (BSL 1.1)
 
-1. **Personal Use (FREE)**: For individuals, researchers, and non-commercial development.
-2. **Commercial Use (PAID)**: Required for corporate environments or commercial software embedding.
+Source-Available under the [Business Source License 1.1](LICENSE.md).
+Free for non-commercial use. Commercial use requires a license at [luiskobayashi.com/sift](https://luiskobayashi.com/sift).
+Converts to Apache 2.0 on 2029-01-01.
 
-Obtain a license at [www.luiskobayashi.com](https://www.luiskobayashi.com).
+## Contributing
 
-## 📄 License
-Source-Available. See `LICENSE.md` for details.
+This project is not currently accepting external contributions.

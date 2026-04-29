@@ -1,40 +1,62 @@
-# ⚖️ Semantic-Sift: Source-Available License
+# Business Source License 1.1
 
-**Version 1.0**
+**Licensor:** Luis Kobayashi
 
-Semantic-Sift is provided under a **Source-Available Dual License**. This model is designed to keep the core context sanitation technology open for individual developers while ensuring that commercial entities contribute to the maintenance and evolution of the project.
+**Licensed Work:** Semantic-Sift
+The Licensed Work is (c) 2026 Luis Kobayashi.
+
+**Additional Use Grant:**
+You may use the Licensed Work for any non-commercial purpose free of charge, including:
+- Personal projects and local development
+- Academic research and education
+- Open source projects that do not generate revenue
+- Evaluation and prototyping
+
+**Change Date:** 2029-01-01
+
+**Change License:** Apache License, Version 2.0
 
 ---
 
-## 1. 🛡️ Personal & Non-Commercial Use (FREE)
-You are free to use, modify, and explore the Semantic-Sift source code for:
-- Personal projects and local development.
-- Educational purposes and research.
-- Non-profit and open-source contributions.
+## Terms
 
-**Constraint**: You may NOT redistribute Semantic-Sift as a standalone product or service without explicit permission.
+### 1. Grant of Rights
 
-## 2. 💼 Commercial Use (PAID)
-A **Commercial License** is required if you meet any of the following criteria:
-- You are using Semantic-Sift in a corporate or revenue-generating environment.
-- You are an individual freelancer using Semantic-Sift for paid client work.
-- You wish to bundle or embed the Semantic-Sift sidecar into a commercial software application (e.g., "Meechi Jiyū").
+The Licensor hereby grants you the right to copy, modify, create derivative works, redistribute, and make non-production use of the Licensed Work. The Licensor may make an Additional Use Grant, above, permitting limited production use.
 
-### **Commercial Benefits**:
-- Legal right to use Sift for profit.
-- Access to pre-compiled, high-performance binaries (Nuitka-frozen).
-- Commercial "Pro" status in the Global Telemetry Registry.
-- Support for organizational context policies and multi-IDE synchronization.
+Effective on the Change Date, or the fourth anniversary of the first publicly available distribution of a specific version of the Licensed Work under this License, whichever comes first, the Licensor hereby grants you rights under the terms of the Change License, and the rights granted in the paragraph above terminate.
 
-## 3. 🛰️ Telemetry & Proof of Value
-By using this software, you acknowledge that the engine sends anonymous "Pulses" (character/token counts) to the global registry at `https://www.luiskobayashi.com`. 
-- **Privacy**: No raw text or code is ever transmitted.
-- **Auditing**: Telemetry includes a `tier` identifier. Use of the engine in a commercial context without a valid `SIFT_LICENSE_KEY` constitutes a breach of this license.
+### 2. Commercial Use
 
-## 4. 🚀 Obtaining a License
-Commercial licenses and Pro-keys can be obtained at:
+Any use of the Licensed Work in a commercial context — including but not limited to:
+- Use within a revenue-generating product or service
+- Use by a for-profit company for internal tooling or automation
+- Freelance or consulting work performed for a paying client
+- Embedding or bundling Semantic-Sift into a commercial software application
+
+— requires a separate commercial license obtained from the Licensor at:
+
 > **https://luiskobayashi.com/sift**
 
+### 3. Contributions
+
+This project is not currently accepting external contributions.
+
+### 4. Telemetry
+
+By using this software, you acknowledge that the engine sends anonymous usage pulses (character and token counts only) to the global registry at `https://www.luiskobayashi.com`. No raw text or code is ever transmitted. Use of the engine in a commercial context without a valid commercial license constitutes a breach of this license.
+
+### 5. Covenants of Licensor
+
+In consideration of the right to use this software, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, each licensee agrees to comply with the terms of this License.
+
+### 6. Notice
+
+The Licensed Work is provided "as is". The Licensor hereby disclaims all warranties, express or implied, including without limitation the warranties of merchantability, fitness for a particular purpose and non-infringement. In no event shall the Licensor be liable for any claim, damages, or other liability arising from, out of, or in connection with the Licensed Work or the use or other dealings in the Licensed Work.
+
 ---
 
+*For commercial licensing enquiries: https://luiskobayashi.com/sift*
 *Copyright © 2026 Luis Kobayashi. All rights reserved.*
+
+

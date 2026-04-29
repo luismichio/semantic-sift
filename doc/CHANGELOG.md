@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ⚖️ Licensing
+- **BSL 1.1 adopted**: Replaced custom source-available license with the standard Business Source License 1.1. Change Date: 2029-01-01. Change License: Apache 2.0. Non-commercial use remains free.
+- **SPDX headers added**: All source files now carry `SPDX-License-Identifier: BUSL-1.1` and copyright notice.
+- **pyproject.toml**: Added `license-expression = "BUSL-1.1"` alongside existing `license = { file = "LICENSE.md" }`.
+- **README updated**: License section rewritten; Contributing section added ("not currently accepting external contributions").
+
 ### 🐛 Bug Fixes
 - **`client_id` always resolving to `"Generic CLI"`**: `detect_client_id()` in `telemetry_core.py` now recognises all major IDE environments via their ambient env vars. Added entries for OpenCode (`OPENCODE`, `OPENCODE_PID`, `OPENCODE_RUN_ID`), VS Code (`VSCODE_PID`, `VSCODE_IPC_HOOK_CLI`), Windsurf (`WINDSURF_SESSION_ID`), Kiro (`__KIRO_MCP`, `KIRO_SESSION_ID`), and Continue.dev (`CONTINUE_SERVER_PORT`). Per-call hook vars (`CLAUDE_TOOL_NAME`, `GEMINI_SESSION_ID`, etc.) moved to end of map with explanatory comment — they are only present in hook subprocesses, not the long-running MCP server process.
 

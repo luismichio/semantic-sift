@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BUSL-1.1
+# Copyright (c) 2026 Luis Kobayashi. All rights reserved.
 import os
 
 from semantic_sift.hook_injector import update_instruction_files
