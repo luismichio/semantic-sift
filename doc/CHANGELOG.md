@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Bug Fixes
+- **`client_id` always resolving to `"Generic CLI"`**: `detect_client_id()` in `telemetry_core.py` now recognises all major IDE environments via their ambient env vars. Added entries for OpenCode (`OPENCODE`, `OPENCODE_PID`, `OPENCODE_RUN_ID`), VS Code (`VSCODE_PID`, `VSCODE_IPC_HOOK_CLI`), Windsurf (`WINDSURF_SESSION_ID`), Kiro (`__KIRO_MCP`, `KIRO_SESSION_ID`), and Continue.dev (`CONTINUE_SERVER_PORT`). Per-call hook vars (`CLAUDE_TOOL_NAME`, `GEMINI_SESSION_ID`, etc.) moved to end of map with explanatory comment — they are only present in hook subprocesses, not the long-running MCP server process.
+
+### 🏗️ Dependencies
+- **`psutil` promoted to core dependency**: Previously absent from `pyproject.toml` entirely; `detect_client_id()` uses process-ancestry walk as the final reliable fallback when no env var matches. Now guaranteed available in all install profiles, not just `[neural]`.
+
 ## [0.2.0] - 2026-04-29
 
 ### 🏗️ Infrastructure & CI/CD

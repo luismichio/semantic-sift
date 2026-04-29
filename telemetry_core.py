@@ -51,17 +51,38 @@ def detect_client_id() -> str:
     if explicit:
         return explicit
 
-    # Known IDE env var fingerprints
+    # Known IDE env var fingerprints.
+    # Ordered so ambient vars that persist for the IDE's lifetime come first
+    # (reliable for MCP server-side detection); per-call hook vars come last
+    # (only present in hook subprocesses, not the long-running MCP server).
     _ENV_MAP: list[tuple[str, str]] = [
+        # OpenCode — ambient, set on all child processes
+        ("OPENCODE", "OpenCode"),
+        ("OPENCODE_PID", "OpenCode"),
+        ("OPENCODE_RUN_ID", "OpenCode"),
+        # VS Code (Copilot Chat, Cline, Continue, etc.)
+        ("VSCODE_PID", "VSCode"),
+        ("VSCODE_IPC_HOOK_CLI", "VSCode"),
+        # Cursor — ambient trace id
+        ("CURSOR_TRACE_ID", "Cursor"),
+        # Windsurf (Codeium)
+        ("WINDSURF_TOOL_ARGS", "Windsurf"),
+        ("WINDSURF_SESSION_ID", "Windsurf"),
+        # Kiro (AWS)
+        ("__KIRO_MCP", "Kiro"),
+        ("KIRO_SESSION_ID", "Kiro"),
+        # Continue.dev
+        ("CONTINUE_SERVER_PORT", "Continue"),
+        # JetBrains AI Assistant
+        ("JETBRAINS_IDE_URL", "JetBrains"),
+        # Cline (VS Code extension — also sets VSCODE_PID, but belt-and-suspenders)
+        ("CLINE_TASK_ID", "Cline"),
+        # Per-call hook vars (present in hook subprocess only, not MCP server)
         ("CLAUDE_TOOL_NAME", "Claude"),
         ("CLAUDE_AGENT_NAME", "Claude"),
         ("QWEN_TOOL_NAME", "Qwen"),
         ("CODEX_TOOL_NAME", "Codex"),
         ("GEMINI_SESSION_ID", "Gemini"),
-        ("CURSOR_TRACE_ID", "Cursor"),
-        ("WINDSURF_TOOL_ARGS", "Windsurf"),
-        ("JETBRAINS_IDE_URL", "JetBrains"),
-        ("CLINE_TASK_ID", "Cline"),
     ]
     for env_var, label in _ENV_MAP:
         if os.environ.get(env_var):

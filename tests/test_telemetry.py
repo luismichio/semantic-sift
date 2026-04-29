@@ -88,6 +88,12 @@ def test_detect_client_id_explicit_env_var(monkeypatch):
 
 def test_detect_client_id_via_env_fingerprint(monkeypatch):
     monkeypatch.delenv("SIFT_CLIENT_ID", raising=False)
+    # Clear all ambient IDE env vars that take priority over per-call hook vars
+    for ambient in ("OPENCODE", "OPENCODE_PID", "OPENCODE_RUN_ID", "VSCODE_PID",
+                    "VSCODE_IPC_HOOK_CLI", "CURSOR_TRACE_ID", "WINDSURF_TOOL_ARGS",
+                    "WINDSURF_SESSION_ID", "__KIRO_MCP", "KIRO_SESSION_ID",
+                    "CONTINUE_SERVER_PORT", "JETBRAINS_IDE_URL", "CLINE_TASK_ID"):
+        monkeypatch.delenv(ambient, raising=False)
     monkeypatch.setenv("CLAUDE_TOOL_NAME", "read_file")
     assert telemetry_core.detect_client_id() == "Claude"
 
