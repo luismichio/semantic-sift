@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🏗️ Code Quality & Professionalism
+- **Version floor pins**: All `pyproject.toml` core dependencies now have floor version pins (`mcp>=1.0`, `numpy>=1.24`, `opentelemetry-api>=1.20`, `opentelemetry-sdk>=1.20`, `markitdown>=0.1`, `psutil>=5.9`). Silent breakage on future releases is no longer possible.
+- **`requirements.txt` aligned**: Neural deps (`llmlingua`, `torch`, `transformers`, `sentence-transformers`) moved to comments pointing to `pip install .[neural]`. Core deps now match `pyproject.toml` with version pins.
+- **Debug scripts relocated**: `test_sift.py` and `tests/verify_file_sift.py` (manual print-based scripts) moved to `scripts/` to eliminate root clutter and false pytest signals.
+- **`sift_notification` hoisted**: Module-level constant moved from after `main()` (line 342) to immediately after imports — no more forward-reference confusion for readers and static analysis.
+- **`threading.Lock` on `log_telemetry`**: Read-modify-write on `.sift_telemetry.json` is now protected by `_TELEMETRY_LOCK`, eliminating the concurrent-write data corruption race condition.
+- **`content_type` validation in `sift_read_file`**: Parameter renamed from `type` (shadowed Python builtin) to `content_type`; validated against explicit allowlist `{"auto","logs","doc","extraction","chat"}` with early error return for unknown values.
+- **`MACHINE_ID` made lazy**: `get_machine_id()` no longer executes at module import time. Replaced with `_get_machine_id_lazy()` (double-checked locking singleton) — eliminates side-effect file writes on import in read-only environments.
+
+### 📄 Documentation
+- **`doc/TELEMETRY.md` merged into `doc/TELEMETRY_SPEC.md`**: Retention/deletion policy section added to the authoritative spec; redundant file deleted.
+- **README broken link fixed**: `[doc/TELEMETRY.md]` → `[doc/TELEMETRY_SPEC.md]`.
+
 ### ⚖️ Licensing
 - **BSL 1.1 adopted**: Replaced custom source-available license with the standard Business Source License 1.1. Change Date: 2029-01-01. Change License: Apache 2.0. Non-commercial use remains free.
 - **SPDX headers added**: All source files now carry `SPDX-License-Identifier: BUSL-1.1` and copyright notice.

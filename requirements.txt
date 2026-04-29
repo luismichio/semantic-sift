@@ -1,9 +1,13 @@
-mcp  
-llmlingua  
-torch  
-transformers  
-numpy  
-sentence-transformers  
-opentelemetry-api  
-opentelemetry-sdk  
-markitdown 
+# Core dependencies (matches pyproject.toml [project.dependencies])
+mcp>=1.0
+numpy>=1.24
+opentelemetry-api>=1.20
+opentelemetry-sdk>=1.20
+markitdown>=0.1
+psutil>=5.9
+
+# Neural/optional extras (pip install .[neural])
+# llmlingua
+# torch
+# transformers
+# sentence-transformers

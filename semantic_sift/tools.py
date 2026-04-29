@@ -34,7 +34,11 @@ def register_tools(
     runtime_hook_command: str,
 ) -> None:
     @mcp.tool()
-    async def sift_read_file(path: str, rate: float = 0.5, type: str = "auto") -> str:
+    async def sift_read_file(path: str, rate: float = 0.5, content_type: str = "auto") -> str:
+        _VALID_TYPES = {"auto", "logs", "doc", "extraction", "chat"}
+        if content_type not in _VALID_TYPES:
+            return f"Error: invalid content_type '{content_type}'. Must be one of: {', '.join(sorted(_VALID_TYPES))}"
+
         safe_path = sift_kernel.resolve_safe_path(path)
         if safe_path.startswith("Error"):
             return safe_path
@@ -44,7 +48,7 @@ def register_tools(
             return content
 
         start_t = time.time()
-        sifter_type = type
+        sifter_type = content_type
         if sifter_type == "auto":
             ext = os.path.splitext(safe_path)[1].lower()
             if ext in [".log", ".out"]:

@@ -36,6 +36,7 @@ except ImportError:
 # Persistent Configuration
 TELEMETRY_FILE = ".sift_telemetry.json"
 IDENTITY_FILE = ".sift_identity"
+_TELEMETRY_LOCK = threading.Lock()  # Guards concurrent read-modify-write on TELEMETRY_FILE
 
 
 def detect_client_id() -> str:
@@ -307,7 +308,19 @@ def get_machine_id() -> str:
         LOGGER.debug("Failed writing identity file '%s': %s", path, exc)
     return new_id
 
-MACHINE_ID = get_machine_id()
+_MACHINE_ID: str | None = None
+_MACHINE_ID_LOCK = threading.Lock()
+
+
+def _get_machine_id_lazy() -> str:
+    """Returns the machine ID, initialising it on first call (lazy singleton)."""
+    global _MACHINE_ID
+    if _MACHINE_ID is None:
+        with _MACHINE_ID_LOCK:
+            if _MACHINE_ID is None:  # double-checked locking
+                _MACHINE_ID = get_machine_id()
+    return _MACHINE_ID
+
 
 def _send_telemetry_pulse_now(tool_name: str, original: int, final: int, latency: float, tier_override: str | None = None, client_id_override: str | None = None, agent_label: str | None = None, file_ext: str | None = None) -> None:
     """Sends an anonymous telemetry pulse immediately (internal)."""
@@ -329,7 +342,7 @@ def _send_telemetry_pulse_now(tool_name: str, original: int, final: int, latency
     final_tokens = estimate_tokens(" " * final)
 
     payload = {
-        "machine_id": MACHINE_ID,
+        "machine_id": _get_machine_id_lazy(),
         "client_id": final_client,
         "tier": final_tier,
         "agent_label": safe_label,
@@ -408,36 +421,37 @@ def log_telemetry(session_id: str, start_time: str, tool_name: str, original_cha
     safe_label = redact_secrets_for_telemetry(agent_label) if agent_label else None
 
     try:
-        data = {}
-        if os.path.exists(TELEMETRY_FILE):
-            with open(TELEMETRY_FILE, "r") as f:
-                data = json.load(f)
+        with _TELEMETRY_LOCK:
+            data = {}
+            if os.path.exists(TELEMETRY_FILE):
+                with open(TELEMETRY_FILE, "r") as f:
+                    data = json.load(f)
 
-        if session_id not in data:
-            data[session_id] = {"start_time": start_time, "tools": {}}
+            if session_id not in data:
+                data[session_id] = {"start_time": start_time, "tools": {}}
 
-        tool_stats = data[session_id]["tools"].get(safe_tool, {
-            "calls": 0, "original_chars": 0, "final_chars": 0,
-            "original_tokens": 0, "final_tokens": 0,
-            "total_latency_ms": 0, "cache_hits": 0
-        })
+            tool_stats = data[session_id]["tools"].get(safe_tool, {
+                "calls": 0, "original_chars": 0, "final_chars": 0,
+                "original_tokens": 0, "final_tokens": 0,
+                "total_latency_ms": 0, "cache_hits": 0
+            })
 
-        orig_tokens = estimate_tokens(" " * original_chars)
-        final_tokens = estimate_tokens(" " * final_chars)
+            orig_tokens = estimate_tokens(" " * original_chars)
+            final_tokens = estimate_tokens(" " * final_chars)
 
-        tool_stats["calls"] += 1
-        tool_stats["original_chars"] += original_chars
-        tool_stats["final_chars"] += final_chars
-        tool_stats["original_tokens"] += orig_tokens
-        tool_stats["final_tokens"] += final_tokens
-        tool_stats["total_latency_ms"] += latency_ms
-        if cache_hit:
-            tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
+            tool_stats["calls"] += 1
+            tool_stats["original_chars"] += original_chars
+            tool_stats["final_chars"] += final_chars
+            tool_stats["original_tokens"] += orig_tokens
+            tool_stats["final_tokens"] += final_tokens
+            tool_stats["total_latency_ms"] += latency_ms
+            if cache_hit:
+                tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
 
-        data[session_id]["tools"][safe_tool] = tool_stats
+            data[session_id]["tools"][safe_tool] = tool_stats
 
-        with open(TELEMETRY_FILE, "w") as f:
-            json.dump(data, f, indent=2)
+            with open(TELEMETRY_FILE, "w") as f:
+                json.dump(data, f, indent=2)
 
         if not cache_hit:
             send_telemetry_pulse(safe_tool, original_chars, final_chars, latency_ms, client_id_override=client_id_override, agent_label=safe_label, file_ext=file_ext)

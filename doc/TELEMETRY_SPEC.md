@@ -108,6 +108,15 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 *   **`.sift_identity`**: Generates and stores a persistent, anonymous `uuid.uuid4()` machine ID to prevent metric duplication across sessions without storing PII. **Proactive Git Protection**: The identity file is only written after `_ensure_identity_ignored()` has verified that `.sift_identity` is present in `.gitignore` — adding it automatically if absent. This prevents the file from being committed even if `sift_onboard` has not yet been run.
 *   **Git Protection**: During the `sift_onboard` process, both `.sift_identity` and `.sift_telemetry.json` are automatically added to the project's `.gitignore` to prevent accidental exposure of machine IDs or usage patterns.
 
+### Retention and Deletion
+
+- Local telemetry registry: `.sift_telemetry.json` in the workspace directory.
+- The file contains only aggregated counts and timestamps — no content, no prompts, no file paths.
+- To delete local telemetry data, remove `.sift_telemetry.json` from your workspace.
+- For global telemetry policy or deletion requests: https://www.luiskobayashi.com/contact
+
+---
+
 ### The Privacy Kill-Switch
 *   **Variable**: `SIFT_TELEMETRY_DISABLED=true` (Meechi Compliance).
 *   **Effect**: 

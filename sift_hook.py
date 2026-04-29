@@ -13,6 +13,9 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import telemetry_core
 import sift_kernel
 
+# Module-level constants
+sift_notification = "--- [Distilled by Semantic-Sift] ---\n"
+
 # Logging configuration
 LOG_FILE = os.environ.get("SIFT_LOG_FILE", os.path.join(os.getcwd(), ".gemini", "sift_debug.log"))
 LOG_LEVEL = os.environ.get("SIFT_LOG_LEVEL", "WARNING").upper()
@@ -338,8 +341,6 @@ def main() -> None:
     except Exception as e:
         log(f"ERROR in Subconscious Brain: {str(e)}")
         sys.stdout.write(raw_input)
-
-sift_notification = "--- [Distilled by Semantic-Sift] ---\n"
 
 if __name__ == "__main__":
     main()

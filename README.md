@@ -146,7 +146,7 @@ Hook logging controls:
 
 See [SECURITY.md](SECURITY.md) for our full security policy.
 
-Telemetry schema and endpoint details are documented in [doc/TELEMETRY.md](doc/TELEMETRY.md).
+Telemetry schema and endpoint details are documented in [doc/TELEMETRY_SPEC.md](doc/TELEMETRY_SPEC.md).
 
 ---
 
