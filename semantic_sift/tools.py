@@ -7,7 +7,12 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-import torch
+try:
+    import torch as _torch
+    _TORCH_AVAILABLE = True
+except ImportError:
+    _torch = None  # type: ignore[assignment]
+    _TORCH_AVAILABLE = False
 
 import sift_kernel
 import telemetry_core
@@ -209,7 +214,7 @@ def register_tools(
             "# 🔍 Onboarding Status\n",
             "## 💻 Environment",
             f"- Python: {sys.version.split()[0]}",
-            f"- CUDA: {torch.cuda.is_available()}",
+            f"- CUDA: {_torch.cuda.is_available() if _TORCH_AVAILABLE else 'N/A (torch not installed)'}",
             f"- Device: {sift_kernel.get_device()}",
             "- Security: SAST/SCA Audited (0 CVEs)\n",
             "## 📝 Actions",
