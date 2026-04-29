@@ -208,17 +208,20 @@ GitHub surfaces a `CONTRIBUTING.md` link on the "New Issue" and "New PR" pages w
 
 | ID | Category | Severity | Status |
 |---|---|---|---|
-| CI-01 | CI/CD | Critical | Open |
-| CI-02 | CI/CD | High | Open |
-| COV-01 | Coverage | Critical | Open |
-| COV-02 | Coverage | Medium | Open |
-| LINT-01 | Linting | Medium | Open |
-| LINT-02 | Linting | Low | Open |
-| LEGAL-01 | Legal | Critical | Open |
-| LEGAL-02 | Legal | Low | Open |
-| DOC-01 | Documentation | Medium | Open |
-| DOC-02 | Documentation | High | Open |
+| CI-01 | CI/CD | Critical | ✅ Resolved — FIX-B01 |
+| CI-02 | CI/CD | High | ✅ Resolved — FIX-B03 |
+| COV-01 | Coverage | Critical | ✅ Resolved — FIX-D01/D02/D03 |
+| COV-02 | Coverage | Medium | ✅ Resolved — FIX-B02 |
+| LINT-01 | Linting | Medium | ✅ Resolved — FIX-C01 |
+| LINT-02 | Linting | Low | ✅ Resolved — FIX-B02 (ruff config added) |
+| LEGAL-01 | Legal | Critical | ✅ Resolved — FIX-A01 |
+| LEGAL-02 | Legal | Low | ✅ Resolved — FIX-A02 |
+| DOC-01 | Documentation | Medium | ✅ Resolved — FIX-E01 |
+| DOC-02 | Documentation | High | ✅ Resolved — FIX-A01 |
 
 ---
+
+**Closed**: 2026-04-29
+All 10 findings resolved. CI green on Python 3.10 / 3.11 / 3.13. Version 0.2.0 tagged and released.
 
 *This report was generated during a live audit session. All findings were verified by running tools against the actual codebase.*
