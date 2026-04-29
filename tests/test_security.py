@@ -1,4 +1,3 @@
-import pytest
 from sift_kernel import apply_heuristic_sieve
 
 def test_sieve_does_not_mangle_api_keys():
@@ -6,9 +5,9 @@ def test_sieve_does_not_mangle_api_keys():
     # We use a pattern that looks like a secret but isn't real.
     secret = "sk-ant-api03-abcdef1234567890-GHIJKLMN"
     noisy = f"2026-04-19T22:00:00Z INFO: Setting key {secret}\n[50/100] Progress..."
-    
+
     result = apply_heuristic_sieve(noisy)
-    
+
     assert secret in result
     assert "INFO: Setting key" in result
     assert "Progress" not in result

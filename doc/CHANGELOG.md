@@ -7,7 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-29
+
+### 🏗️ Infrastructure & CI/CD
+- **GitHub Actions CI**: Added `.github/workflows/ci.yml` — matrix build on Python 3.10/3.11/3.13; runs ruff → mypy → pytest with coverage on every push/PR to `main`.
+- **Automated Release Workflow**: Added `.github/workflows/release.yml` — gates on full quality pipeline, builds distribution, publishes to PyPI via OIDC trusted publishing, creates GitHub Release with CHANGELOG section as release notes.
+- **Dev Dependencies**: Added `pytest`, `pytest-cov`, `ruff`, `mypy` to `[dev]` optional extra in `pyproject.toml`.
+- **Ruff & Coverage Config**: Added `[tool.ruff]`, `[tool.ruff.lint]`, `[tool.coverage.run]`, `[tool.coverage.report]` sections to `pyproject.toml`.
+
+### 🧹 Code Quality
+- **22 Ruff Violations Fixed**: 10 auto-fixed; 12 manual — `E701` multi-statement lines in `sift_hook.py`, `sift_kernel.py`, `telemetry_core.py`; `E741` ambiguous `l` variable renamed `lat` in `tools.py`; `F541` f-string without placeholder in `benchmark_sift.py`.
+- **mypy Clean**: Zero type errors across all modules.
+
+### 🧪 Test Coverage
+- **Hook Integration Tests** (`tests/test_hook_integration.py`): 12 new tests covering all platform detection paths (Claude, OpenCode, Gemini, Cursor, VSCode) + bypass, pass-through, and sifting-reduction assertions.
+- **MCP Tool Tests** (`tests/test_server_tools.py`): Expanded from 3 to 11 tests — added `sift_logs`, `sift_chat`, `sift_doc`, `sift_extraction`, `sift_rank`, full `get_sift_stats` table, and `sift_onboard` None-environment guard.
+- **Hook Injector Smoke Tests** (`tests/test_hook_injector.py`): 18 new tests covering `build_runtime_hook_command`, `merge_hook_json` (create/idempotent/append), `update_toml_config` (inject/replace/idempotent), `discover_agent_configs`, and `update_instruction_files` for Cursor, VS Code, OpenCode, unknown IDE.
+- **Total: 84 passing tests** (up from 46).
+
+### 📋 Legal & Community
+- **CONTRIBUTING.md**: Added at repo root with CLA notice, dev setup, test commands, code style rules, platform-addition guide, and PR checklist.
+- **SECURITY.md**: Confirmed at repo root (GitHub-discoverable).
+
+### 🏷️ README Badges
+- Replaced static badge row with CI, Tests, Coverage, PyPI version, Python versions, Security, and License badges.
+
 ### 🐛 Bug Fixes
+- **Client ID Always `"Generic CLI"` for MCP Tools**: `telemetry_core.SIFT_CLIENT_ID` was resolved once at module load from `os.environ.get("SIFT_CLIENT_ID", "Generic CLI")`. No IDE sets that env var, so every `sift_chat`, `sift_doc`, `sift_logs`, etc. call logged as `"Generic CLI"`, making per-IDE analytics blind. Added `detect_client_id()` in `telemetry_core.py` that resolves the client via (1) `SIFT_CLIENT_ID` env var, (2) known IDE env var fingerprints, (3) parent-process name via `psutil` (optional), (4) `"Generic CLI"` fallback. `SIFT_CLIENT_ID` is now set from this function at module load. `semantic_sift/tools.py` now passes `client_id_override=CLIENT_ID` to all 8 `log_telemetry` calls. The `Compacting` event in `sift_hook.py` was also missing `client_id_override=platform` — fixed.
 - **OpenCode Platform Detection**: Fixed `sift_hook.py` incorrectly classifying OpenCode tool calls as `Gemini` in telemetry. Both platforms emit `hook_event_name: "AfterTool"`, but the OpenCode native plugin always includes a top-level `tool_args` key which Gemini never sends. The `AfterTool` branch now checks for `tool_args` first and routes to `OpenCode`; payloads without it fall through to the existing Gemini path. Two regression tests added in `tests/test_hook_routing.py`.
 - **Telemetry Secret-Type Metadata Leakage**: `telemetry_core.py` was logging type-specific redaction labels (`[REDACTED_GITHUB_PAT]`, `[REDACTED_OPENAI_KEY]`, `[REDACTED_SLACK_TOKEN]`) into `.sift_telemetry.json` and remote pulses. Even though the raw secret was masked, the label itself reveals secret type, which tool surfaces it, and frequency. Added `redact_secrets_for_telemetry()` which normalises all labels to a generic `[REDACTED]`. The descriptive labels are preserved in local debug logs (`sift_hook.py`) where the operator owns the output.
 

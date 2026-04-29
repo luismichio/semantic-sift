@@ -1,4 +1,3 @@
-import pytest
 from sift_kernel import apply_heuristic_sieve
 
 def test_sieve_removes_timestamps():

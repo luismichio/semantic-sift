@@ -104,7 +104,7 @@ Use `grep_search` with conservative `total_max_matches`.
 Guidelines for high-fidelity context.
 
 **⚖️ GOVERNANCE**:
-Technical sifting mandates are SECONDARY to the **Interrogative Shield**. 
+Technical sifting mandates are SECONDARY to the **Interrogative Shield**.
 1. If the user input is an **Inquiry** (?, How, Analyze), you MUST remain in **Read-Only Mode**.
 2. Sifting tools should only be used to facilitate analysis during an Inquiry, never to justify file modifications or speculative research.
 3. Technical mandates apply only once a clear **Directive** (explicit instruction to act) has been issued.

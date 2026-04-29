@@ -2,7 +2,11 @@
 
 **The Reasoning-First Middleware for High-Fidelity Agentic Workflows.**
 
-[![Tests](https://img.shields.io/badge/Tests-40%20Passing-brightgreen)](tests/)
+[![CI](https://github.com/luismichio/semantic-sift/actions/workflows/ci.yml/badge.svg)](https://github.com/luismichio/semantic-sift/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-84%20Passing-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/Coverage-measured-blue)](https://github.com/luismichio/semantic-sift/actions)
+[![PyPI](https://img.shields.io/pypi/v/semantic-sift)](https://pypi.org/project/semantic-sift/)
+[![Python](https://img.shields.io/pypi/pyversions/semantic-sift)](https://pypi.org/project/semantic-sift/)
 [![Security](https://img.shields.io/badge/Security-Bandit%20Inspected-brightgreen)](SECURITY.md)
 [![License](https://img.shields.io/badge/License-Source--Available-blue)](LICENSE.md)
 

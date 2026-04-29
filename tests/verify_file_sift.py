@@ -15,7 +15,7 @@ def test_load_file_content():
     # Test valid file
     content = sift_kernel.load_file_content("AGENTS.md")
     assert not content.startswith("Error"), f"Failed to load AGENTS.md: {content[:100]}"
-    
+
     # Test invalid file
     content = sift_kernel.load_file_content("DOES_NOT_EXIST.md")
     assert content.startswith("Error: File not found at"), "Failed to return correct error for missing file."
@@ -23,7 +23,7 @@ def test_load_file_content():
 
 async def test_server_tools():
     print("Testing server tools with OTel & Audit Header...")
-    
+
     # Create a dummy noisy file
     test_file = "test_noise.log"
     with open(test_file, "w", encoding="utf-8") as f:
@@ -53,7 +53,7 @@ def test_hook_exemption_and_echo():
     print("Testing hook exemptions and echo detection...")
     import subprocess
     hook_script = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'sift_hook.py'))
-    
+
     # 1. Test Content Signature Bypass
     payload = {
         "result": "Some content\n--- [Semantic-Sift Audit] ---"
@@ -61,12 +61,12 @@ def test_hook_exemption_and_echo():
     process = subprocess.Popen([sys.executable, hook_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     out, _ = process.communicate(input=json.dumps(payload))
     assert "Distilled by Semantic-Sift" not in out # Should have bypassed
-    
+
     # 2. Test Echo Detection
     content = "This is some repeating content " * 100
     # First call: record hash
-    telemetry_core.check_echo(content) 
-    
+    telemetry_core.check_echo(content)
+
     payload2 = {
         "tool_name": "test_tool",
         "result": content
@@ -74,15 +74,15 @@ def test_hook_exemption_and_echo():
     process2 = subprocess.Popen([sys.executable, hook_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     out2, _ = process2.communicate(input=json.dumps(payload2))
     assert "🚨 ECHO DETECTED (Bypassed)" in out2
-    
+
     # 3. Test Structured Data Exemption
     payload3 = {
-        "result": json.dumps({"key": "value " * 200}) 
+        "result": json.dumps({"key": "value " * 200})
     }
     process3 = subprocess.Popen([sys.executable, hook_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     out3, _ = process3.communicate(input=json.dumps(payload3))
     assert "--- [Semantic-Sift Audit] ---" not in out3 # Should have bypassed entirely
-    
+
     print("hook exemptions and echo OK.")
 
 

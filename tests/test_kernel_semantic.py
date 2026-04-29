@@ -1,4 +1,3 @@
-import os
 
 import sift_kernel
 

@@ -1,6 +1,5 @@
 import os
 import time
-import json
 import telemetry_core
 import asyncio
 import sift_kernel
@@ -23,7 +22,7 @@ def load_scenario_data():
     scenarios = []
     if not os.path.exists(DATA_DIR):
         return scenarios
-    
+
     # We skip .html files locally to keep repo stats focused on Python
     supported_exts = ['.txt', '.md', '.pdf', '.docx', '.xlsx']
     for filename in os.listdir(DATA_DIR):
@@ -59,7 +58,7 @@ async def run_benchmark():
     # 1. Gather Scenarios
     local_scenarios = load_scenario_data()
     all_scenarios = local_scenarios
-    
+
     for url_s in URL_SCENARIOS:
         all_scenarios.append({
             "name": url_s["name"],
@@ -78,23 +77,23 @@ async def run_benchmark():
     for scenario in all_scenarios:
         name = scenario["name"]
         ext = scenario["ext"]
-        
+
         # 2. Load content (Local or URL)
         if scenario["is_url"]:
             print(f"Fetching Live Content: {name}...")
             raw_content = await fetch_url_content(scenario["path"])
         else:
             raw_content = sift_kernel.load_file_content(scenario["path"])
-            
+
         if raw_content.startswith("Error"):
             print(f"Warning: Could not load {name}: {raw_content}")
             continue
-            
+
         raw_len = len(raw_content)
         raw_tokens = telemetry_core.estimate_tokens(raw_content)
-        
+
         start_t = time.time()
-        
+
         # 3. Sifting Logic
         if ext in ['.html', '.pdf', '.docx', '.xlsx']:
             # Hybrid Ingestion + Sifting
@@ -108,7 +107,7 @@ async def run_benchmark():
             # Real Heuristic Sieve on High Volume
             sifted = sift_kernel.apply_heuristic_sieve(raw_content)
             latency = (time.time() - start_t) * 1000
-        
+
         sifted_tokens = telemetry_core.estimate_tokens(sifted)
         total_raw_tokens += raw_tokens
         total_sifted_tokens += sifted_tokens
@@ -139,7 +138,7 @@ async def run_benchmark():
     print("==========================================")
     final_savings = (1 - (total_sifted_tokens / total_raw_tokens)) * 100 if total_raw_tokens > 0 else 0
     print(f"🏆 TOTAL SAVINGS: {final_savings:.1f}%")
-    print(f"📡 All data sent to registry with [Tier: Benchmark]")
+    print("📡 All data sent to registry with [Tier: Benchmark]")
     print("==========================================")
 
 if __name__ == "__main__":

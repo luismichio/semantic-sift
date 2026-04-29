@@ -33,8 +33,86 @@ This document tracks identified challenges, real-world usage observations, and p
 ## 🔵 Suggested Improvements
 
 ### Platform Detection Refactor
-**Observation**: `sift_hook.py` platform detection is 8+ `elif` branches. As more CLIs are added (Gemini CLI, Codex CLI, slash commands) this becomes a maintenance liability.
-- [ ] **Registry Pattern**: Replace `elif` chain with a list of `PlatformDetector` objects each implementing `matches(data, event_name, env) -> bool`. New platforms register themselves without touching the routing logic.
+**Observation**: `sift_hook.py` platform detection is a monolithic `if/elif` chain spanning lines 104–145. Each branch simultaneously performs three concerns: (1) detecting the platform, (2) extracting `raw_content` from the platform-specific payload shape, and (3) extracting `agent_label` and `tool_name` overrides. The injection phase (lines 313–327) then repeats a second `if/elif` chain over the same platform labels to write sifted output back into the correct payload key. Adding a new IDE requires editing both chains and understanding the full routing logic — there is no safe insertion point.
+
+**Concrete problems today**:
+- `VSCode` branch (line 133) is a structural catch-all: any unrecognised payload with `tool_response.llmContent` silently becomes `"VSCode"`. No warning is emitted.
+- `OpenCode` is detected in two separate branches: line 123 (AfterTool with `tool_args`) and line 143 (Compacting event). If one is updated without the other, they drift.
+- `Gemini/OpenClaw` sub-detection (line 131) is a nested conditional inside the Gemini branch — easy to miss.
+- The injection phase (lines 313–327) uses string-grouped `elif` (`["Gemini", "Gemini/OpenClaw"]`, `["VSCode", "Claude", "Qwen"]`) which couples platform identity to payload write logic in a non-obvious way.
+
+**Proposed Solution — Registry Pattern**:
+
+Replace both `elif` chains with a list of `PlatformDetector` dataclasses. Each detector encapsulates all platform-specific knowledge: how to recognise it, how to read from it, and how to write back to it.
+
+```python
+# semantic_sift/platforms/_base.py
+from dataclasses import dataclass, field
+from typing import Callable
+
+@dataclass
+class PlatformDetector:
+    label: str
+    # Returns True if this detector matches the current invocation context
+    matches: Callable[[dict, str, dict], bool]      # (data, event_name, env) -> bool
+    # Extracts (raw_content, tool_name_override, agent_label) from the payload
+    extract: Callable[[dict, str], tuple[str, str | None, str | None]]
+    # Writes sifted content back into the payload dict; returns modified dict
+    inject: Callable[[dict, str, str], dict]        # (data, sifted, notification) -> data
+```
+
+Each platform lives in its own file and registers one or more detectors:
+
+```python
+# semantic_sift/platforms/opencode.py
+from ._base import PlatformDetector
+
+def _matches_aftertool(data, event_name, env):
+    return event_name in ("AfterTool", "PreCompress") and "tool_args" in data
+
+def _matches_compacting(data, event_name, env):
+    return event_name == "Compacting"
+
+def _extract(data, event_name):
+    raw = data.get("tool_response", {}).get("llmContent", "") or data.get("context", "")
+    tool = data.get("tool_name")
+    return raw, tool, None
+
+def _inject(data, sifted, notification):
+    data["tool_response"]["llmContent"] = notification + sifted
+    return data
+
+detectors = [
+    PlatformDetector("OpenCode", _matches_aftertool, _extract, _inject),
+    PlatformDetector("OpenCode", _matches_compacting, _extract, _inject),
+]
+```
+
+`sift_hook.py` detection loop becomes:
+
+```python
+from semantic_sift.platforms import all_detectors
+
+detector = next((d for d in all_detectors() if d.matches(data, event_name, os.environ)), None)
+platform = detector.label if detector else "Unknown"
+raw_content, tool_name_override, agent_label = detector.extract(data, event_name) if detector else ("", None, None)
+# ... sifting logic ...
+data = detector.inject(data, sifted, sift_notification) if detector else data
+```
+
+**What this buys**:
+- Adding a new IDE = one new file in `semantic_sift/platforms/`, zero changes to `sift_hook.py`
+- Updating an IDE's payload shape = edit only that platform's file
+- Removing an IDE = delete the file; the registry auto-shrinks
+- `Unknown` platform gets an explicit warning log instead of silently falling through to VSCode
+- Both detection and injection for a platform are co-located — no drift between the two `elif` chains
+
+**Constraints**:
+- `matches()` must be evaluated in priority order; env-var detectors (Claude, Qwen, Codex) must be checked before structural detectors (Gemini, OpenCode) since some payloads could match both.
+- The existing `detect_client_id()` in `telemetry_core.py` (startup-time env var + process name detection) is a separate concern and should **not** be merged into this registry — it runs at server start, not per hook call.
+- All existing tests in `tests/test_hook_routing.py` must remain green after the refactor.
+
+**Effort estimate**: Medium. The logic already exists — this is a structural reorganisation, not new behaviour.
 
 ### Telemetry File Pruning
 **Observation**: `.sift_telemetry.json` grows unbounded. Old sessions accumulate indefinitely.

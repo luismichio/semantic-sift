@@ -70,11 +70,12 @@ def main() -> None:
     try:
         # 1. Read JSON from stdin
         raw_input = sys.stdin.read()
-        if not raw_input: return
-        
+        if not raw_input:
+            return
+
         data = json.loads(raw_input)
         start_t = time.time()
-        
+
         # Identity
         HOOK_SESSION = "Subconscious-Brain"
         START_TIME = time.ctime()
@@ -87,7 +88,7 @@ def main() -> None:
 
         # Platform Detection
         event_name = data.get("hook_event_name", "unknown")
-        
+
         # Aggressive Tool Name Discovery
         def find_tool_name(d):
             # Check common keys in order of likelihood
@@ -100,7 +101,7 @@ def main() -> None:
             return None
 
         tool_name = find_tool_name(data) or "unknown"
-        
+
         if os.environ.get("CLAUDE_TOOL_NAME"):
             platform = "Claude"
             tool_name = os.environ.get("CLAUDE_TOOL_NAME", tool_name)
@@ -136,8 +137,10 @@ def main() -> None:
         elif "result" in data and isinstance(data["result"], str):
             platform = "Cursor"
             # Subagent detection for Cursor (sniff from result prefix or metadata)
-            if data["result"].startswith("[Explore]"): agent_label = "Explore"
-            elif data["result"].startswith("[Bash]"): agent_label = "Bash"
+            if data["result"].startswith("[Explore]"):
+                agent_label = "Explore"
+            elif data["result"].startswith("[Bash]"):
+                agent_label = "Bash"
             raw_content = data["result"]
         elif event_name == "Compacting":
             platform = "OpenCode"
@@ -151,13 +154,13 @@ def main() -> None:
                 summary = sift_kernel.perform_compaction_summary(raw_content)
                 # Inject summary into OpenCode output
                 data["summary"] = summary
-                
+
                 # Log Compaction ROI
-                telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, "event_compacting", len(raw_content), len(summary), (time.time() - start_t) * 1000, agent_label=agent_label)
-                
+                telemetry_core.log_telemetry(HOOK_SESSION, START_TIME, "event_compacting", len(raw_content), len(summary), (time.time() - start_t) * 1000, client_id_override=platform, agent_label=agent_label)
+
                 sys.stdout.write(json.dumps(data))
                 return
-            
+
             # For advisory-only PreCompress, just pulse telemetry
             telemetry_core.send_telemetry_pulse(
                 tool_name=f"event_{event_name.lower()}",
@@ -178,7 +181,7 @@ def main() -> None:
         # --- New: Echo Detector & OTel Integration ---
         is_echo = telemetry_core.check_echo(raw_content)
         tracer = telemetry_core.get_tracer()
-        
+
         with tracer.start_as_current_span("subconscious_sift") as span:
             span.set_attribute("tool.name", tool_name)
             span.set_attribute("platform", platform)
@@ -189,7 +192,7 @@ def main() -> None:
                 log(f"ECHO DETECTED for {tool_name} (Agent: {agent_label or 'Main'}) - Bypassing BERT")
                 # Even for echoes, we inject the header so the user knows why it bypassed
                 header = telemetry_core.generate_audit_header(len(raw_content), len(raw_content), 0, is_echo=True)
-                
+
                 # Re-wrap in the correct JSON schema for the platform
                 bypassed_content = header + raw_content
                 if platform == "Gemini":
@@ -199,7 +202,7 @@ def main() -> None:
                 elif platform == "Cursor" or platform == "unknown":
                     # For Cursor or generic payloads, use the 'result' key
                     data["result"] = f"[Echo Bypassed] {bypassed_content}"
-                
+
                 sys.stdout.write(json.dumps(data))
                 return
 
@@ -222,7 +225,7 @@ def main() -> None:
             sift_type = "none"
             is_html = False
             timed_out_semantic = False
-            
+
             # --- A. Auto-Ranking (Search Tools) ---
             if any(x in tool_name.lower() for x in ['search', 'grep', 'find']):
                 # If we have query info (Gemini AfterTool includes args)
@@ -243,7 +246,7 @@ def main() -> None:
                 is_prose = any(x in tool_name.lower() for x in ['read', 'fetch', 'extraction', 'chat'])
                 is_html = "<html" in raw_content.lower()[:500] or "<!doctype html" in raw_content.lower()[:500]
                 has_md_ext = any(x in raw_content[:200].lower() for x in ['.md', '# ', '---'])
-                
+
                 # Normalize HTML to Markdown first if needed
                 working_content = raw_content
                 if is_html:
@@ -296,10 +299,10 @@ def main() -> None:
             if sifted and len(sifted) < len(raw_content):
                 latency = (time.time() - start_t) * 1000
                 log(f"Subconscious {sift_type} successful: saved {len(raw_content) - len(sifted)} chars")
-                
+
                 # Combine sift type with intercepted tool name for high-fidelity telemetry
                 telemetry_name = f"{sift_type}:{tool_name}"
-                
+
                 # Detect extension for telemetry
                 hook_file_ext = "html" if is_html else "txt"
                 if any(x in tool_name.lower() for x in ['search', 'grep', 'find']):
@@ -311,7 +314,8 @@ def main() -> None:
                 # Inject back to platform
                 msg = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted)} chars of noise.]"
                 if platform in ["Gemini", "Gemini/OpenClaw"]:
-                    if "hookSpecificOutput" not in data: data["hookSpecificOutput"] = {}
+                    if "hookSpecificOutput" not in data:
+                        data["hookSpecificOutput"] = {}
                     data["hookSpecificOutput"]["additionalContext"] = msg
                     data["tool_response"]["llmContent"] = sift_notification + sifted
                 elif platform in ["VSCode", "Claude", "Qwen"]:
@@ -328,7 +332,7 @@ def main() -> None:
 
             # 5. Output modified JSON
             sys.stdout.write(json.dumps(data))
-        
+
     except Exception as e:
         log(f"ERROR in Subconscious Brain: {str(e)}")
         sys.stdout.write(raw_input)

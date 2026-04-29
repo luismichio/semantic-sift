@@ -16,6 +16,8 @@ from semantic_sift.onboarding import apply_onboarding
 
 SESSION_ID = str(uuid.uuid4())
 START_TIME = datetime.now().isoformat()
+# Detected at import time — reflects the actual calling IDE/CLI.
+CLIENT_ID = telemetry_core.SIFT_CLIENT_ID
 
 
 def register_tools(
@@ -57,7 +59,7 @@ def register_tools(
 
         latency = (time.time() - start_t) * 1000
         file_ext = os.path.splitext(safe_path)[1].lower() or "txt"
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, f"sift_read_file_{sifter_type}", len(content), len(result), latency, file_ext=file_ext)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, f"sift_read_file_{sifter_type}", len(content), len(result), latency, client_id_override=CLIENT_ID, file_ext=file_ext)
 
         tracer = telemetry_core.get_tracer()
         with tracer.start_as_current_span(f"sift_read_file:{sifter_type}") as span:
@@ -100,7 +102,7 @@ def register_tools(
             report.extend(["- **Action**: Optional `sift_read_file`.", "- Reason: Moderate length."])
 
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze_file", len(content), len(content), latency)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze_file", len(content), len(content), latency, client_id_override=CLIENT_ID)
 
         tracer = telemetry_core.get_tracer()
         with tracer.start_as_current_span("sift_analyze_file") as span:
@@ -114,7 +116,7 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.apply_heuristic_sieve(raw_text)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_logs", len(raw_text), len(result), latency)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_logs", len(raw_text), len(result), latency, client_id_override=CLIENT_ID)
         return result
 
     @mcp.tool()
@@ -122,7 +124,7 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.perform_semantic_sift(text, rate=rate)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency, client_id_override=CLIENT_ID)
         return result
 
     @mcp.tool()
@@ -130,7 +132,7 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.perform_doc_sift(text, rate=rate)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(result), latency)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(result), latency, client_id_override=CLIENT_ID)
         return result
 
     @mcp.tool()
@@ -138,7 +140,7 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.perform_extraction_cleaning(content, show_diff=show_diff)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(result), latency)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(result), latency, client_id_override=CLIENT_ID)
         return result
 
     @mcp.tool()
@@ -167,14 +169,14 @@ def register_tools(
                     fc = stats.get("final_chars", 0)
                     ot = stats.get("original_tokens", 0)
                     ft = stats.get("final_tokens", 0)
-                    l = stats.get("total_latency_ms", 0)
+                    lat = stats.get("total_latency_ms", 0)
                     h = stats.get("cache_hits", 0)
                     total_calls += c
                     total_orig_chars += oc
                     total_final_chars += fc
                     total_orig_tokens += ot
                     total_final_tokens += ft
-                    total_lat += l
+                    total_lat += lat
                     total_hits += h
                     if tool not in breakdown:
                         breakdown[tool] = {"calls": 0, "chars_saved": 0, "tokens_saved": 0, "cache_hits": 0}
@@ -242,7 +244,7 @@ def register_tools(
         else:
             report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
 
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze", char_count, char_count, 0)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze", char_count, char_count, 0, client_id_override=CLIENT_ID)
         return "\n".join(report)
 
     @mcp.tool()
@@ -253,7 +255,7 @@ def register_tools(
 
         total_chars = sum(len(d) for d in documents)
         returned_chars = sum(len(doc) for _, doc in scored_docs)
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_rank", total_chars, returned_chars, 0)
+        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_rank", total_chars, returned_chars, 0, client_id_override=CLIENT_ID)
 
         report = [f"## 🎯 Reranking Results (Top {top_n})\n"]
         for i, (score, doc) in enumerate(scored_docs):

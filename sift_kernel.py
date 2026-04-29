@@ -1,12 +1,10 @@
 import re
 import os
-import time
 import json
 import hashlib
 import threading
 import difflib
 from typing import Any
-import telemetry_core
 
 # Cache Configuration
 CACHE_DIR = ".sift_cache"
@@ -115,22 +113,22 @@ def ensure_markdown_content(path: str) -> str:
     """Converts binary files to Markdown using MarkItDown with local caching."""
     ext = os.path.splitext(path)[1].lower()
     binary_exts = ['.pdf', '.docx', '.xlsx', '.pptx', '.zip', '.html', '.htm']
-    
+
     if ext not in binary_exts:
         return load_raw_text(path)
-        
+
     md_converter = get_markitdown()
     if not md_converter:
         return f"Error: MarkItDown not installed. Cannot process {ext} files."
 
     file_hash = get_file_hash(path)
     cache_path = os.path.join(CACHE_DIR, f"raw_{file_hash}.md")
-    
+
     # Check Cache
     if os.path.exists(cache_path):
         with open(cache_path, "r", encoding="utf-8", errors="replace") as f:
             return f.read()
-            
+
     # Perform Conversion
     try:
         result = md_converter.convert(path)
@@ -172,7 +170,7 @@ def apply_heuristic_sieve(text: str) -> str:
     progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
     metadata_pattern = re.compile(r'\s*(INFO|DEBUG|WARN|ERROR)\s+dfs\..*?:\s*')
     module_pattern = re.compile(r'^\s*[\d\.]+\s+(MB|KB|bytes|B)\s+[\w\-\.\/]+.*$', re.IGNORECASE)
-    
+
     for line in lines:
         clean_line = timestamp_pattern.sub('', line).strip()
         clean_line = metadata_pattern.sub('', clean_line).strip()
@@ -190,18 +188,21 @@ def get_cache_key(tool_name: str, text: str, **kwargs: Any) -> str:
 def check_cache(key: str) -> str | None:
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
     if os.path.exists(cache_path):
-        with open(cache_path, "r", encoding="utf-8", errors="replace") as f: return f.read()
+        with open(cache_path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
     return None
 
 def set_cache(key: str, result: str) -> None:
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
-    with open(cache_path, "w", encoding="utf-8", errors="replace") as f: f.write(result)
+    with open(cache_path, "w", encoding="utf-8", errors="replace") as f:
+        f.write(result)
 
 def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
     """Performs BERT-based prompt compression."""
     cache_key = get_cache_key("sift_chat", text, rate=rate)
-    if cached := check_cache(cache_key): return cached
-    
+    if cached := check_cache(cache_key):
+        return cached
+
     start_model_warmup()
     wait_ms_raw = os.environ.get("SIFT_MODEL_READY_WAIT_MS", "1200")
     try:
@@ -221,10 +222,10 @@ def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
 
     try:
         results = _COMPRESSOR.compress_prompt(
-            [text], 
-            rate=rate, 
-            force_tokens=['\n', '?'], 
-            chunk_end_tokens=['.', '\n'], 
+            [text],
+            rate=rate,
+            force_tokens=['\n', '?'],
+            chunk_end_tokens=['.', '\n'],
             return_word_label=False
         )
         result = results.get('compressed_prompt', text)
@@ -255,7 +256,7 @@ def perform_compaction_summary(text: str) -> str:
     # before semantic compression
     priorities = re.findall(r'(?:Decision|Status|File|Task).*?:.*', text, re.IGNORECASE)
     context_hint = "\n".join(priorities) if priorities else ""
-    
+
     # We use a very aggressive rate for compaction (0.2) to save massive space
     summary = perform_semantic_sift(text, rate=0.2)
 
@@ -273,7 +274,7 @@ def perform_compaction_summary(text: str) -> str:
             + f"\n\n[Semantic-Sift: Low fidelity compaction detected - vocabulary overlap: {fidelity_score:.1%}. "
             "Consider reviewing session manually.]"
         )
-    
+
     if context_hint:
         return f"## Structural Snapshot\n{context_hint}\n\n## Semantic Summary\n{summary}"
     return summary
