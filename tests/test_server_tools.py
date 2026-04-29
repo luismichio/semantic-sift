@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 
 import semantic_sift.tools as tools
 import sift_kernel
@@ -49,7 +50,7 @@ def test_sift_read_file_path_traversal_rejected(tmp_path, monkeypatch):
     mcp = _register(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    result = asyncio.run(mcp.tools["sift_read_file"]("..\\outside.txt"))
+    result = asyncio.run(mcp.tools["sift_read_file"](os.path.join("..", "outside.txt")))
     assert "Access denied" in result
 
 

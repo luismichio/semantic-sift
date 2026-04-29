@@ -13,7 +13,8 @@ from datetime import datetime
 try:
     from opentelemetry import trace
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
+    from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+    from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
     from opentelemetry.sdk.resources import Resource
     OTEL_AVAILABLE = True
 except ImportError:
@@ -173,8 +174,8 @@ def get_tracer():
         resource = Resource(attributes={"service.name": "semantic-sift-mcp"})
         provider = TracerProvider(resource=resource)
 
-        # Simple console exporter for local verification
-        processor = SimpleSpanProcessor(ConsoleSpanExporter())
+        # Use in-memory exporter to avoid polluting stdout (hook protocol requires clean JSON on stdout)
+        processor = SimpleSpanProcessor(InMemorySpanExporter())
         provider.add_span_processor(processor)
 
         _TRACER = provider.get_tracer(__name__)
