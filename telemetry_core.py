@@ -27,7 +27,7 @@ except ImportError:
             return MockSpan()
     class MockTrace:
         def get_tracer(self, name): return MockTracer()
-    trace = MockTrace()
+    trace = MockTrace()  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
 # Persistent Configuration
