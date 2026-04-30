@@ -8,7 +8,8 @@
 [![PyPI](https://img.shields.io/pypi/v/semantic-sift)](https://pypi.org/project/semantic-sift/)
 [![Python](https://img.shields.io/pypi/pyversions/semantic-sift)](https://pypi.org/project/semantic-sift/)
 [![Security](https://img.shields.io/badge/Security-Bandit%20Inspected-brightgreen)](SECURITY.md)
-[![License](https://img.shields.io/badge/License-Source--Available-blue)](LICENSE.md)
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE.md)
+[![OSI](https://img.shields.io/badge/OSI-Approved-brightgreen)](https://opensource.org/licenses/Apache-2.0)
 
 > **"It saves tokens while preserving context—maximizing reasoning, minimizing hallucination."**
 
@@ -150,11 +151,9 @@ Telemetry schema and endpoint details are documented in [doc/TELEMETRY_SPEC.md](
 
 ---
 
-## License (BSL 1.1)
+## License
 
-Source-Available under the [Business Source License 1.1](LICENSE.md).
-Free for non-commercial use. Commercial use requires a license at [luiskobayashi.com/sift](https://luiskobayashi.com/sift).
-Converts to Apache 2.0 on 2029-01-01.
+Apache License 2.0. See [LICENSE.md](LICENSE.md) for details.
 
 ## Contributing
 
