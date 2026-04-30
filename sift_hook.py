@@ -205,12 +205,10 @@ def main() -> None:
 
                 # Re-wrap in the correct JSON schema for the platform
                 bypassed_content = header + raw_content
-                if platform == "Gemini":
+                if platform in ("Gemini", "Gemini/OpenClaw", "VSCode"):
                     data["tool_response"]["llmContent"] = bypassed_content
-                elif platform == "VSCode":
-                    data["tool_response"]["llmContent"] = bypassed_content
-                elif platform == "Cursor" or platform == "unknown":
-                    # For Cursor or generic payloads, use the 'result' key
+                else:
+                    # Cursor, OpenCode, Claude, Codex, Qwen, Antigravity, unknown — all use 'result' key
                     data["result"] = f"[Echo Bypassed] {bypassed_content}"
 
                 sys.stdout.write(json.dumps(data))
