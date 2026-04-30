@@ -59,6 +59,11 @@ def detect_client_id() -> str:
     # (reliable for MCP server-side detection); per-call hook vars come last
     # (only present in hook subprocesses, not the long-running MCP server).
     _ENV_MAP: list[tuple[str, str]] = [
+        # Google Antigravity — must precede VS Code; Antigravity inherits VSCODE_PID from its
+        # VS Code framework host, so without this guard every Antigravity session is misattributed.
+        ("ANTIGRAVITY_AGENT", "Google Antigravity"),
+        ("ANTIGRAVITY_EDITOR_APP_ROOT", "Google Antigravity"),
+        ("ANTIGRAVITY_TRAJECTORY_ID", "Google Antigravity"),
         # OpenCode — ambient, set on all child processes
         ("OPENCODE", "OpenCode"),
         ("OPENCODE_PID", "OpenCode"),
@@ -93,6 +98,7 @@ def detect_client_id() -> str:
 
     # Parent process name heuristic
     _PROC_MAP: list[tuple[str, str]] = [
+        ("antigravity", "Google Antigravity"),
         ("opencode", "OpenCode"),
         ("cursor", "Cursor"),
         ("windsurf", "Windsurf"),

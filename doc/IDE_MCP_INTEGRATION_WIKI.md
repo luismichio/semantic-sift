@@ -54,6 +54,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Payload Schema**: N/A.
 *   **Semantic-Sift Strategy**: Because there is no intercepting hook, if an agent uses `view_file`, it will inevitably flood the context window (as seen in the original bug report). `sift_onboard` MUST inject strict, mandatory Auto-Sift directives into `AGENTS.md` to force the agent to use `sift_read_file` instead.
 *   **Subagents & Multi-Agent**: Antigravity is a native multi-agent environment. Subagents inherit the full parent toolset by default. Directives injected into `AGENTS.md` are critical as they are the primary mechanism to enforce context sanitation across asynchronous agent threads.
+*   **Telemetry Identity**: Antigravity's process environment inherits `VSCODE_PID` from its VS Code framework host. `telemetry_core.detect_client_id()` checks `ANTIGRAVITY_AGENT`, `ANTIGRAVITY_EDITOR_APP_ROOT`, and `ANTIGRAVITY_TRAJECTORY_ID` **before** `VSCODE_PID`, ensuring MCP tool calls are attributed to `"Google Antigravity"` rather than `"VSCode"`. If none of the Antigravity env vars are set in a given subprocess, attribution falls back to `"Generic CLI"` — this is a runtime env contract that `semantic-sift` cannot enforce unilaterally.
 
 ### Kilo Code
 *   **Official Docs**: [Kilo Code Documentation](https://kilo.ai)
@@ -128,7 +129,7 @@ When an AI agent executes a tool, middleware (like `sift_hook.py`) can intercept
 *   **Hook Mechanism**: **Unshielded**. These platforms primarily use MCP for context fetching and direct tool invocation. They currently lack robust, deterministic post-tool shell-hook architectures.
 *   **Semantic-Sift Strategy**: Rule Infusion. `sift_onboard` MUST inject extremely aggressive, mandatory rules into `AGENTS.md` to force the LLM to use `sift_read_file` instead of standard file readers.
 *   **Subagents & Multi-Agent**:
-    *   **Zed**: Uses the Agent Client Protocol (ACP) for multi-agent orchestration. MCP servers (and thus Sift tools) are shared across all active agent threads.
+    *   **Zed**: Uses the Agent Client Protocol (ACP) for multi-agent orchestration. MCP servers (and thus Sift tools) are shared across all active agent threads. **Telemetry implication**: because all agents share one MCP server process, `SIFT_CLIENT_ID` is frozen at server launch and reflects whichever agent's environment was present at that moment. In mixed-agent sessions (e.g., Gemini CLI + OpenCode running simultaneously in Zed), MCP tool calls (`sift_chat`, `sift_read_file`, etc.) will all report the same startup-time identity. This is a known shared-server limitation — see `doc/TELEMETRY_SPEC.md §4` for details.
     *   **Continue**: Features a `subagent` tool for task delegation. Each subagent has an isolated context window but shares access to the parent's MCP registry.
 
 ### JetBrains (IntelliJ IDEA, PyCharm, WebStorm & AI Assistant)

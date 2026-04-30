@@ -107,18 +107,25 @@ def main() -> None:
 
         tool_name = find_tool_name(data) or "unknown"
 
+        # --- Platform Identity (WHO is calling) ---
+        # Single authoritative source: telemetry_core.detect_client_id() reads the subprocess
+        # environment using the same priority-ordered _ENV_MAP used by the MCP server.
+        # This ensures Antigravity env vars (ANTIGRAVITY_AGENT etc.) are checked before
+        # inherited VS Code / Claude vars, regardless of hook payload shape.
+        platform = telemetry_core.detect_client_id()
+
+        # --- Payload Parsing (HOW to extract content) — orthogonal to identity above ---
+        # Each branch reads raw_content and agent_label from the payload shape.
+        # Platform label is NOT set here; identity is already resolved above.
         if os.environ.get("CLAUDE_TOOL_NAME"):
-            platform = "Claude"
             tool_name = os.environ.get("CLAUDE_TOOL_NAME", tool_name)
             # Subagent detection for Claude
             agent_label = os.environ.get("CLAUDE_AGENT_NAME") or os.environ.get("CLAUDE_SUBAGENT_ID")
             raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
         elif os.environ.get("QWEN_TOOL_NAME") or ("tool_name" in data and "tool_input" in data and "context" in data):
-            platform = "Qwen"
             tool_name = os.environ.get("QWEN_TOOL_NAME", tool_name)
             raw_content = data.get("result", "") if "result" in data else json.dumps(data) if isinstance(data, (dict,list)) else raw_input
         elif os.environ.get("CODEX_TOOL_NAME"):
-            platform = "Codex"
             tool_name = os.environ.get("CODEX_TOOL_NAME", tool_name)
             # Subagent detection for Codex
             agent_label = data.get("context", {}).get("agent_name")
@@ -126,29 +133,27 @@ def main() -> None:
         elif event_name in ["AfterTool", "PreCompress"]:
             # OpenCode native plugin sends tool_args alongside tool_name; Gemini never does.
             if "tool_args" in data:
-                platform = "OpenCode"
                 tool_name = data.get("tool_name", tool_name)
                 raw_content = data.get("tool_response", {}).get("llmContent", "")
             else:
-                platform = "Gemini"
-                # Subagent detection for Gemini/OpenClaw
-                agent_label = data.get("hookSpecificOutput", {}).get("threadLabel") or data.get("sessionId")
+                # Gemini/OpenClaw shape — refine platform label only if env didn't resolve it
+                if platform == "Generic CLI":
+                    agent_label = data.get("hookSpecificOutput", {}).get("threadLabel") or data.get("sessionId")
+                    if "tool_response" in data and "llmContent" in data["tool_response"] and not os.environ.get("GEMINI_SESSION_ID"):
+                        platform = "Gemini/OpenClaw"
+                    else:
+                        platform = "Gemini"
                 raw_content = data.get("tool_response", {}).get("llmContent", "")
-                if "tool_response" in data and "llmContent" in data["tool_response"] and not os.environ.get("GEMINI_SESSION_ID"):
-                    platform = "Gemini/OpenClaw"
         elif "tool_response" in data and "llmContent" in data["tool_response"]:
-            platform = "VSCode"
             raw_content = data["tool_response"]["llmContent"]
         elif "result" in data and isinstance(data["result"], str):
-            platform = "Cursor"
-            # Subagent detection for Cursor (sniff from result prefix or metadata)
+            # Subagent detection from result prefix metadata (Cursor convention)
             if data["result"].startswith("[Explore]"):
                 agent_label = "Explore"
             elif data["result"].startswith("[Bash]"):
                 agent_label = "Bash"
             raw_content = data["result"]
         elif event_name == "Compacting":
-            platform = "OpenCode"
             tool_name = "internal_compacting"
             raw_content = data.get("context", "")
 

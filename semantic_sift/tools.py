@@ -24,6 +24,11 @@ from semantic_sift.onboarding import apply_onboarding
 SESSION_ID = str(uuid.uuid4())
 START_TIME = datetime.now().isoformat()
 # Detected at import time — reflects the actual calling IDE/CLI.
+# Best-effort identity for MCP tool calls. Resolved once at server startup from the
+# process environment via detect_client_id(). In shared-server sessions (multiple agents
+# connecting to the same MCP server process), this value reflects whichever agent's
+# environment was present at launch and cannot be updated per-call. Hook-layer telemetry
+# (sift_hook.py) is the authoritative per-call source; treat this as a session-level label.
 CLIENT_ID = telemetry_core.SIFT_CLIENT_ID
 
 

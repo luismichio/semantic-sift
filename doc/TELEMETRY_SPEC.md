@@ -100,8 +100,14 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
     ```
 
 ### Licensing & Identity
-*   **`SIFT_CLIENT_ID`**: Defaults to `"Generic CLI"`. Identifies the host application.
-*   **Dynamic Client Identification**: The `sift_hook.py` interceptor automatically detects the platform (e.g., `"Claude"`, `"Gemini"`, `"Cursor"`) and passes it as a `client_id_override` to the telemetry system.
+*   **`SIFT_CLIENT_ID`**: Resolved once at MCP server startup via `telemetry_core.detect_client_id()`. Identifies the host application for MCP tool calls (`sift_chat`, `sift_read_file`, etc.).
+*   **Platform Identity Resolution** (`detect_client_id()`): Uses a four-step priority chain, shared by both the MCP server process and every hook subprocess:
+    1.  Explicit `SIFT_CLIENT_ID` env var (always wins).
+    2.  Ambient IDE env var fingerprints (`_ENV_MAP`) — checked in priority order. Google Antigravity vars (`ANTIGRAVITY_AGENT`, `ANTIGRAVITY_EDITOR_APP_ROOT`, `ANTIGRAVITY_TRAJECTORY_ID`) are checked **before** `VSCODE_PID` because Antigravity inherits VS Code's process environment. Per-call hook vars (`CLAUDE_TOOL_NAME`, `GEMINI_SESSION_ID`, etc.) are checked last — they are only present in hook subprocesses, not the long-running MCP server process.
+    3.  Parent process name heuristic via `psutil` (fragment match against known process names).
+    4.  `"Generic CLI"` fallback.
+*   **Hook-Layer Identity**: `sift_hook.py` calls `telemetry_core.detect_client_id()` once per invocation (Phase 1) to resolve `platform` from the subprocess environment. This is the **authoritative per-call identity source**. Payload structure parsing (Phase 2 — extracting `raw_content` and `agent_label`) is strictly separate and does not influence the platform label.
+*   **Shared-Server Limitation**: When multiple agents connect to the same MCP server process (e.g., Zed running Gemini CLI + OpenCode simultaneously), `SIFT_CLIENT_ID` reflects whichever agent's environment was present at server launch and cannot be updated per-call. MCP tool calls in such sessions carry a best-effort session-level identity. Hook-layer telemetry (resolved independently per subprocess) remains accurate per-call.
 *   **Aggressive Tool Sniffing**: To minimize `unknown` tool entries, the interceptor uses a recursive discovery engine that searches for tool names across common JSON keys (`tool_name`, `tool`, `call`, etc.) and nested payload structures.
 *   **Subagent Tracking (`agent_label`)**: The interceptor further "sniffs" the payload for subagent markers (e.g., `CLAUDE_AGENT_NAME`, `threadLabel`, or result prefixes like `[Explore]`) to attribute context savings to specific specialized agent threads.
 *   **`SIFT_LICENSE_KEY`**: If present, sets the `tier` payload attribute to `"Commercial"`. Otherwise, it defaults to `"Community"`. Testing/Diagnostic tools automatically override the tier to `"Internal-Testing"`.
