@@ -29,7 +29,7 @@ def test_secret_redaction_logic():
     from telemetry_core import redact_secrets
 
     # Test GitHub PAT — descriptive label for local logs
-    assert redact_secrets("my key is ***REDACTED***") == "my key is [REDACTED_GITHUB_PAT]"
+    assert redact_secrets("my key is github_pat_FAKEFAKE00000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") == "my key is [REDACTED_GITHUB_PAT]"
 
     # Test OpenAI Key — descriptive label for local logs
     assert redact_secrets("sk-abcdefghijklmnopqrstuvwxyz0123456789") == "[REDACTED_OPENAI_KEY]"
@@ -45,8 +45,7 @@ def test_secret_redaction_logic():
 def test_secret_redaction_for_telemetry_generic_label():
     from telemetry_core import redact_secrets_for_telemetry
 
-    pat = "***REDACTED***"
-    # Must NOT reveal the secret type in the telemetry stream
+    pat = "github_pat_FAKEFAKE00000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     result = redact_secrets_for_telemetry(f"sift_chat:grep {pat}")
     assert result == "sift_chat:grep [REDACTED]"
     assert "GITHUB" not in result
@@ -69,7 +68,7 @@ def test_telemetry_does_not_log_content_secrets():
     # Use a unique session ID to avoid collisions with stale test data in the telemetry file
     session_id = f"test-pat-redaction-{uuid.uuid4().hex}"
     start_time = "now"
-    pat = "***REDACTED***"
+    pat = "github_pat_FAKEFAKE00000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     secret_tool = f"sift_chat:grep {pat}"
 
     telemetry_core.log_telemetry(session_id, start_time, secret_tool, 1000, 500, 10.0)
