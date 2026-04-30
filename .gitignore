@@ -30,6 +30,11 @@ benchmarks/data/*.pdf
 benchmarks/data/*.xlsx
 benchmarks/data/*.docx
 
+# Python packaging artifacts
+*.egg-info/
+dist/
+build/
+
 # Tests
 test_sift.py
 .pytest_cache/
