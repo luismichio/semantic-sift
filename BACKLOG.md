@@ -142,6 +142,23 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 **Observation**: `pyproject.toml` is already in place. Publishing to PyPI would allow `pip install semantic-sift` and significantly lower the adoption barrier. Also a prerequisite for the npm wrapper path.
 - [ ] Publish to PyPI. Add a GitHub Actions workflow for automated release on tag push.
 
+### Model "Cold Start" Warmup Command
+**Observation**: The `llmlingua-2` model downloads silently in the background via `_warm_up_models()`. Users executing semantic tools for the first time will hit the 1200ms timeout and fall back to heuristics, assuming the tool is broken while the 1GB model downloads.
+- [ ] Add a dedicated CLI command (e.g., `semantic-sift warmup` or `--download-weights`) for explicit local caching during installation.
+- [ ] Add explicit terminal logging when `_MODEL_WARMUP_STARTED` finishes so users know the semantic engine is online.
+
+### Atomic Cache Writes (Concurrency)
+**Observation**: In `sift_kernel.py`, `set_cache` writes directly to `.sift_cache/{key}.txt`. In highly asynchronous MCP environments, concurrent requests hitting the same key could lead to `OSError` or corrupted reads.
+- [ ] Implement atomic writes: write to a temporary file (`{key}.tmp`) and use `os.rename(tmp_path, cache_path)` to eliminate race conditions.
+
+### Workspace Root Resolution (IDE Path Traversal Guard)
+**Observation**: `resolve_safe_path` falls back to `os.getcwd()`. When an MCP server is booted by IDEs (like Cursor or Claude Desktop), `os.getcwd()` is often the server's executable directory, not the user's workspace root, causing the path traversal guard to block legitimate reads.
+- [ ] Update documentation to explicitly instruct users to pass the `--workspace-root` flag or set the `SIFT_WORKSPACE_ROOT` environment variable in their IDE's `mcp.json` config.
+
+### Dependency Confusion Warning ("Lite" vs "Neural")
+**Observation**: If a user runs `pip install .` instead of `pip install .[neural]`, `get_device()` gracefully falls back to heuristics due to missing dependencies. However, the user might assume the semantic AI is just poor at compressing if the warning isn't loud enough.
+- [ ] Update the fallback warning string to be explicit: `"[Semantic-Sift: Semantic model unavailable. Did you install with 'pip install .[neural]'? - heuristic mode active]"`.
+
 
 
 ## 🟢 Completed (Phase 2: Production Hardening — FIX_PLAN_5_STAR)

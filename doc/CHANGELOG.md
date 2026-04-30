@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### 🐛 Bug Fixes
+- **Unshielded Env Mandate Bypass — File Size Paradox**: Removed the `> 1KB` conditional from the `AGENTS.md` Auto-Sift Mandate. Agents could not know file size before reading, causing them to guess and default to native tools. The mandate is now an absolute binary: `sift_read_file` / `sift_analyze_file` must be used for **all** files unconditionally; the MCP server bypasses sifting automatically for small files. (`AGENTS.md`)
+- **Unshielded Env Mandate Bypass — Path Traversal Fragility**: Refactored `resolve_safe_path()` in `sift_kernel.py` to add a heuristic walk-up fallback. When `os.getcwd()` points to the MCP server binary directory rather than the project root (common in IDE-spawned servers), the function now walks up the directory tree from the requested path looking for workspace markers (`.git`, `pyproject.toml`, `AGENTS.md`, etc.) to locate the true project root, preventing false-positive "Access Denied" errors that caused agents to revert to native file readers. (`sift_kernel.py`)
+
+### 🐛 Bug Fixes (prior)
 - **Negative token savings in compaction**: `perform_compaction_summary` previously duplicated priority lines (Decision/Status/File/Task markers) — they appeared in both the `## Structural Snapshot` header and the `## Semantic Summary` body. On short inputs this caused the output to be longer than the input (negative savings). Priority lines are now stripped from the text before semantic compression; if stripping leaves nothing to compress, the Snapshot is returned alone with no Summary section. (`sift_kernel.py`)
 
 ### 🏗️ Code Quality & Professionalism

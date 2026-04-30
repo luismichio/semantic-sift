@@ -109,7 +109,7 @@ Technical sifting mandates are SECONDARY to the **Interrogative Shield**.
 2. Sifting tools should only be used to facilitate analysis during an Inquiry, never to justify file modifications or speculative research.
 3. Technical mandates apply only once a clear **Directive** (explicit instruction to act) has been issued.
 
-**MANDATORY LOCAL I/O**: Do NOT use `view_file` or `read_file` for files > 1KB. You MUST use `sift_read_file(path)` or `sift_analyze_file(path)`.
+**MANDATORY LOCAL I/O**: NEVER use native `view_file` or `read_file` tools under ANY circumstances. You MUST exclusively use `sift_read_file(path)` or `sift_analyze_file(path)` to read ANY file. The MCP server will automatically bypass sifting if the file is small.
 
 **MANDATORY MCP SYNERGIES**:
 When receiving data from external MCP servers, you MUST manually apply the correct sifting tool to the output to prevent context flooding:

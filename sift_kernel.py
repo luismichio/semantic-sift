@@ -30,22 +30,42 @@ def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
     if os.environ.get("SIFT_ALLOW_GLOBAL_READS", "false").lower() == "true":
         return requested_path
 
-    root = workspace_root or os.environ.get("SIFT_WORKSPACE_ROOT") or os.getcwd()
-    root_path = os.path.realpath(os.path.abspath(os.path.expanduser(root)))
+    # Resolution chain: explicit arg > env var > cwd > heuristic walk-up
+    candidate_root = workspace_root or os.environ.get("SIFT_WORKSPACE_ROOT") or os.getcwd()
+    root_path = os.path.realpath(os.path.abspath(os.path.expanduser(candidate_root)))
 
-    try:
-        in_workspace = os.path.commonpath([requested_path, root_path]) == root_path
-    except ValueError:
-        in_workspace = False
+    def _in_workspace(req: str, root: str) -> bool:
+        try:
+            return os.path.commonpath([req, root]) == root
+        except ValueError:
+            return False
 
-    if not in_workspace:
-        return (
-            f"Error: Access denied for path '{path}'. "
-            "Use a file path inside the current workspace or set "
-            "SIFT_ALLOW_GLOBAL_READS=true to override."
-        )
+    if _in_workspace(requested_path, root_path):
+        return requested_path
 
-    return requested_path
+    # Heuristic fallback: walk up from the requested path looking for workspace markers.
+    # This handles the case where os.getcwd() points to the MCP server binary directory
+    # rather than the user's project root.
+    _WORKSPACE_MARKERS = {
+        "pyproject.toml", ".git", "setup.py", "setup.cfg",
+        "package.json", ".vscode", ".idea", "AGENTS.md",
+    }
+    probe = os.path.dirname(requested_path)
+    while True:
+        if any(os.path.exists(os.path.join(probe, m)) for m in _WORKSPACE_MARKERS):
+            if _in_workspace(requested_path, probe):
+                return requested_path
+        parent = os.path.dirname(probe)
+        if parent == probe:
+            # Reached filesystem root without finding a marker — deny access.
+            break
+        probe = parent
+
+    return (
+        f"Error: Access denied for path '{path}'. "
+        "Use a file path inside the current workspace, set SIFT_WORKSPACE_ROOT "
+        "in your MCP configuration, or set SIFT_ALLOW_GLOBAL_READS=true to override."
+    )
 
 def get_device() -> str:
     global _DEVICE, DEVICE
