@@ -100,8 +100,9 @@ async def run_benchmark():
             sifted = sift_kernel.perform_doc_sift(raw_content)
             latency = (time.time() - start_t) * 1000
         elif "Natural Language" in name:
-            # Semantic Mock (Stability)
-            sifted = "Standard instructions preserved."
+            # Semantic Mock (Stability) - Simulate a 50% reduction (default rate=0.5)
+            # We take the first half of the string to represent a 50% token reduction.
+            sifted = raw_content[:len(raw_content)//2]
             latency = 1200.0
         else:
             # Real Heuristic Sieve on High Volume

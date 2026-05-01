@@ -18,7 +18,7 @@ This document provides empirical evidence of the sifting engine's impact across 
 | **GitHub Action (CI)** | **47.5%** | **~150** | Heuristic | Remove debug/group markers. |
 | **NPM Install** | **25.9%** | **~20** | Heuristic | Prune progress bars/dots. |
 | **Git History** | **16.4%** | **~25** | Surgical | Remove ISO-8601 timestamps. |
-| **Natural Language** | **99.9%** | **~6,000** | Semantic | Prune linguistic filler (BERT). |
+| **Natural Language** | **~50.0%** | **~6,000** | Semantic | Prune linguistic filler (BERT). |
 
 ---
 

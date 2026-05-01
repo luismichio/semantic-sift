@@ -1,585 +1,586 @@
-function a ( p ) null return + p p. charAt ( 0? + 
- function u ( p ) null return p + p charAt length - 1 return p slice ( 0 1 p 
- function i ( p ) null return p + p 6 < = p. length substring - index return p substring ( 0 length - 6 index p return " return p 
- p = location. pathname split (? 
- p b p = 0 p indexOf + p = p. substring b length 
- p = a ( p p = u ( p ) p = i ( p p index? 
- document. documentElement. setAttribute ( data - current - path " p ) 
- function ( a, b ) c = document. getElementById ( banner "? innerText d = 0 localStorage length e = localStorage. key ( d if? endsWith ( a localStorage. getItem ( e = c return void document. documentElementsetAttribute b hidden document b visible c = 0 localStorage length + d localStorage key c d? endsWith localStorage getItem d document b hidden b visible catch a b hidden 
- bannerDismissed 
- data - banner - state 
- primary 9 9 11 
- 250 250 250 
- dark 9 9 11 
- 255 255 255 
- 
- 14 14 16 
- gray - 50 243 243 243 
- - 100 238 238 238 
- - 200 222 222 222 
- 300 206 206 206 
- - 400 158 158 158 
- 500 112 112 112 
- - 600 80 80 80 
- - 700 62 62 62 
- - 800 37 37 37 
- - 900 23 23 23 
- - 950 10 10 10 
- antialiased text - gray - 500 dark : - gray - 400 self next _ spush ( 0 suppressHydrationWarning children " function ( a, b, c, d ) var e f, g = mint d linden d? sidebar - content h = e = d f navbar - transition maple e & f + - maple f [ i, j ] = ( ( ) = switch ( d ) case almond return scroll - mt 2. 5rem. 5rem luma return scroll - mt 6rem sequoia return 8. 5rem mt 11rem default return scroll - mt 9. 5rem 12rem function k ( document. documentElement classList. add ( i function l ( a ) document getElementById? setProperty top rem function m ( a )? setProperty height calc 100vh - $ a rem function n ( a, b )! a & & b | a & b? k ( document documentElementclassList. remove ( j ) a b document. documentElement add j ) remove i ) o = document documentElement getAttribute data - banner - state p = null o? visible o b switch ( d mint l ( c ), n ( a, p ) palm aspen sequoia l ( c ) m ( c ) n ( a, p ) luma k ( linden l ( c ) p k ( almond k ( l ( c ) m ( c ) q = function ( a = document. createElement style return a. appendChild ( document createTextNode document. head. appendChild a function window. getComputedStyle ( document body ) setTimeout removeChild 1 requestAnimationFrame? a a 1 window. scrollY > 50 document. getElementById ( h )?setAttribute data - - opaque q function m ( a, b, c ) d = document. documentElement getAttribute data - banner - state e = 2. 5 null? visible d f = 3 g = 4 h = e + g + f switch c mint palm aspen f = 2. 5 g 3. 5 h = e + f + g luma g = 3 h = e + g linden 4 h = e + g almond g = 3. 5 h = e + g sequoia f = 3 g 3 h = e + g + f return h true false mint script content - area sr - only focus text background - light dark outline - primary main content script function j ( a, b, c, d ) window. matchMedia max - width : 1024px ) ) matches d document. documentElement. style. setProperty ( c, " 0px " ) document. documentElementsetAttribute ( data - assistant - state closed " d localStorage. setItem a false " return e = localStorage getItem a ) null = e ) document. documentElement setProperty c 0px " data - assistant - state closed return f = JSON. parse ( e ) g = localStorage getItem b ) h = null g? JSON parse g 368 document. documentElement setProperty c f? h + px " 0px " setAttribute data - assistant - state f? open closed catch a ) document documentElement setProperty c 0px " setAttribute data - assistant - state closed 
- chat - assistant - sheet - open 
- sheet - width 
- 
- 
- Mintlify theme 
- 
- 500 
- 
- 
- 400 
- 
- Fix code block line highlight color 
- 
- 250 
- 
- 
- Add automatic section numbers headings table of contents items 
- enable - section - numbers 
- 
- 
- 
- 
- contents 
-counter - reset h2 - counter h3 - counter h4 - h5 - h6 - counter 
- 
- - area h2 
- 0 
- counter - increment h2 - counter 
- - set h3 - counter h4 - h5 - h6 
- 
- content - area h3 
- 1 
- counter - increment h3 - counter 
- - set h4 - counter h5 - h6 
- 
- - area h4 
- 2 
- counter - increment h4 - counter 
- - set h5 - counter h6 - 
- 
- - area h5 
- h5 
- 3 
- counter - increment h5 - counter 
- - set h6 - counter 
- 
- - area h6 
- 
- 4 
- h6 - 
- 
- 
- 
- 
- area h2 
- 0 
- counter h2 - counter ) 
- 
- - h3 
- 1 
- counter h2 - counter ) h3 - 
- 
- - h4 
- 2 
- counter h2 - counter )counter ( h3 - counter ) counter h4 - counter 
- 
- 
- content - area h5 id before 
- content - area h5 
- table contents depth 3 
- counter ( h2 - counter ) counter h3 - counter h4 - counter 
- h5 - counter 
- 
- content - area h6 id ] before 
- content - area h6 
- table contents 4 
- content counter ( h2 - counter ) counter h3 - counter h4 - counter 
- h5 - counter counter h6 - counter ) 
- 
- 
- schema reference 
- 
- none 
- 
- Vertical margins 
- 
- 
- 
- 
- 0 
- 
- 
- 
- 
- h2, h3 
- margin : 0 
- 
- type h2 h3 
- margin - top calc var mt 
- 
- h2 + type h3 
- margin - top var 
- 
- Type definition code 
- tsd signature 
- margin var 0 0 0 
- 
- 
- 
- 
- 
- margin 0 
- 
-is ( p, ul ol pre ) 
- margin - top var ( - - mt - lg ) 
- 
- 
- var mt - sm ) 
- 
- 
- Example block 
- 
- margin var ( - - mt - lg 0 0 0 
- 
- var mt - sm 
- scroll - margin calc 8rem + 1. 5rem var ( - - mt - sm ) 
- 
- 
- 
- 
- is p, ul ) 
- margin - top 0 
- 
- 
- 
- 
- margin var ( - - mt - lg ) 0 0 0 
- 
- comment 
- margin top var ( - - mt - sm ) 
- 
- 
- type - declaration 
- 
- 4 
- margin var ( mt - md 0 0 0 
- 
- 
- 
- 
- var mt - sm 0 0 0 
- 
- 
- 
- 
- 
- comment 
- alias 
- interface 
- 
- family var mono ) 
- size 0. 875em 
- 
- 
- Code blocks 
- signature 
- tag code 
- Mintlify 
-border 1px solid 
- color light - dark rgb var 950 rgba 255 255 255 1 
- - radius 1rem 
- padding 1rem 0. 875rem 
- background color inherit 
- 
- font - family var mono 
- - size 0. 875rem 
- line - height 1. 5rem 
- 
- Type definition 
- 
- 
- - weight normal 
- bottom none 
- text decoration underline 
- 
- 2px 
- 
- 
- 
- pointer events none 
- color inherit 
- 
- 
- keyword 
- light - dark rgb ( 207, 34, 46 ) # 9CDCFE 
- 
- 
- - dark rgb 149, 56, 0 ) 4EC9B0 
- 
- 
- light - dark rgb ( 5, 80 174 DCDCAA 
- 
- 
- 
- 
- 
- 
- - weight 600 
- style italic 
- 
- 
- 
- 
- light - dark rgb ( 17, 99, 41 9CDCFE 
- 
- 3 
-light - dark rgb ( 10, 48, 105 ) # CE9178 ) 
- 
- hl - 5 
- rgb 5, 80, 174 ) # 569CD6 ) 
- 
- 
- Copy button 
- 
- display none 
- 
- 
- See links 
- tag 
- trailing 
- 4 " 
- 
- 
- anchor link 
- tsd anchor - icon 
- display none 
- 
- single link display inline heading 
- has p 
- 4 
- 
- 
- 
- 
- 
- 
- doc comments 
- 
- none 
- 
- border 
- 
- border - top light - dark rgb ( var ( - - gray - 950 ) /. 05 ) rgba ( 255 255 255 / 0. 1 ) 
- padding - top var ( - - mt - md ) 
- 
- 
- " 3 " 
- font - family var - mono ) 
- - weight : 700 
- 
- 
- type declaration 
- margin - left 1. 25rem 
- 
- Sub - members 
- tsd - type - declaration 
-Templated heading Type Declaration 
- data typedoc 4 " 
- display none 
- 
- Name type 
- 5 " 
- font - family var - mono 
- - size 0. 875rem 
- - weight 500 
- width fit - content 
- padding 0. 125em 0. 5em 
- background - color light - dark rgb 100 5 rgb 
- tsd - tag 
- display none 
- 
- 
- 
- Example 
- tag 
- padding left 0. 5rem 
- 
- sources 
- display none 
- 
- 
- Anchor links 
- anchor - icon 
- border : 0 
- padding 0 0. 5rem 
- color rgb 500 5 
- 
- 500 
- 
- 
- 
- 
- 
- 
- none 
- 
- 
- Types index properties 
- - declaration 
- 
- 
- display none 
- 
- Templated heading Type Declaration 
- data typedoc - h 4 " 
- none 
- 
- Index property 
- 5 " 
- font - family var - mono ) 
- font - weight 700 
- 
- 
- 
-copyright footer 
- 
- margin - top 2rem 
- padding - top 1. 5rem 
- border - top 1px light - dark rgb var gray - 950 rgba ( 255 255. 1 
- text - align center 
- font - size 0. 875rem 
- color rgb var gray - 500 
- line - height 1. 5 
- 
- color inherit 
- text - decoration underline 
- hover 
- rgb var gray - 700 
- 
- 
- 
- data - as p MCP SDKs layer protocol MCP servers context AI application 
- p SDK 
- h2 class flex whitespace - pre - wrap font - semibold scope absolute tabindex - 1 ml - 10 flex items - center opacity border - 0 group hover 100 outline group header w - 6 h rounded - md flex items - center justify - center shadow - text - gray - 400 white bg - background - brightness 135 dark ring - 1 brightness 150 bg white ring 400 30 700 / 25 400 / 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 - 24 - 24h72c61. 9 112 - 50. 1 - 13. 24 71 160zM184 232H392c13. 3 10 path svg div span cursor - pointer 
- p Model Context Protocol includes projects span 
- 
- href modelcontextprotocolio specification latest target blank rel noreferrer class link " MCP Specification outlines implementation requirements clients servers 
- class link " href docs sdk " MCP SDKs programming languages MCP 
- MCP Development Tools MCP servers target blank rel noreferrer link " 
- target blank rel noreferrer link " MCP Reference Server Implementations implementations MCP servers 
- 
- class callout my - 4 px - 5 py - 4 overflow - hidden rounded border - blue - 200 bg - 50 900 600 / 20 data callout type note " class mt - 0. 5 w - 4 data component callout - icon " svg width 14 viewBox fill currentColor class size - 4 text - blue - 800 dark - blue - 300 Note " path fill - rule evenodd M7 1. 3C10. 14 1. 3 12. 7 3. 86 12. 7 7C12. 7 1014 10. 14 12. 7 7C5. 48908 12. 6974 4. 0408 12 096 2. 97241 11. 0276C1. 90403 9. 9592 1. 30264 8. 51092 1. 7C1. 3. 86 3. 86 3ZM7 0C3 10 9H6V11H8V9Z path > svg > div class text - prose dark prose - invert min - w - 0 w - full bg - - text - current current blue - 800 dark text - 300 data callout - content p " MCP protocol context exchange dictate 
- applications LLMs context span div 
-h2 class flex whitespace pre - wrap group font - semibold id concepts - of - mcp div class absolute tabindex - 1 " href concepts - of - mcp class - ml - 10 flex items center opacity border group hover 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items - center justify text - gray - 400 dark group focus border svg xmlns org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 112 112h72c13. 24H160C71. 256zm576 - 71 160 - 160 160H344c - 13. 3 - 24 - 10 7 - - 24s10 24h72c61. 112 - 50 1 - 137 - 24 - 24s10 24h72c88. 4 0 71. 160zM184 232H392c13. 3 10. 7 - 24H184c - 13 path svg div span cursor - pointer " Concepts MCP h2 
- h3 class flex whitespace - pre - wrap group font " id participants " div absolute tabindex - 1 " participants - ml - 10 flex items - center opacity - border group 100 div class w - 6 h - 6 rounded - md flex items - center shadow - text - gray - 400 dark 400 svg xmlns org fill gray height 12px " viewBox = 0 0 576 512 " path d = M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24 24s - 10 7 - 24H160C98. 1 144 48 194. 256s50112 112 112h72c13. 3 24 10. 7 - 24H160C71. 6 416 0 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 0 - 24 - 10. 7 24s10 24h72c61. 112 - 50 112 - 112s 112H344c - 13. 24s10. 24h72c88. 4 160 71. 6 160 160zM184 232H392c13. 3 10 - 10 24H184c - 13. " path svg div span cursor - pointer " 
- p " MCP client - server architecture host AI application establishes connections MCP servers MCP host one MCP client each server maintains dedicated connection 
- Local MCP servers STDIO transport serve single MCP client remote MCP servers Streamable HTTP transport serve many MCP clients 
-span data - as = " p " > key participants in MCP architecture span > 
- ul 
- li strong MCP Host AI application coordinates manages MCP clients 
- strong MCP Client component maintains connection to MCP server obtains context from MCP 
- MCP Server strong program provides context to MCP clients 
- 
- span data - as = p " > Visual Studio Code acts as MCP host establishes connection to MCP server href docs sentry io Sentry MCP server instantiates MCP client object connection to MCP server 
- connects to another MCP server instantiates additional MCP client object maintain connection span 
- template data - dgst BAILOUT _ TO CLIENT _ SIDE RENDERING " 
- span data - as = p " strong MCP server refers program serves context data 
- MCP servers can execute locally or remotely 
- Claude Desktop launches href = githubmodelcontextprotocol servers tree main src filesystem target = blank " rel noreferrer class link filesystem 
- server 
- runs locally same machine uses STDIO 
- transport local MCP server official 
- href docs sentry product sentry mcp target blank rel noreferrer class link Sentry MCP server runs 
- Sentry platform uses Streamable HTTP transport 
- remote MCP server 
- h3 class flex whitespace - pre - wrap group font - semibold id layers " div class absolute tabindex - 1 layers class - ml - 10 flex items - center opacity - 0 border - 0 - 100 outline - div class w - 6 h - 6 flex items center justify center shadow text - gray - 400 dark group focus border svg xmlns w3. org 2000 svg fill = gray " height 12px viewBox = 0 0 576 512 " path d = M0 256C0 167. 6 716 96 160 96h72c13. 3 24 10 - 24H160C98. 1 144 194 256s50. 1 112 112 112h72c13. 10 - 24H160C71. 6 416 344 256zm576 88. - 71. 6 160 - 160H344c - 13. 3 24 10 7 24s10. 24 24h72c61. 112 - 50 112s 112H344c - 13 10 24s10 24 24h72c88 71 160zM184 232H392c13. 3 24 10. 7 24s - 10 24H184c - 13 24z " path svg div span cursor - pointer 
- two layers 
- 
- JSON - RPC protocol client - server communication lifecycle management core primitives 
- communication mechanisms data exchange transport - specific connection establishment message framing authorization 
- 
- data inner outer 
-h4 class flex whitespace pre - wrap group font - semibold data - layer div class absolute tabindex - 1 href data - layer class - ml - 10 flex items center opacity border group hover 100 outline label Navigate header div class w - 6 h - 6 rounded - md flex items center justify shadow text gray - 400 dark group svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98 112 112h72c13. 24H160C71. 6 416 256zm576 - 160 - 160 160H344c - 13. 3 0 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13. 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 7 24 24H184c - 13. 3 24s10 " path svg div span class cursor - pointer " Data layer 
- data - as " p " implements href = jsonrpc org target " blank link " JSON - RPC 2. 0 exchange protocol message structure semantics 
- includes 
- 
- Lifecycle management connection initialization capability negotiation termination 
- Server features core functionality AI actions context data prompts interaction templates 
- sample LLM input log messages 
- Utility Supports capabilities notifications real - time updates progress tracking long - running operations 
- 
-h4 class flex whitespace pre - wrap group font - semibold transport - layer div class absolute tabindex - 1 href transport - layer class - ml - 10 flex items center opacity border group hover 100 outline label Navigate header div class w - 6 h - 6 rounded - md flex items center justify shadow text gray - 400 dark group svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98 112 112h72c13. 24H160C71. 6 416 256zm576 - 160 - 160 160H344c - 13. 3 0 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13. 37 - 24 24 - 24h72c88. 4 0 160 71. 160zM184 232H392c13. 3 24 10. 7 24s - 10. 7 24H184c - 13. 3 " path cursor - pointer Transport layer 
- p manages communication channels authentication handles connection establishment message framing secure communication MCP 
- MCP supports transport mechanisms 
- 
- Uses standard input streams communication performance no network overhead 
- Streamable HTTP transport HTTP POST client - server messages Server - Sent Events streaming enables remote server communication supports HTTP authentication methods bearer tokens API keys custom headers MCP recommends OAuth authentication tokens 
- 
- transport abstracts communication details JSON - RPC 2. 0 message format 
-h3 class flex whitespace pre - wrap group font - semibold data - layer protocol div class absolute tabindex - 1 " href data - layer protocol class - ml - 10 flex items center opacity border group hover 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items - center justify text gray - 400 dark group svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 - 71 160 - 160 160H344c - 13. 3 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160zM184 232H392c13. 3 24 10. 7 24s - 10. 7 24H184c - 13. 3 " path svg div span cursor - pointer " Data Layer Protocol span h3 
- data - as p " schema semantics MCP clients servers. Developers find data layer href primitives link " context clients. 
- data - p " MCP href = jsonrpc org target link JSON - RPC 2. 0 underlying RPC protocol Client servers send requests respond. no response required. span > 
-h4 class flex whitespace pre - wrap group font - semibold lifecycle - management div class absolute tabindex - 1 " href lifecycle - management class - ml - 10 flex items center opacity border group 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items center justify shadow text gray - 400 dark svg xmlns org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 88 - 71 160 - 160 160H344c - 13. 3 - 24 - 10 7 24s10. 7 24h72c61. 9 112 - 50 1 112H344c - 13. 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 7 24 - 24H184c - 13. 3 24s10. 7 24z " path svg div span cursor - pointer " Lifecycle management span h4 
- data - p " MCP button data - state closed stateless Streamable HTTP transport span tooltip underline decoration - - offset - 4 - gray - 400 dark : - gray - 500 " stateful protocol lifecycle management negotiate data - state closed Features operations gray - 400 dark gray - 500 capabilities client server support information class link " lifecycle example showcases initialization sequence span 
-h4 class flex whitespace pre - wrap group font - semibold id primitives div class absolute tabindex - 1 href primitives class - ml - 10 flex items center opacity border group hover opacity 100 outline label Navigate header div class w - 6 h - 6 rounded - md flex items - center justify shadow text - gray - 400 dark group svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 - 160 - 160 160H344c - 13. 3 0 - 24 - 10 7 24s10 24h72c61. 9 112 - 50. 1 112H344c - 13 37 - 24 24 - 24h72c88. 4 0 160 71. 6 160 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 7 24 - 24 24H184c - 13. 3 0 - 24 10. 7 - 24s10. 7 - - 24z " > path > svg div span class cursor - pointer " Primitives span h4 
- data - p " > MCP primitives important define clients servers specify contextual information with AI applications range actions 
- p " MCP defines three core primitives 
- 
- Executable functions AI actions file operations API calls database queries 
- Resources contextual information AI file contents database records API responses 
- Reusable templates structure interactions with language models system prompts examples 
- 
- " primitive type methods for discovery retrieval execution tools 
- MCP clients code list methods discover available primitives client list tools execute design allows listings dynamic 
-span data - as = " p " > consider MCP server context about database expose tools for querying resource schema prompt examples span 
- data - p " server primitives class = link " docs learn server - concepts server concepts span 
- data p " MCP defines primitives em > clients expose primitives allow MCP build richer interactions span 
- 
- strong Sampling Allows servers request language model completions from client AI application want access language model stay model - independent not include language model SDK MCP use code > sampling / createMessage method request language model completion AI application li 
- Elicitation request additional information more information confirmation action request additional information 
- Logging Enables send log messages for debugging monitoring 
- 
- data - p " client primitives class = " link " docs learn client - concepts " client concepts 
- p " protocol offers cross - cutting utility primitives augment requests span 
- 
-li strong Tasks Experimental Durable execution wrappers deferred result retrieval status tracking MCP requests expensive computations workflow automation batch processing multi - step operations 
- 
- h4 class flex whitespace - pre - wrap group font - semibold id notifications absolute tabindex - 1 notifications - ml - 10 flex items - center opacity 100 outline Navigate header w - 6 h - 6 flex items center justify shadow text gray - 400 dark group svg xmlns gray height 12px viewBox 0 0 576 512 " path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - - 24H160C98. 1 256s50 112h72c13. 3 - 24H160C71. 6 416 0 344. 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13- 24 - 24h72c61. - 112H344c - 13 24h72c88. 160zM184 232H392c13. 24H184c - path svg div span class cursor - pointer " Notifications span h4 
- - p " protocol supports real - time notifications dynamic updates update notifications Notifications JSON - RPC 2. 0 notification messages MCP servers real - time updates 
- h2 class flex whitespace - pre - wrap group font - semibold example div class absolute tabindex = " - 1 " href example - ml - 10 flex items - center opacity - 0 border - 0 group hover - 100 focus outline - Navigate header div w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : - white / 50 bg - background - brightness - 1dark ring 1 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50 - 13 24 24h72c88 71. 160zM184 232H392c13. 3 10 - path svg div span class cursor - pointer " Example h2 > 
-h3 class flex whitespace pre - wrap group font - semibold data - layer - 2 div class absolute tabindex - 1 " href data - layer - 2 class - ml - 10 flex items center opacity border group hover 100 outline Navigate header div class w - 6 h - 6 rounded - md flex items - center justify text gray - 400 group border svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24 24s - 24H160C98. 112 112h72c13. 24H160C71. 6 416 256zm576 160 - 160 160H344c - 13. 3 - 24 - 10 7 24s10 7 24h72c61. 9 112 - 50 1 112H344c - 13 37 - 24 24 - 24h72c88. 4 71 160zM184 232H392c13. 3 10. 7 - 10. 24H184c - 13. 3 path svg div span cursor - pointer " Data Layer h3 
- data - p " step - walkthrough MCP client - server interaction data layer protocol lifecycle sequence tool operations notifications JSON - RPC 2. 0 messages 
- line " color : # 116329 ; dark # 9CDCFE & quot jsonrpc color 1F2328 # D4D4D4 0A3069 # CE9178 quot 2. 0 1F2328 D4D4D4 
-span line " color # 116329 ; - shiki - dark # 9CDCFE " quot id color # 1F2328 shiki - dark # D4D4D4 color # 0550AE dark # B5CEA8 " 1F2328 # D4D4D4 
- line " color # 116329 - dark # 9CDCFE quot ; method color # 1F2328 # D4D4D4 color # 0A3069 ; shiki - dark # CE9178 quot initialize 1F2328 D4D4D4 
- line " color # 116329 - dark # 9CDCFE quot ; params quot color # 1F2328 - dark # D4D4D4 
-span class line " color # 116329 ; - shiki - dark : # 9CDCFE " & quot ; protocolVersion color 1F2328 dark # D4D4D4 color # 0A3069 ; shiki - dark : # CE9178 " quot ; 2025 - 06 - 18 quot color # 1F2328 dark D4D4D4 
- line " color # 116329 ; - dark # 9CDCFE quot capabilities color 1F2328 dark # D4D4D4 
- line " color 116329 9CDCFE quot elicitation 1F2328 D4D4D4 
- line " color # 1F2328 dark D4D4D4 
- line " color # 116329 ; - dark # 9CDCFE " quot ; clientInfo quot color 1F2328 ; dark # D4D4D4 
-span line " color # 116329 ; - shiki - dark # 9CDCFE " quot name color # 1F2328 # D4D4D4 color # 0A3069 dark # CE9178 quot example client color # 1F2328 shiki - dark # D4D4D4 
- line " color # 116329 dark # 9CDCFE quot version color # 1F2328 # D4D4D4 color # 0A3069 # CE9178 quot 1. 0. 0 
- line " color # 1F2328 - dark # D4D4D4 
- line " color # 1F2328 dark # D4D4D4 
- line " color # 1F2328 ; shiki - dark # D4D4D4 
-code pre div class print hidden data - fade overlay true style fade color light # ffffff dark # 0B0C0E data - state inactive orientation horizontal role tabpanel aria - labelledby radix - R ljildinpfcqcf9babsnpfdb trigger - 1 tabindex - 1 w full relative rounded xt h4 class flex whitespace - pre - wrap group font - semibold understanding initialization - exchange absolute tabindex - 1 - ml - 10 flex items - center opacity 0 border group 100 aria - label Navigate to header " div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : text - white / 50 bg - background - dark dark brightness - 135 dark ring - 1 brightness 150 bg white ring 400 30 700 / 25 400 / 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 9 112 - 50. 1 - 13. 3 - 24 71 160zM184 232H392c13. 3 10 path div span cursor - pointer Initialization Exchange p initialization process key MCP s lifecycle management span ol > 
- li 
-span data - as = " p " > strong Protocol Version Negotiation strong code protocolVersion field 2025 - 06 - 18 ensures client server compatible protocol versions prevents communication errors when different versions. If mutually compatible version not negotiated connection should terminated span > 
- 
- 
- span data - as = p " > strong Capability Discovery strong capabilities object allows declare features including href = # primitives class link " primitives handle tools resources prompts features href notifications enables efficient communication avoiding unsupported operations span 
- 
- 
- p Identity Exchange clientInfo serverInfo objects provide identification versioning information for debugging compatibility purposes 
- 
- p capability negotiation demonstrates MCP primitives p Client Capabilities strong 
- quot elicitation client declares work with user interaction requests receive code elicitation create method calls 
- span data - as p " > strong Server Capabilities strong 
-code & quot ; tools server supports tools primitive send tools list changed notifications changes 
- quot ; resources ; supports resources primitive handle list read methods 
- data - as p " initialization client sends notification div class code - block mt - 5 mb - 8 not - rounded - 2xl group min - w - 0 print print - color - text - gray - 950 - - 50 div class flex text - gray - 400 text - xs rounded - t - 14px leading - 6 font - medium pl - 4 pr - 2. 5 py - 1 code - block - header flex - grow - 0 flex items - center gap - 1. 5 text - gray - 700 dark 300 min - w - 0 header filename truncate min - w - 0 Notification flex - 1 flex items - center justify - end gap - 1print hidden div z - 10 select none data state closed button h - 26px w - 26px flex items center justify rounded md backdrop blur group copy button data contents svg width 18 viewBox fill none xmlns w3 org 2000 svg class w - 4 h - text - gray - 400 group path d M14. 25 5. 25H7. 25C6. 14543 25V14. 25 15. 3546 currentColor 1 path M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 96397 3. 45603 2. 80197L10. 38 1. 77297C11. 313 1. 63397 12. 19 2. 16297 12. 528 3. 00097 currentColor width 1stroke linecap round linejoin round path svg button div class w - 0 min - full max - w full py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg - transparent transition height ] duration 300 ease - - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 " style font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language json numberOfLines 4 " span line " color # 1F2328 dark D4D4D4 span 
-span line " color # 116329 ; shiki - dark # 9CDCFE " quot jsonrpc color # 1F2328 # D4D4D4 color # 0A3069 shiki - dark # CE9178 quot 2. color # 1F2328 dark D4D4D4 
- line " color # 116329 shiki - dark # 9CDCFE quot method color # 1F2328 dark D4D4D4 color 0A3069 # CE9178 quot notifications 
- line " color # 1F2328 ; shiki - dark # D4D4D4 
-code pre div print hidden data - fade overlay true aria style fade - color light # ffffff ; dark # 0B0C0E div h4 class flex whitespace - pre - wrap group font - semibold " id works in - ai applications div absolute tabindex - 1 href class - ml - 10 flex items center opacity border - 0 group hover opacity 100 outline - group link aria Navigate header div w - 6 h - 6 rounded - md flex items center justify shadow text - gray - 400 dark white brightness svg xmlns w3 org 2000 svg fill gray height 12px " viewBox 0 0 576 512 " path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10 7 24s - 10. 7 - 24H160C98. 1 112h72c13. 3 0 - 24H160C71. 6 416 0 344256zm576 0c0 88. - 71 160 - 160 160H344c - 13 24 - 10 24 - 24s10. 24h72c61 112 - 50 112H344c - 13 24h72c88 71 160zM184 232H392c13. 24H184c 13 path span cursor - pointer " AI Applications - p application MCP client manager establishes connections servers stores capabilities functionality tools resources prompts real - time updates div code - block mt - 5 mb - 8 rounded - 2xl print print - color text - gray - 950 - 0 5 numberOfLines 7 python div class flex text - gray - 400 text - xs rounded - t - 14px ] leading - 6 font - medium pl - 4 pr - 2. 5 py - 1 data - component - code - block - header " div flex - grow - 0 items - center gap - 1text - gray - 700 300 min - w - 0 data code - block header filename truncate min - w - 0 Pseudo - code AI application initialization flex - 1 items center justify end gap 1. print hidden z - 10 select none closed button h - 26px flex items center justify md backdrop blur group copy button contents svg width 18 viewBox fill none xmlns http www w3. org 2000 svg class w - 4 h - 4 text - gray - 400 group - hover copy button text gray - 500 - white 40 60 path M14. 25 5. 25H7. 25C6. 14543 5. 25 25 14543 7 25V14. 25C5. 25 15 3546 1. 5 linecap round M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 9639745603 80197L10 38 77297C11 313 63397 12 19. 16297 12 528 3. 00097 stroke currentColor width 1. 5 linecap round linejoin path div class w - min py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 style font - variant ligatures none height auto background color # ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff # 0B0C0E # 1f2328 D4D4D4 language python numberOfLines 7 span line " color # 6E7781 # 6A9955 Pseudo Code 
-span class line " color # CF222E dark # C586C0 " async CF222E C586C0 color # 1F2328 dark # D4D4D4 " stdio _ client ( server _ config ) color CF222E dark # C586C0 color # 1F2328 # D4D4D4 read write 
- span class line " color # CF222E dark # C586C0 async color CF222E C586C0 1F2328 D4D4D4 ClientSession ( read write ) color CF222E # C586C0 color # 1F2328 shiki - dark # D4D4D4 session : span 
-span class line " color # 1F2328 ; dark # D4D4D4 init _ response color # CF222E D4D4D4 color CF222E # C586C0 await 1F2328 D4D4D4 session. initialize ( 
- line " color # CF222E # C586C0 color 1F2328 D4D4D4 init _ response. capabilities tools 
- line " color # 1F2328 D4D4D4 app. register _ mcp _ server session color # 953800 shiki - dark # 9CDCFE supports tools color # CF222E D4D4D4 color # 0550AE dark # 569CD6 " color # 1F2328 D4D4D4 
- line " color # 1F2328 dark # D4D4D4 app. set _ server _ ready ( session 
-span class line " color # 116329 ; shiki - dark # 9CDCFE " quot ; jsonrpc color # 1F2328 dark # D4D4D4 color # 0A3069 ; - dark # CE9178 " quot 2. color # 1F2328 ; dark # D4D4D4 
- line " color # 116329 dark # 9CDCFE quot ; id color # 1F2328 dark # D4D4D4 color # 0550AE ; shiki - dark # B5CEA8 " 1F2328 D4D4D4 
- line " color # 116329 dark # 9CDCFE quot method color # 1F2328 # D4D4D4 color # 0A3069 dark # CE9178 " quot 
- line " color # 1F2328 ; - dark # D4D4D4 
-code pre div class print hidden data - fade overlay true style fade color light ffffff dark # 0B0C0E div data - state inactive orientation horizontal role tabpanel aria labelledby radix - R llildinpfcqcf9babsnpfdb trigger - 1 tabindex - 1 class w full relative rounded xt h4 class flex whitespace - pre - wrap group font - semibold understanding tool - discovery - request absolute tabindex - 1 href - ml - 10 flex items - center opacity 0 border 100 aria - label Navigate to header div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : text - white / 50 dark bg - background - dark dark brightness - 1dark ring - 1 brightness 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. 1 - 13. 3 24 71 160zM184 232H392c13. 3 10 path svg div span class cursor - pointer " Tool Discovery Request span data p " code tools list request simple no parametersspan h4 class flex whitespace pre - wrap group font - semibold understanding tool discovery response div class absolute tabindex - 1 " href understanding - ml - 10 flex items center opacity border group hover 100 outline group Navigate header div class w - 6 h - 6 rounded - md flex items - center justify shadow text - gray - 400 dark group focus border svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 1 256s50 112 112h72c13. 24H160C71. 6 256zm576 88 - 71. 160 - 160 160H344c - 13. 3 0 - 24 - 10. 7 - 24h72c61. 112 - 50 1 - 133 0 - 24 - 10. 7 - 24 - 24s10 - 24h72c88. 4 0 160 71. 6 160 160zM184 232H392c13. 3 0 24 10. 7 24 24s - 10. 24H184c - 13. 3 24s10 24z " > path > svg div span class = " cursor - pointer " Tool Discovery Response span h4 data - as = " p " response contains code > tools array comprehensive metadata tool. array structure allows expose multiple tools clear boundaries. data - as = p " tool object includes key fields : 
- unique identifier tool namespace primary key for tool execution clear naming pattern calculator _ arithmetic 
- human - readable display name 
- description explanation tool 
- inputSchema JSON Schema defines expected input parameters type validation clear documentation about required optional parameters 
-ul h4 class flex whitespace pre - wrap group font - semibold id ai applications - 2 div class absolute tabindex - 1 " href applications 2 class - ml - 10 flex items - center opacity border group 100 outline header div class w - 6 h - 6 rounded - md flex items - center justify center shadow - text - gray - 400 white brightness group focus primary svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 1 256s50 112 112h72c13. 24H160C71. 6 416 344 256zm576 0c0 88 - 71. 160 - 160 160H344c - 13. 3 0 - 24 - 10 24h72c61.- - 112H344c - 13 24 10 24s10 24h72c88 160zM184 232H392c13. 10 path svg div span cursor - pointer " AI Applications data - p " AI application fetches tools MCP combines unified tool registry allows LLM understand actions generates tool div code - block mt - 5 mb - 8 rounded - 2xl print print - color text - gray - 950 bg - 50 p - 0. 5 numberOfLines python div flex text - gray - 400 text - xs rounded - t - 14px ] leading - 6 font - medium pl - 4 pr - 2. 5 py - 1 data - component code - block - header " div flex - grow - 0 items - center gap - 1text - gray - 700 300 min - w - 0 data code - block header filename truncate min - w - 0 Pseudo - code AI application tool discovery flex - 1 items center justify end gap 1. print hidden z - 10 select none closed button h - 26px flex items center justify md backdrop blur group copy button contents svg width 18 viewBox fill none xmlns http www w3. org 2000 svg class w - 4 h - 4 text - gray - 400 group - hover copy button text gray - 500 - white 40 60 path M14. 25 5. 25H7. 25C6. 14543 5. 25 25 14543 7 25V14. 25C5. 25 15 3546 1. 5 linecap round M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 9639745603 80197L10 38 77297C11 313 63397 12 19. 16297 12 528 3. 00097 stroke currentColor width 1. 5 linecap round linejoin path div class w - min py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg - transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 font - variant ligatures none height auto background color # ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language python 6 span line " color # 6E7781 # 6A9955 Pseudo - code MCP Python SDK patterns 
-span class line " color # 1F2328 ; shiki - dark # D4D4D4 available _ tools color # CF222E D4D4D4 1F2328 
- line " color # CF222E # C586C0 color # 1F2328 D4D4D4 session color # CF222E C586C0 color # 1F2328 shiki dark # D4D4D4 app. mcp _ server _ sessions ( ) 
- line " color 1F2328 D4D4D4 tools _ response color # CF222E D4D4D4 CF222E C586C0 await color 1F2328 D4D4D4 session. list _ tools ( 
- line " color # 1F2328 ; shiki - dark # D4D4D4 available _ tools. extend ( tools _ response. tools ) 
-span line color # 1F2328 ; shiki - dark # D4D4D4 conversation register available tools 
- line " color # 116329 ; shiki - dark # 9CDCFE color 1F2328 dark D4D4D4 color # 0A3069 shiki - dark # CE9178 quot color # 1F2328 shiki dark D4D4D4 
- line color # 116329 shiki - dark # 9CDCFE quot color 1F2328 dark D4D4D4 color # 0550AE shiki - dark # B5CEA8 color # 1F2328 shiki - dark D4D4D4 
-span class line " color # 116329 ; - shiki - dark # 9CDCFE " quot method color # 1F2328 shiki - dark # D4D4D4 color # 0A3069 - dark # CE9178 quot tools color # 1F2328 shiki - dark # D4D4D4 
- line " color # 116329 - dark # 9CDCFE quot params color 1F2328 - dark D4D4D4 
- line " color # 116329 - dark # 9CDCFE quot name color 1F2328 dark D4D4D4 color 0A3069 dark CE9178 quot weather current color 1F2328 dark D4D4D4 
- line " color # 116329 ; shiki - dark # 9CDCFE quot arguments quot color # 1F2328 ; shiki - dark # D4D4D4 
-span line " color # 116329 ; - shiki - dark # 9CDCFE " quot ; location color # 1F2328 D4D4D4 color # 0A3069 dark # CE9178 quot San Francisco color # 1F2328 shiki - dark # D4D4D4 
- line " color # 116329 dark # 9CDCFE quot ; units quot color # 1F2328 D4D4D4 color # 0A3069 CE9178 quot imperial quot 
- line " color # 1F2328 shiki - dark # D4D4D4 
- line " color # 1F2328 dark # D4D4D4 
- line " color # 1F2328 - dark # D4D4D4 
-code pre div class print hidden data - fade overlay true style color light ffffff dark 0B0C0E data - state inactive orientation horizontal role tabpanel aria labelledby radix - R _ 15nildinpfcqcf9babsnpfdb trigger - 1 tabindex - 1 class w full rounded xt h4 class flex whitespace - pre - wrap group font - semibold id key - elements - of tool - execution absolute tabindex - 1 href key - ml - 10 flex items - center opacity 0 border 100 aria - label Navigate to header " div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : - white / 50 dark bg - background - dark brightness - 1dark ring - 1 brightness 150 bg white ring 400 30 700 25 400 60 white 20 group focus border 2 primary light svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. - 13. 3 24 71 160zM184 232H392c13. 3 path svg div span class cursor - pointer Tool Execution data p " request structure includes components span > ol > 
- li > 
-span data - as p " strong name match tool name from discovery response weather _ current ensures server identify tool 
- 
- 
- span data - as p " arguments Contains input parameters tool inputSchema 
- 
- location San Francisco 
- units imperial 
- 
- 
- 
- span data - as p " JSON - RPC Structure Uses JSON - RPC 2. 0 format unique code id request - response correlation 
- 
- h4 class flex whitespace - pre - wrap group font - semibold understanding tool execution response div absolute tabindex - 1 - ml - 10 flex items - center opacity - 0 border - 0 group - 100 outline - 0 Navigate header div class w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark : text - white 50 dark bg - background - brightness - 135 dark ring 1 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. 1 112H344c - 13. 3 24 71 160zM184 232H392c13. 3 path div span cursor - pointer Tool Execution Response data p demonstrates MCP flexible content system span ol > 
- li 
-span data - as p " > strong content Array Tool responses return content objects rich multi - format responses text images resources 
- 
- 
- span data - as p " Content Types object code > type field plain text content MCP supports content types cases span 
- 
- 
- span data - as p " Structured Output response provides actionable information AI application context for language model interactions 
- 
- p " execution pattern allows AI applications invoke server functionality receive structured responses h4 class flex whitespace - pre - wrap group font - semibold id how - - works - in - ai applications - 3 div absolute tabindex - 1 - ml - 10 flex items - center opacity - 0 100 Navigate div class w - 6 h - 6 md flex items - center justify - shadow - sm text - gray - 400 dark : text - white 50 dark bg background 1dark ring 1 150 white 400 30 700 25 400 60 group focus border svg xmlns org 2000 gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10 24s - 24H160C98. 1 144 256s50. 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50 - 13 24 24h72c88 71. 160zM184 232H392c13. 3 10 7 24H184c -7 - 24 24 - 24z path svg div a span cursor - pointer AI Applications span h4 data - as p " language model AI application intercepts call routes MCP server executes returns results LLM LLM access real - time data actions external span div code - block mt - 5 mb - 8 rounded - 2xl group min - w - 0 print print text - gray - 950 5 python div data - floating buttons true absolute top - 3 right - 4 flex items - center gap - 1. 5 print hidden z - 10 select - none data state closed button h - 26px ] w - flex items - center svg width 18 viewBox 0 fill none w3 org 2000 svg class w - 4 h - 4 text - gray - 400 group - hover - 500 dark white / 40 60 path d M14. 25 5. 25H7. 25C6. 14543 5. 25 5. 25 614543 5. 25 7. 25V14. 25C5 25 15 3546 16 25 14 15 3546 currentColor 1. 5 round M2. 80103 11. 998L1 77203 5. 07397C1 61003 3 98097 2 36403 2 96397 3 45603 2 80197L10 38 1. 77297C11. 313 1. 63397 12. 19 2. 16297 12. 528 3. 00097 currentColor 1. 5 round w - - full - py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded - 2xl bg - white overflow x auto scrollbar data - component part code - block - root tabindex 0 font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language python 5 span line " color # 6E7781 # 6A9955 Pseudo - code AI application tool execution 
-span class line " color : # CF222E ; shiki - dark # 569CD6 " async color # CF222E ; shiki dark # 569CD6 " color # 8250DF ; shiki dark # DCDCAA " handle _ tool _ call color # 1F2328 ; dark # D4D4D4 color 1F2328 # 9CDCFE conversation color 1F2328 D4D4D4 color 1F2328 9CDCFE tool _ name color 1F2328 D4D4D4 9CDCFE arguments 1F2328 D4D4D4 
- span line " color # 1F2328 D4D4D4 session color # CF222E # D4D4D4 1F2328 D4D4D4 app. find _ mcp _ session _ for _ tool ( tool _ name ) 
-span line " color # 1F2328 ; shiki - dark # D4D4D4 result color CF222E D4D4D4 CF222E C586C0 color 1F2328 dark D4D4D4 session call tool arguments 
- line " color # 1F2328 shiki - dark D4D4D4 conversation add _ tool _ result content 
- line " color # 116329 shiki - dark # 9CDCFE quot jsonrpc color 1F2328 dark D4D4D4 color # 0A3069 ; shiki - dark # CE9178 quot color # 1F2328 shiki - dark D4D4D4 
-span line color # 116329 ; shiki - dark # 9CDCFE color # 1F2328 dark # D4D4D4 color # 0A3069 shiki - dark # CE9178 quot notifications tools list 
- line color # 1F2328 shiki - dark D4D4D4 
- print hidden data - fade overlay true color ffffff # 0B0C0E h4 flex whitespace - pre - wrap group font - semibold key - features - of - mcp notifications absolute tabindex - 1 - ml - 10 flex items - center opacity 100 label Navigate to header div w - 6 h - 6 rounded - md flex items - center justify - shadow - sm text - gray - 400 dark text - white / 50 dark bg - background - dark - 1dark ring 1 brightness 150 bg white ring 400 30 700 25 400 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50. 1 - 13 24 71 160zM184 232H392c13. 3 path svg div span class cursor - pointer " Features MCP Notifications span h4 ol > 
- 
-span data - p " No Response Required id field follows JSON - RPC 2. 0 notification semantics no response expected span 
- 
- 
- data - p " Capability - Based notification sent by servers code during initialization Step 1 
- 
- 
- data - p " Event - Driven server decides notifications state changes MCP connections dynamic responsive 
- 
- h4 class flex whitespace pre - wrap group font semibold client - response to notifications div class absolute tabindex - 1 - ml - 10 flex items - center opacity 0 border 100 Navigate header div w - 6 h - 6 rounded - md flex items - center justify - center shadow - sm text - gray - 400 dark text - white 50 dark bg background brightness 135 dark ring - 1 brightness 150 bg white ring 400 30 700 / 25 400 / 60 20 group focus border 2 primary svg xmlns w3 org 2000 fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 24 10. 7 24s - 24H160C98. 1 144 48 194. 256s50. 1 112 112 112h72c13. 3 24H160C71. 6 416 344. 4 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 24h72c61. 112 - 50 - 13. 3 24 71 160zM184 232H392c13. 3 path svg div span class cursor - pointer " Response Notifications span h4 data p " notification client reacts updated tool listrefresh cycle client tools div code - block mt - 5 mb - 8 rounded - 2xl group min - w - 0 print print color text - gray - 950 bg 50 950 0. 5 numberOfLines flex text - gray - 400 text xs rounded t - 14px leading font medium pl - 4 pr - 2. 5 py - 1 code block header flex - grow - items - center gap 1. 5 text gray - 700 300 min w 0 header filename truncate min - w - 0 Request flex - 1 items - center justify - end gap - 1. 5 print hidden z - 10 select - none data state closed button h - 26px w - flex items - center justify - center rounded md backdrop blur group copy button svg width 18 viewBox fill none xmlns http www. w32000 svg class w - 4 h - text - gray 400 group hover copy button 500 dark white 40 60 path M14. 25 5. 25H7 25C6 14543 3546 currentColor 1. 5 round round M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 96397 3. 45603 2. 80197L10. 38 1. 77297C11. 313 1. 63397 12 19 2. 16297 12. 528 3. 00097 currentColor 1. 5 round svg button div class w - 0 min - w - full max - w - full py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg - transparent transition height ] duration 300 ease - - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded xt bg - white overflow auto scrollbar data - component part code - block - root tabindex 0 " style font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff 0B0C0E # 1f2328 D4D4D4 language json numberOfLines 5 " span line " color # 1F2328 dark D4D4D4 span 
-span class line " color # 116329 ; shiki - dark # 9CDCFE " quot ; jsonrpc color # 1F2328 dark # D4D4D4 color # 0A3069 ; - dark # CE9178 " quot 2. 0 color # 1F2328 dark # D4D4D4 
- line " color # 116329 dark # 9CDCFE quot ; id color 1F2328 dark # D4D4D4 color # 0550AE ; shiki - dark # B5CEA8 " 4 1F2328 D4D4D4 
- line " color # 116329 dark # 9CDCFE quot method color # 1F2328 # D4D4D4 color # 0A3069 dark # CE9178 " quot 
- line " color # 1F2328 ; - dark # D4D4D4 
-code pre div print hidden data - fade overlay true aria style fade - color light # ffffff dark # 0B0C0E " div h4 class flex whitespace - pre - wrap group font - semibold why - notifications - matter absolute tabindex - 1 href class - ml - 10 flex items - center opacity border - 0 group hover opacity - 100 focus outline - group link aria label Navigate to header w - 6 h - 6 rounded - md flex items center justify shadow text - gray - 400 dark svg xmlns w3. org 2000 svg fill gray height 12px " viewBox 0 0 576 512 " path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - - 24H160C98. 1 112h72c13. 3 - 24H160C71. 6 416 0 344256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 0 - 24 - 10. 7 - 24 - 24s10. 7 - 24h72c61. 9 112 - 50. 1 - 112s - 112H344c - 13. 3 0 24 - 10 24h72c88. 4 160 71. 160zM184 232H392c13. 3 10 - 10 24H184c - 13. 3 " path svg span class cursor - pointer " Notifications p notification system crucial 
- Dynamic Environments server state dependencies user permissions 
- changes 
- Consistency server capabilities 
- Real - time Collaboration AI applications changing contexts 
- - = p " notification pattern extends MCP primitives real - time synchronization clients serversspan h4 class flex whitespace pre - wrap group font - semibold id ai applications - 4 div class absolute tabindex - 1 " href applications 4 - ml - 10 flex items - center opacity border group 100 outline header div class w - 6 h - 6 rounded - md flex items - center justify shadow - text - gray - 400 white brightness group focus svg xmlns w3 org 2000 svg fill gray height 12px viewBox 0 0 576 512 path d M0 256C0 167. 6 71. 6 96 160 96h72c13. 3 0 24 10. 7 - 24H160C98. 1 256s50 112 112h72c13. 24H160C71. 6 416 344 256zm576 0c0 88. 4 - 71. 6 160 - 160 160H344c - 13. 3 0 - 24 - 10 24h72c61.- 112 - 112H344c - 13. 3 24 10 24s10 24h72c88 160zM184 232H392c13. 3 10 24H184c 13 path svg div span class cursor - pointer " AI Applications data - as p " AI application notification refreshes tool registry updates LLM capabilities ensures conversations access current tools LLM adapt functionality span div class code - block mt - 5 mb - 8 - 2xl group min - w - 0 print print - color - gray - 950 dark 50 numberOfLines = 6 language python " div data - floating - buttons true " class absolute top - 3 right - 4 flex items - center gap - 1print hidden div z - 10 select none data state closed button h - 26px w - 26px flex items center justify rounded md backdrop blur group copy button data contents svg width 18 viewBox fill none xmlns w3 org 2000 svg class w - 4 h - text - gray - 400 group path d M14. 25 5. 25H7. 25C6. 14543 25V14. 25 15. 3546 currentColor 1 path M2. 80103 11. 998L1. 77203 5. 07397C1. 61003 3. 98097 2. 36403 2. 96397 3. 45603 2. 80197L10. 38 1. 77297C11. 313 1. 63397 12. 19 2. 16297 12. 528 3. 00097 currentColor width 1stroke linecap round linejoin path svg button div div class w - 0 min - full max - w py - 35 px - 4 h - full dark bg - codeblock text sm leading 6 children! my - 0 shadow none bg transparent transition height ] duration 300 ease - in - out code - block background amp ring - 0 outline - 0 focus ring - 0 rounded 2xl bg - white overflow x auto scrollbar data - component part code - block - root tabindex 0 font - variant ligatures none height auto background color ffffff dark bg # 0B0C0E div class font - mono whitespace - pre leading - 6 themes github - light default dark - plus background color ffffff # 0B0C0E # 1f2328 D4D4D4 language python 6 span line " color # 6E7781 # 6A9955 Pseudo - code AI application notification handling 
-span class line " color CF222E ; shiki - dark # 569CD6 " async color CF222E 569CD6 " color # 8250DF ; shiki dark # DCDCAA " handle _ tools _ changed notification color # 1F2328 ; dark # D4D4D4 color 1F2328 # 9CDCFE session 1F2328 D4D4D4 
- line " color # 1F2328 D4D4D4 tools _ response color CF222E D4D4D4 CF222E C586C0 await color 1F2328 D4D4D4 session. list _ tools ( 
- line " color # 1F2328 D4D4D4 app. update _ available tools session response tools 
- line " color # CF222E ; shiki dark # C586C0 " color # 1F2328 dark # D4D4D4 app. conversationactive ( span 
- line span color 1F2328 shiki dark D4D4D4 app. conversation notify _ llm new capabilities span 
- body html
+[Semantic-Sift: Models warming up - heuristic mode active]
+function a(p){if(p==null)return"/";p=""+p;if(""===p)return"/";return"/"===p.charAt(0)?p:"/"+p}
+function u(p){if(p==null)return p;p=""+p;if(!p||p.charAt(p.length-1)==="/")return p.slice(0,-1);return p}
+function i(p){if(p==null)return p;p=""+p;if(6<=p.length&&p.substring(p.length-6)==="/index")return p.substring(0,p.length-6);if("index"===p)return"";return p}
+var p=(location.pathname||"").split("?")[0].split("#")[0]||"";
+if(b)if(p===b)p="";else if(0===p.indexOf(b+"/"))p=p.substring(b.length);
+p=a(p);p=u(p);p=i(p);p=""===p||"index"===p?"/":a(p);
+document.documentElement.setAttribute("data-current-path",p);
+}();</script><script type="text/javascript">(function(a,b){try{let c=document.getElementById("banner")?.innerText;if(c){for(let d=0;d<localStorage.length;d++){let e=localStorage.key(d);if(e?.endsWith(a)&&localStorage.getItem(e)===c)return void document.documentElement.setAttribute(b,"hidden")}document.documentElement.setAttribute(b,"visible");return}for(let c=0;c<localStorage.length;c++){let d=localStorage.key(c);if(d?.endsWith(a)&&localStorage.getItem(d))return void document.documentElement.setAttribute(b,"hidden")}document.documentElement.setAttribute(b,"visible")}catch(a){document.documentElement.setAttribute(b,"hidden")}})(
+"bannerDismissed",
+"data-banner-state",
+--primary: 9 9 11;
+--primary-light: 250 250 250;
+--primary-dark: 9 9 11;
+--tooltip-foreground: 255 255 255;
+--background-light: 255 255 255;
+--background-dark: 14 14 16;
+--gray-50: 243 243 243;
+--gray-100: 238 238 238;
+--gray-200: 222 222 222;
+--gray-300: 206 206 206;
+--gray-400: 158 158 158;
+--gray-500: 112 112 112;
+--gray-600: 80 80 80;
+--gray-700: 62 62 62;
+--gray-800: 37 37 37;
+--gray-900: 23 23 23;
+--gray-950: 10 10 10;
+}</style><div class="relative antialiased text-gray-500 dark:text-gray-400"><script>(self.__next_s=self.__next_s||[]).push([0,{"suppressHydrationWarning":true,"children":"(function(a,b,c,d){var e;let f,g=\"mint\"===d||\"linden\"===d?\"sidebar\":\"sidebar-content\",h=(e=d,f=\"navbar-transition\",\"maple\"===e&&(f+=\"-maple\"),f),[i,j]=(()=>{switch(d){case\"almond\":return[\"[--scroll-mt:2.5rem]\",\"[--scroll-mt:2.5rem]\"];case\"luma\":return[\"lg:[--scroll-mt:6rem]\",\"lg:[--scroll-mt:6rem]\"];case\"sequoia\":return[\"lg:[--scroll-mt:8.5rem]\",\"lg:[--scroll-mt:11rem]\"];default:return[\"lg:[--scroll-mt:9.5rem]\",\"lg:[--scroll-mt:12rem]\"]}})();function k(){document.documentElement.classList.add(i)}let l=document.documentElement.getAttribute(\"data-banner-state\"),m=null!=l?\"visible\"===l:b;function n(a){let b=m?`calc(${a-2.5}rem + var(--banner-height, 2.5rem))`:`${a}rem`;document.getElementById(g)?.style.setProperty(\"top\",b)}function o(a){let b=m?`calc(100vh - ${a-2.5}rem - var(--banner-height, 2.5rem))`:`calc(100vh - ${a}rem)`;document.getElementById(g)?.style.setProperty(\"height\",b)}function p(a,b){!a&&b||a&&!b?(k(),document.documentElement.classList.remove(j)):a&&b&&(document.documentElement.classList.add(j),document.documentElement.classList.remove(i))}switch(d){case\"mint\":n(c),p(a,m);break;case\"palm\":case\"aspen\":case\"sequoia\":n(c),o(c),p(a,m);break;case\"luma\":k();break;case\"linden\":n(c),m&&k();break;case\"almond\":k(),n(c),o(c)}let q=function(){let a=document.createElement(\"style\");return a.appendChild(document.createTextNode(\"*,*::before,*::after{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}\")),document.head.appendChild(a),function(){window.getComputedStyle(document.body),setTimeout(()=>{document.head.removeChild(a)},1)}}();(\"requestAnimationFrame\"in globalThis?requestAnimationFrame:setTimeout)(()=>{let a;a=!1,a=window.scrollY>50,document.getElementById(h)?.setAttribute(\"data-is-opaque\",`${!!a}`),q()})})(\n  true,\n  false,\n  (function m(a,b,c){let d=document.documentElement.getAttribute(\"data-banner-state\"),e=2.5*!!(null!=d?\"visible\"===d:b),f=3*!!a,g=4,h=e+g+f;switch(c){case\"mint\":case\"palm\":break;case\"aspen\":f=2.5*!!a,g=3.5,h=e+f+g;break;case\"luma\":g=3,h=e+g;break;case\"linden\":g=4,h=e+g;break;case\"almond\":g=3.5,h=e+g;break;case\"sequoia\":f=3*!!a,g=3,h=e+g+f}return h})(true, false, \"mint\"),\n  \"mint\",\n)","id":"_mintlify-scroll-top-script"}])</script><a href="#content-area" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:p-2 focus:text-sm focus:bg-background-light dark:focus:bg-background-dark focus:rounded-md focus:outline-primary dark:focus:outline-primary-light">Skip to main content</a><script>(function j(a,b,c,d){try{if(window.matchMedia("(max-width: 1024px)").matches||!d){document.documentElement.style.setProperty(c,"0px"),document.documentElement.setAttribute("data-assistant-state","closed"),d||localStorage.setItem(a,"false");return}let e=localStorage.getItem(a);if(null===e){document.documentElement.style.setProperty(c,"0px"),document.documentElement.setAttribute("data-assistant-state","closed");return}let f=JSON.parse(e),g=localStorage.getItem(b),h=null!==g?JSON.parse(g):368;document.documentElement.style.setProperty(c,f?h+"px":"0px"),document.documentElement.setAttribute("data-assistant-state",f?"open":"closed")}catch(a){document.documentElement.style.setProperty(c,"0px"),document.documentElement.setAttribute("data-assistant-state","closed")}})(
+"chat-assistant-sheet-open",
+"chat-assistant-sheet-width",
+"--assistant-sheet-width",
+false
+--font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* via Mintlify theme */
+h5 {
+font-weight: 500;
+}
+h6 {
+font-weight: 400;
+}
+/* Fix code block line highlight color */
+code .line-highlight {
+--primary-light: 100 175 250;
+}
+}
+/*** Add automatic section numbers to headings and table of contents items ***/
+#enable-section-numbers {
+display: none;
+}
+body:has(#enable-section-numbers) {
+#content-area,
+#table-of-contents {
+counter-reset: h2-counter h3-counter h4-counter h5-counter h6-counter;
+}
+#content-area h2[id],
+#table-of-contents li[data-depth="0"] {
+counter-increment: h2-counter;
+counter-set: h3-counter h4-counter h5-counter h6-counter;
+}
+#content-area h3[id],
+#table-of-contents li[data-depth="1"] {
+counter-increment: h3-counter;
+counter-set: h4-counter h5-counter h6-counter;
+}
+#content-area h4[id],
+#table-of-contents li[data-depth="2"] {
+counter-increment: h4-counter;
+counter-set: h5-counter h6-counter;
+}
+#content-area h5[id],
+#content-area h5,
+#table-of-contents li[data-depth="3"] {
+counter-increment: h5-counter;
+counter-set: h6-counter;
+}
+#content-area h6[id],
+#content-area h6,
+#table-of-contents li[data-depth="4"] {
+counter-increment: h6-counter;
+}
+#table-of-contents li a::before {
+flex-shrink: 0;
+}
+#content-area h2[id]::before,
+#table-of-contents li[data-depth="0"] a::before {
+content: counter(h2-counter) ". ";
+}
+#content-area h3[id]::before,
+#table-of-contents li[data-depth="1"] a::before {
+content: counter(h2-counter) "." counter(h3-counter) " ";
+}
+#content-area h4[id]::before,
+#table-of-contents li[data-depth="2"] a::before {
+content: counter(h2-counter) "." counter(h3-counter) "." counter(h4-counter)
+" ";
+}
+#content-area h5[id]::before,
+#content-area h5::before,
+#table-of-contents li[data-depth="3"] a::before {
+content: counter(h2-counter) "." counter(h3-counter) "." counter(h4-counter)
+"." counter(h5-counter) " ";
+}
+#content-area h6[id]::before,
+#content-area h6::before,
+#table-of-contents li[data-depth="4"] a::before {
+content: counter(h2-counter) "." counter(h3-counter) "." counter(h4-counter)
+"." counter(h5-counter) "." counter(h6-counter) " ";
+}
+}
+/*** Page: schema reference ***/
+#schema-reference {
+display: none;
+}
+/* Vertical margins */
+body:has(#schema-reference) {
+* {
+scroll-margin-top: 8rem;
+}
+--mt-sm: 0.25rem;
+--mt-md: 0.5rem;
+--mt-lg: 1rem;
+--mt-xl: 1.5rem;
+/* Headings */
+h2, h3 {
+margin: 0;
+}
+.type + h2, .type h3 {
+margin-top: calc(5 * var(--mt-lg));
+}
+h2 + .type h3 {
+margin-top: var(--mt-xl);
+}
+/* Type definition code */
+.tsd-signature {
+margin: var(--mt-lg) 0 0 0;
+}
+/* Prose */
+.tsd-comment {
+margin: var(--mt-lg) 0 0 0;
+p, ul, ol, li {
+margin: 0;
+}
+* + :is(p, ul, ol, pre) {
+margin-top: var(--mt-lg);
+}
+* + li {
+margin-top: var(--mt-sm);
+}
+}
+/* Example block (`@example` tag) */
+.tsd-tag-example {
+margin: var(--mt-lg) 0 0 0;
+summary + * {
+margin: var(--mt-sm) 0 0 0;
+scroll-margin-top: calc(8rem + 1.5rem + var(--mt-sm));
+}
+}
+/* "See" links (`@see` tag) */
+.tsd-tag-see {
+& > :is(p, ul) {
+margin-top: 0;
+}
+}
+/* Type member */
+.tsd-member {
+margin: var(--mt-lg) 0 0 0;
+/* Description */
+.tsd-comment {
+margin-top: var(--mt-sm);
+}
+/* Sub-members */
+.tsd-type-declaration {
+/* List */
+[data-typedoc-h="4"] + .tsd-parameters {
+margin: var(--mt-md) 0 0 0;
+}
+}
+/* Example (`@example` tag) inside type member */
+.tsd-tag-example {
+margin: var(--mt-sm) 0 0 0;
+}
+}
+}
+body:has(#schema-reference) {
+/* Prose */
+.tsd-comment {
+a.tsd-kind-type-alias,
+a.tsd-kind-interface,
+a.tsd-kind-property {
+font-family: var(--font-mono);
+font-size: 0.875em;
+}
+}
+/* Code blocks */
+.tsd-signature,
+.tsd-tag-example pre:has(code) {
+/* Based on code blocks rendered by Mintlify. */
+border: 1px solid;
+border-color: light-dark(rgb(var(--gray-950)/.1), rgba(255 255 255/0.1));
+border-radius: 1rem;
+padding: 1rem 0.875rem;
+background-color: inherit;
+color: inherit;
+font-family: var(--font-mono);
+font-size: 0.875rem;
+line-height: 1.5rem;
+}
+/* Type definition code */
+.tsd-signature {
+a {
+font-weight: normal;
+border-bottom: none;
+text-decoration: underline;
+&:hover {
+text-decoration-thickness: 2px;
+}
+}
+a[href="#"] {
+pointer-events: none;
+color: inherit;
+text-decoration: none;
+}
+.tsd-signature-keyword {
+color: light-dark(rgb(207, 34, 46), #9CDCFE);
+}
+:is(.tsd-kind-interface, .tsd-kind-type-alias):not(.tsd-signature-type) {
+color: light-dark(rgb(149, 56, 0), #4EC9B0);
+}
+.tsd-signature-type:not(.tsd-kind-interface, .tsd-kind-type-alias) {
+color: light-dark(rgb(5, 80, 174), #DCDCAA);
+}
+}
+/* Example block (`@example` tag) */
+.tsd-tag-example {
+/* Label */
+summary {
+font-weight: 600;
+font-style: italic;
+}
+/* Code */
+pre code.json {
+.hl-1 {
+color: light-dark(rgb(17, 99, 41), #9CDCFE);
+}
+.hl-2, .hl-3 {
+color: light-dark(rgb(10, 48, 105), #CE9178);
+}
+.hl-5 {
+color: light-dark(rgb(5, 80, 174), #569CD6);
+}
+}
+/* Copy button */
+pre button {
+display: none;
+}
+}
+/* "See" links (`@see` tag) */
+.tsd-tag-see {
+/* Add trailing ":" to heading */
+[data-typedoc-h="4"]::after {
+content: ": ";
+}
+/* Hide (defunct) anchor link */
+.tsd-anchor-icon {
+display: none;
+}
+/* Case: single link -- display inline with heading */
+&:has(> p) {
+[data-typedoc-h="4"], p {
+display: inline;
+}
+}
+}
+/* Type member */
+.tsd-member {
+/* Hide members that don't have doc comments */
+&:not(:has(.tsd-comment)) {
+display: none;
+}
+/* When the type itself has a doc comment, add a subtle top border to the first visible member */
+.tsd-comment ~ &:has(.tsd-comment):not(.tsd-member:has(.tsd-comment) ~ *) {
+border-top: 2px solid light-dark(rgb(var(--gray-950)/.05), rgba(255 255 255/0.1));
+padding-top: var(--mt-md);
+}
+/* Member name */
+[data-typedoc-h="3"] {
+font-family: var(--font-mono);
+font-weight: 700;
+}
+& > .tsd-comment,
+& > .tsd-type-declaration {
+margin-left: 1.25rem;
+}
+/* Sub-members */
+.tsd-type-declaration {
+/* Templated heading ("Type Declaration") */
+[data-typedoc-h="4"] {
+display: none;
+}
+/* Name and type */
+[data-typedoc-h="5"] {
+font-family: var(--font-mono);
+font-size: 0.875rem;
+font-weight: 500;
+width: fit-content;
+padding: 0.125em 0.5em;
+background-color: light-dark(rgb(var(--gray-100)/.5), rgb(255 255 255/.05));
+.tsd-tag {
+display: none;
+}
+}
+}
+/* Example (`@example` tag) inside type member */
+.tsd-tag-example {
+padding-left: 0.5rem;
+}
+.tsd-sources {
+display: none;
+}
+}
+/* Anchor links for members and examples */
+.tsd-anchor-icon {
+border: 0;
+padding: 0 0.5rem;
+color: rgb(var(--gray-500)/.5);
+&:hover {
+color: rgb(var(--gray-500))
+}
+&::before {
+content: "#";
+color: inherit;
+}
+svg {
+display: none;
+}
+}
+/* Types with only index properties (e.g., `type Foo = { [key: string]: unknown }`) */
+.type > .tsd-type-declaration {
+/* Hide property if no doc comments */
+&:not(:has(.tsd-comment)) {
+display: none;
+}
+/* Templated heading ("Type Declaration") */
+[data-typedoc-h="4"] {
+display: none;
+}
+/* Index property */
+[data-typedoc-h="5"] {
+font-family: var(--font-mono);
+font-weight: 700;
+}
+}
+}
+/*** LF Projects copyright footer ***/
+#lf-copyright {
+margin-top: 2rem;
+padding-top: 1.5rem;
+border-top: 1px solid light-dark(rgb(var(--gray-950)/.1), rgba(255 255 255/0.1));
+text-align: center;
+font-size: 0.875rem;
+color: rgb(var(--gray-500));
+line-height: 1.5;
+a {
+color: inherit;
+text-decoration: underline;
+&:hover {
+color: rgb(var(--gray-700));
+}
+}
+}
+<span data-as="p">Because MCP SDKs abstract away many concerns, most developers will likely find the <a href="#data-layer-protocol" class="link">data layer protocol</a> section to be the most useful. It discusses how MCP servers can provide context to an AI application.</span>
+<span data-as="p">For specific implementation details, please refer to the documentation for your <a class="link" href="/docs/sdk">language-specific SDK</a>.</span>
+<h2 class="flex whitespace-pre-wrap group font-semibold" id="scope"><div class="absolute" tabindex="-1"><a href="#scope" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Scope</span></h2>
+<span data-as="p">The Model Context Protocol includes the following projects:</span>
+<ul>
+<li><a href="https://modelcontextprotocol.io/specification/latest" target="_blank" rel="noreferrer" class="link">MCP Specification</a>: A specification of MCP that outlines the implementation requirements for clients and servers.</li>
+<li><a class="link" href="/docs/sdk">MCP SDKs</a>: SDKs for different programming languages that implement MCP.</li>
+<li><strong>MCP Development Tools</strong>: Tools for developing MCP servers and clients, including the <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noreferrer" class="link">MCP Inspector</a></li>
+<li><a href="https://github.com/modelcontextprotocol/servers" target="_blank" rel="noreferrer" class="link">MCP Reference Server Implementations</a>: Reference implementations of MCP servers.</li>
+</ul>
+<div class="callout my-4 px-5 py-4 overflow-hidden rounded-2xl flex gap-3 border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-600/20" data-callout-type="note"><div class="mt-0.5 w-4" data-component-part="callout-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="size-4 text-blue-800 dark:text-blue-300" aria-label="Note"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 1.3C10.14 1.3 12.7 3.86 12.7 7C12.7 10.14 10.14 12.7 7 12.7C5.48908 12.6974 4.0408 12.096 2.97241 11.0276C1.90403 9.9592 1.30264 8.51092 1.3 7C1.3 3.86 3.86 1.3 7 1.3ZM7 0C3.14 0 0 3.14 0 7C0 10.86 3.14 14 7 14C10.86 14 14 10.86 14 7C14 3.14 10.86 0 7 0ZM8 3H6V8H8V3ZM8 9H6V11H8V9Z"></path></svg></div><div class="text-sm prose dark:prose-invert min-w-0 w-full [&amp;_kbd]:bg-background-light dark:[&amp;_kbd]:bg-background-dark [&amp;_code]:!text-current [&amp;_kbd]:!text-current [&amp;_a]:!text-current [&amp;_a]:border-current [&amp;_strong]:!text-current text-blue-800 dark:text-blue-300" data-component-part="callout-content"><span data-as="p">MCP focuses solely on the protocol for context exchange—it does not dictate
+how AI applications use LLMs or manage the provided context.</span></div></div>
+<h2 class="flex whitespace-pre-wrap group font-semibold" id="concepts-of-mcp"><div class="absolute" tabindex="-1"><a href="#concepts-of-mcp" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Concepts of MCP</span></h2>
+<h3 class="flex whitespace-pre-wrap group font-semibold" id="participants"><div class="absolute" tabindex="-1"><a href="#participants" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Participants</span></h3>
+<span data-as="p">MCP follows a client-server architecture where an MCP host — an AI application like <a href="https://www.anthropic.com/claude-code" target="_blank" rel="noreferrer" class="link">Claude Code</a> or <a href="https://www.claude.ai/download" target="_blank" rel="noreferrer" class="link">Claude Desktop</a> — establishes connections to one or more MCP servers. The MCP host accomplishes this by creating one MCP client for each MCP server. Each MCP client maintains a dedicated connection with its corresponding MCP server.</span>
+<span data-as="p">Local MCP servers that use the STDIO transport typically serve a single MCP client, whereas remote MCP servers that use the Streamable HTTP transport will typically serve many MCP clients.</span>
+<span data-as="p">The key participants in the MCP architecture are:</span>
+<ul>
+<li><strong>MCP Host</strong>: The AI application that coordinates and manages one or multiple MCP clients</li>
+<li><strong>MCP Client</strong>: A component that maintains a connection to an MCP server and obtains context from an MCP server for the MCP host to use</li>
+<li><strong>MCP Server</strong>: A program that provides context to MCP clients</li>
+</ul>
+<span data-as="p"><strong>For example</strong>: Visual Studio Code acts as an MCP host. When Visual Studio Code establishes a connection to an MCP server, such as the <a href="https://docs.sentry.io/product/sentry-mcp/" target="_blank" rel="noreferrer" class="link">Sentry MCP server</a>, the Visual Studio Code runtime instantiates an MCP client object that maintains the connection to the Sentry MCP server.
+When Visual Studio Code subsequently connects to another MCP server, such as the <a href="https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem" target="_blank" rel="noreferrer" class="link">local filesystem server</a>, the Visual Studio Code runtime instantiates an additional MCP client object to maintain this connection.</span>
+<!--$!--><template data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"></template><!--/$-->
+<span data-as="p">Note that <strong>MCP server</strong> refers to the program that serves context data, regardless of
+where it runs. MCP servers can execute locally or remotely. For example, when
+Claude Desktop launches the <a href="https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem" target="_blank" rel="noreferrer" class="link">filesystem
+server</a>,
+the server runs locally on the same machine because it uses the STDIO
+transport. This is commonly referred to as a “local” MCP server. The official
+<a href="https://docs.sentry.io/product/sentry-mcp/" target="_blank" rel="noreferrer" class="link">Sentry MCP server</a> runs on the
+Sentry platform, and uses the Streamable HTTP transport. This is commonly
+referred to as a “remote” MCP server.</span>
+<h3 class="flex whitespace-pre-wrap group font-semibold" id="layers"><div class="absolute" tabindex="-1"><a href="#layers" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Layers</span></h3>
+<span data-as="p">MCP consists of two layers:</span>
+<ul>
+<li><strong>Data layer</strong>: Defines the JSON-RPC based protocol for client-server communication, including lifecycle management, and core primitives, such as tools, resources, prompts and notifications.</li>
+<li><strong>Transport layer</strong>: Defines the communication mechanisms and channels that enable data exchange between clients and servers, including transport-specific connection establishment, message framing, and authorization.</li>
+</ul>
+<span data-as="p">Conceptually the data layer is the inner layer, while the transport layer is the outer layer.</span>
+<h4 class="flex whitespace-pre-wrap group font-semibold" id="data-layer"><div class="absolute" tabindex="-1"><a href="#data-layer" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Data layer</span></h4>
+<span data-as="p">The data layer implements a <a href="https://www.jsonrpc.org/" target="_blank" rel="noreferrer" class="link">JSON-RPC 2.0</a> based exchange protocol that defines the message structure and semantics.
+This layer includes:</span>
+<ul>
+<li><strong>Lifecycle management</strong>: Handles connection initialization, capability negotiation, and connection termination between clients and servers</li>
+<li><strong>Server features</strong>: Enables servers to provide core functionality including tools for AI actions, resources for context data, and prompts for interaction templates from and to the client</li>
+<li><strong>Client features</strong>: Enables servers to ask the client to sample from the host LLM, elicit input from the user, and log messages to the client</li>
+<li><strong>Utility features</strong>: Supports additional capabilities like notifications for real-time updates and progress tracking for long-running operations</li>
+</ul>
+<h4 class="flex whitespace-pre-wrap group font-semibold" id="transport-layer"><div class="absolute" tabindex="-1"><a href="#transport-layer" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Transport layer</span></h4>
+<span data-as="p">The transport layer manages communication channels and authentication between clients and servers. It handles connection establishment, message framing, and secure communication between MCP participants.</span>
+<span data-as="p">MCP supports two transport mechanisms:</span>
+<ul>
+<li><strong>Stdio transport</strong>: Uses standard input/output streams for direct process communication between local processes on the same machine, providing optimal performance with no network overhead.</li>
+<li><strong>Streamable HTTP transport</strong>: Uses HTTP POST for client-to-server messages with optional Server-Sent Events for streaming capabilities. This transport enables remote server communication and supports standard HTTP authentication methods including bearer tokens, API keys, and custom headers. MCP recommends using OAuth to obtain authentication tokens.</li>
+</ul>
+<span data-as="p">The transport layer abstracts communication details from the protocol layer, enabling the same JSON-RPC 2.0 message format across all transport mechanisms.</span>
+<h3 class="flex whitespace-pre-wrap group font-semibold" id="data-layer-protocol"><div class="absolute" tabindex="-1"><a href="#data-layer-protocol" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Data Layer Protocol</span></h3>
+<span data-as="p">A core part of MCP is defining the schema and semantics between MCP clients and MCP servers. Developers will likely find the data layer — in particular, the set of <a href="#primitives" class="link">primitives</a> — to be the most interesting part of MCP. It is the part of MCP that defines the ways developers can share context from MCP servers to MCP clients.</span>
+<span data-as="p">MCP uses <a href="https://www.jsonrpc.org/" target="_blank" rel="noreferrer" class="link">JSON-RPC 2.0</a> as its underlying RPC protocol. Client and servers send requests to each other and respond accordingly. Notifications can be used when no response is required.</span>
+<h4 class="flex whitespace-pre-wrap group font-semibold" id="lifecycle-management"><div class="absolute" tabindex="-1"><a href="#lifecycle-management" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Lifecycle management</span></h4>
+<span data-as="p">MCP is a <button data-state="closed" aria-label="A subset of MCP can be made stateless using the Streamable HTTP transport"><span class="tooltip underline decoration-dotted decoration-2 underline-offset-4 decoration-gray-400 dark:decoration-gray-500">stateful protocol</span></button> that requires lifecycle management. The purpose of lifecycle management is to negotiate the <button data-state="closed" aria-label="Features and operations that a client or server supports, such as tools, resources, or prompts"><span class="tooltip underline decoration-dotted decoration-2 underline-offset-4 decoration-gray-400 dark:decoration-gray-500">capabilities</span></button> that both client and server support. Detailed information can be found in the <a class="link" href="/specification/latest/basic/lifecycle">specification</a>, and the <a href="#example" class="link">example</a> showcases the initialization sequence.</span>
+<h4 class="flex whitespace-pre-wrap group font-semibold" id="primitives"><div class="absolute" tabindex="-1"><a href="#primitives" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Primitives</span></h4>
+<span data-as="p">MCP primitives are the most important concept within MCP. They define what clients and servers can offer each other. These primitives specify the types of contextual information that can be shared with AI applications and the range of actions that can be performed.</span>
+<span data-as="p">MCP defines three core primitives that <em>servers</em> can expose:</span>
+<ul>
+<li><strong>Tools</strong>: Executable functions that AI applications can invoke to perform actions (e.g., file operations, API calls, database queries)</li>
+<li><strong>Resources</strong>: Data sources that provide contextual information to AI applications (e.g., file contents, database records, API responses)</li>
+<li><strong>Prompts</strong>: Reusable templates that help structure interactions with language models (e.g., system prompts, few-shot examples)</li>
+</ul>
+<span data-as="p">Each primitive type has associated methods for discovery (<code>*/list</code>), retrieval (<code>*/get</code>), and in some cases, execution (<code>tools/call</code>).
+MCP clients will use the <code>*/list</code> methods to discover available primitives. For example, a client can first list all available tools (<code>tools/list</code>) and then execute them. This design allows listings to be dynamic.</span>
+<span data-as="p">As a concrete example, consider an MCP server that provides context about a database. It can expose tools for querying the database, a resource that contains the schema of the database, and a prompt that includes few-shot examples for interacting with the tools.</span>
+<span data-as="p">For more details about server primitives see <a class="link" href="/docs/learn/server-concepts">server concepts</a>.</span>
+<span data-as="p">MCP also defines primitives that <em>clients</em> can expose. These primitives allow MCP server authors to build richer interactions.</span>
+<ul>
+<li><strong>Sampling</strong>: Allows servers to request language model completions from the client’s AI application. This is useful when server authors want access to a language model, but want to stay model-independent and not include a language model SDK in their MCP server. They can use the <code>sampling/createMessage</code> method to request a language model completion from the client’s AI application.</li>
+<li><strong>Elicitation</strong>: Allows servers to request additional information from users. This is useful when server authors want to get more information from the user, or ask for confirmation of an action. They can use the <code>elicitation/create</code> method to request additional information from the user.</li>
+<li><strong>Logging</strong>: Enables servers to send log messages to clients for debugging and monitoring purposes.</li>
+</ul>
+<span data-as="p">For more details about client primitives see <a class="link" href="/docs/learn/client-concepts">client concepts</a>.</span>
+<span data-as="p">Besides server and client primitives, the protocol offers cross-cutting utility primitives that augment how requests are executed:</span>
+<ul>
+<li><strong>Tasks (Experimental)</strong>: Durable execution wrappers that enable deferred result retrieval and status tracking for MCP requests (e.g., expensive computations, workflow automation, batch processing, multi-step operations)</li>
+</ul>
+<h4 class="flex whitespace-pre-wrap group font-semibold" id="notifications"><div class="absolute" tabindex="-1"><a href="#notifications" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Notifications</span></h4>
+<span data-as="p">The protocol supports real-time notifications to enable dynamic updates between servers and clients. For example, when a server’s available tools change—such as when new functionality becomes available or existing tools are modified—the server can send tool update notifications to inform connected clients about these changes. Notifications are sent as JSON-RPC 2.0 notification messages (without expecting a response) and enable MCP servers to provide real-time updates to connected clients.</span>
+<h2 class="flex whitespace-pre-wrap group font-semibold" id="example"><div class="absolute" tabindex="-1"><a href="#example" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Example</span></h2>
+<h3 class="flex whitespace-pre-wrap group font-semibold" id="data-layer-2"><div class="absolute" tabindex="-1"><a href="#data-layer-2" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Data Layer</span></h3>
+<span data-as="p">This section provides a step-by-step walkthrough of an MCP client-server interaction, focusing on the data layer protocol. We’ll demonstrate the lifecycle sequence, tool operations, and notifications using JSON-RPC 2.0 messages.</span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;jsonrpc&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;2.0&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;id&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0550AE;--shiki-dark:#B5CEA8">1</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;method&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;initialize&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;params&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: {</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">    &quot;protocolVersion&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;2025-06-18&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">    &quot;capabilities&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: {</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">      &quot;elicitation&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: {}</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    },</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">    &quot;clientInfo&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: {</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">      &quot;name&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;example-client&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">      &quot;version&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;1.0.0&quot;</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    }</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">  }</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">}</span></span>
+</code></pre></div></div><div class="print:hidden" data-fade-overlay="true" aria-hidden="true" style="--fade-color-light:#ffffff;--fade-color-dark:#0B0C0E"></div></div><div data-state="inactive" data-orientation="horizontal" role="tabpanel" aria-labelledby="radix-_R_2meb5dinpfcqcf9babsnpfdb_-trigger-1" hidden="" id="radix-_R_2meb5dinpfcqcf9babsnpfdb_-content-1" tabindex="-1" class="w-full min-w-full max-w-full h-full max-h-full relative [&amp;_[data-component-part=code-block-root]]:!rounded-xt"></div></div></div><h4 class="flex whitespace-pre-wrap group font-semibold" id="understanding-the-initialization-exchange"><div class="absolute" tabindex="-1"><a href="#understanding-the-initialization-exchange" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Understanding the Initialization Exchange</span></h4><span data-as="p">The initialization process is a key part of MCP’s lifecycle management and serves several critical purposes:</span><ol>
+<li>
+<span data-as="p"><strong>Protocol Version Negotiation</strong>: The <code>protocolVersion</code> field (e.g., “2025-06-18”) ensures both client and server are using compatible protocol versions. This prevents communication errors that could occur when different versions attempt to interact. If a mutually compatible version is not negotiated, the connection should be terminated.</span>
+</li>
+<li>
+<span data-as="p"><strong>Capability Discovery</strong>: The <code>capabilities</code> object allows each party to declare what features they support, including which <a href="#primitives" class="link">primitives</a> they can handle (tools, resources, prompts) and whether they support features like <a href="#notifications" class="link">notifications</a>. This enables efficient communication by avoiding unsupported operations.</span>
+</li>
+<li>
+<span data-as="p"><strong>Identity Exchange</strong>: The <code>clientInfo</code> and <code>serverInfo</code> objects provide identification and versioning information for debugging and compatibility purposes.</span>
+</li>
+</ol><span data-as="p">In this example, the capability negotiation demonstrates how MCP primitives are declared:</span><span data-as="p"><strong>Client Capabilities</strong>:</span><ul>
+<li><code>&quot;elicitation&quot;: {}</code> - The client declares it can work with user interaction requests (can receive <code>elicitation/create</code> method calls)</li>
+</ul><span data-as="p"><strong>Server Capabilities</strong>:</span><ul>
+<li><code>&quot;tools&quot;: {&quot;listChanged&quot;: true}</code> - The server supports the tools primitive AND can send <code>tools/list_changed</code> notifications when its tool list changes</li>
+<li><code>&quot;resources&quot;: {}</code> - The server also supports the resources primitive (can handle <code>resources/list</code> and <code>resources/read</code> methods)</li>
+</ul><span data-as="p">After successful initialization, the client sends a notification to indicate it’s ready:</span><div class="code-block mt-5 mb-8 not-prose rounded-2xl relative group min-w-0 print:print-color-exact text-gray-950 bg-gray-50 dark:bg-white/5 dark:text-gray-50 codeblock-light border border-gray-950/10 dark:border-white/10 dark:twoslash-dark p-0.5" numberOfLines="4" language="json"><div class="flex text-gray-400 text-xs rounded-t-[14px] leading-6 font-medium pl-4 pr-2.5 py-1" data-component-part="code-block-header"><div class="flex-grow-0 flex items-center gap-1.5 text-gray-700 dark:text-gray-300 min-w-0" data-component-part="code-block-header-filename"><span class="truncate min-w-0" title="Notification">Notification</span></div><div class="flex-1 flex items-center justify-end gap-1.5 print:hidden"><div class="z-10 select-none" data-state="closed"><button class="h-[26px] w-[26px] flex items-center justify-center rounded-md backdrop-blur group/copy-button" data-testid="copy-code-button" aria-label="Copy the contents from the code block"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 group-hover/copy-button:text-gray-500 dark:text-white/40 dark:group-hover/copy-button:text-white/60"><path d="M14.25 5.25H7.25C6.14543 5.25 5.25 6.14543 5.25 7.25V14.25C5.25 15.3546 6.14543 16.25 7.25 16.25H14.25C15.3546 16.25 16.25 15.3546 16.25 14.25V7.25C16.25 6.14543 15.3546 5.25 14.25 5.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.80103 11.998L1.77203 5.07397C1.61003 3.98097 2.36403 2.96397 3.45603 2.80197L10.38 1.77297C11.313 1.63397 12.19 2.16297 12.528 3.00097" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div></div></div><div class="w-0 min-w-full max-w-full py-3.5 px-4 h-full dark:bg-codeblock relative text-sm leading-6 children:!my-0 children:!shadow-none children:!bg-transparent transition-[height] duration-300 ease-in-out code-block-background [&amp;_*]:ring-0 [&amp;_*]:outline-0 [&amp;_*]:focus:ring-0 [&amp;_*]:focus:outline-0 rounded-xt bg-white overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 active:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25 dark:active:scrollbar-thumb-white/25" data-component-part="code-block-root" tabindex="0" style="font-variant-ligatures:none;height:auto;background-color:#ffffff;--shiki-dark-bg:#0B0C0E"><div class="font-mono whitespace-pre leading-6"><pre class="shiki shiki-themes github-light-default dark-plus" style="background-color:#ffffff;--shiki-dark-bg:#0B0C0E;color:#1f2328;--shiki-dark:#D4D4D4" language="json"><code language="json" numberOfLines="4"><span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">{</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;jsonrpc&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;2.0&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;method&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;notifications/initialized&quot;</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">}</span></span>
+</code></pre></div></div><div class="print:hidden" data-fade-overlay="true" aria-hidden="true" style="--fade-color-light:#ffffff;--fade-color-dark:#0B0C0E"></div></div><h4 class="flex whitespace-pre-wrap group font-semibold" id="how-this-works-in-ai-applications"><div class="absolute" tabindex="-1"><a href="#how-this-works-in-ai-applications" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">How This Works in AI Applications</span></h4><span data-as="p">During initialization, the AI application’s MCP client manager establishes connections to configured servers and stores their capabilities for later use. The application uses this information to determine which servers can provide specific types of functionality (tools, resources, prompts) and whether they support real-time updates.</span><div class="code-block mt-5 mb-8 not-prose rounded-2xl relative group min-w-0 print:print-color-exact text-gray-950 bg-gray-50 dark:bg-white/5 dark:text-gray-50 codeblock-light border border-gray-950/10 dark:border-white/10 dark:twoslash-dark p-0.5" numberOfLines="7" language="python"><div class="flex text-gray-400 text-xs rounded-t-[14px] leading-6 font-medium pl-4 pr-2.5 py-1" data-component-part="code-block-header"><div class="flex-grow-0 flex items-center gap-1.5 text-gray-700 dark:text-gray-300 min-w-0" data-component-part="code-block-header-filename"><span class="truncate min-w-0" title="Pseudo-code for AI application initialization">Pseudo-code for AI application initialization</span></div><div class="flex-1 flex items-center justify-end gap-1.5 print:hidden"><div class="z-10 select-none" data-state="closed"><button class="h-[26px] w-[26px] flex items-center justify-center rounded-md backdrop-blur group/copy-button" data-testid="copy-code-button" aria-label="Copy the contents from the code block"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 group-hover/copy-button:text-gray-500 dark:text-white/40 dark:group-hover/copy-button:text-white/60"><path d="M14.25 5.25H7.25C6.14543 5.25 5.25 6.14543 5.25 7.25V14.25C5.25 15.3546 6.14543 16.25 7.25 16.25H14.25C15.3546 16.25 16.25 15.3546 16.25 14.25V7.25C16.25 6.14543 15.3546 5.25 14.25 5.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.80103 11.998L1.77203 5.07397C1.61003 3.98097 2.36403 2.96397 3.45603 2.80197L10.38 1.77297C11.313 1.63397 12.19 2.16297 12.528 3.00097" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div></div></div><div class="w-0 min-w-full max-w-full py-3.5 px-4 h-full dark:bg-codeblock relative text-sm leading-6 children:!my-0 children:!shadow-none children:!bg-transparent transition-[height] duration-300 ease-in-out code-block-background [&amp;_*]:ring-0 [&amp;_*]:outline-0 [&amp;_*]:focus:ring-0 [&amp;_*]:focus:outline-0 rounded-xt bg-white overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 active:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25 dark:active:scrollbar-thumb-white/25" data-component-part="code-block-root" tabindex="0" style="font-variant-ligatures:none;height:auto;background-color:#ffffff;--shiki-dark-bg:#0B0C0E"><div class="font-mono whitespace-pre leading-6"><pre class="shiki shiki-themes github-light-default dark-plus" style="background-color:#ffffff;--shiki-dark-bg:#0B0C0E;color:#1f2328;--shiki-dark:#D4D4D4" language="python"><code language="python" numberOfLines="7"><span class="line"><span style="color:#6E7781;--shiki-dark:#6A9955"># Pseudo Code</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#C586C0">async</span><span style="color:#CF222E;--shiki-dark:#C586C0"> with</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> stdio_client(server_config) </span><span style="color:#CF222E;--shiki-dark:#C586C0">as</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> (read, write):</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#C586C0">    async</span><span style="color:#CF222E;--shiki-dark:#C586C0"> with</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> ClientSession(read, write) </span><span style="color:#CF222E;--shiki-dark:#C586C0">as</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> session:</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">        init_response </span><span style="color:#CF222E;--shiki-dark:#D4D4D4">=</span><span style="color:#CF222E;--shiki-dark:#C586C0"> await</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> session.initialize()</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#C586C0">        if</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> init_response.capabilities.tools:</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">            app.register_mcp_server(session, </span><span style="color:#953800;--shiki-dark:#9CDCFE">supports_tools</span><span style="color:#CF222E;--shiki-dark:#D4D4D4">=</span><span style="color:#0550AE;--shiki-dark:#569CD6">True</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">)</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">        app.set_server_ready(session)</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;jsonrpc&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;2.0&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;id&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0550AE;--shiki-dark:#B5CEA8">2</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;method&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;tools/list&quot;</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">}</span></span>
+</code></pre></div></div><div class="print:hidden" data-fade-overlay="true" aria-hidden="true" style="--fade-color-light:#ffffff;--fade-color-dark:#0B0C0E"></div></div><div data-state="inactive" data-orientation="horizontal" role="tabpanel" aria-labelledby="radix-_R_2mmb5dinpfcqcf9babsnpfdb_-trigger-1" hidden="" id="radix-_R_2mmb5dinpfcqcf9babsnpfdb_-content-1" tabindex="-1" class="w-full min-w-full max-w-full h-full max-h-full relative [&amp;_[data-component-part=code-block-root]]:!rounded-xt"></div></div></div><h4 class="flex whitespace-pre-wrap group font-semibold" id="understanding-the-tool-discovery-request"><div class="absolute" tabindex="-1"><a href="#understanding-the-tool-discovery-request" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Understanding the Tool Discovery Request</span></h4><span data-as="p">The <code>tools/list</code> request is simple, containing no parameters.</span><h4 class="flex whitespace-pre-wrap group font-semibold" id="understanding-the-tool-discovery-response"><div class="absolute" tabindex="-1"><a href="#understanding-the-tool-discovery-response" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Understanding the Tool Discovery Response</span></h4><span data-as="p">The response contains a <code>tools</code> array that provides comprehensive metadata about each available tool. This array-based structure allows servers to expose multiple tools simultaneously while maintaining clear boundaries between different functionalities.</span><span data-as="p">Each tool object in the response includes several key fields:</span><ul>
+<li><strong><code>name</code></strong>: A unique identifier for the tool within the server’s namespace. This serves as the primary key for tool execution and should follow a clear naming pattern (e.g., <code>calculator_arithmetic</code> rather than just <code>calculate</code>)</li>
+<li><strong><code>title</code></strong>: A human-readable display name for the tool that clients can show to users</li>
+<li><strong><code>description</code></strong>: Detailed explanation of what the tool does and when to use it</li>
+<li><strong><code>inputSchema</code></strong>: A JSON Schema that defines the expected input parameters, enabling type validation and providing clear documentation about required and optional parameters</li>
+</ul><h4 class="flex whitespace-pre-wrap group font-semibold" id="how-this-works-in-ai-applications-2"><div class="absolute" tabindex="-1"><a href="#how-this-works-in-ai-applications-2" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">How This Works in AI Applications</span></h4><span data-as="p">The AI application fetches available tools from all connected MCP servers and combines them into a unified tool registry that the language model can access. This allows the LLM to understand what actions it can perform and automatically generates the appropriate tool calls during conversations.</span><div class="code-block mt-5 mb-8 not-prose rounded-2xl relative group min-w-0 print:print-color-exact text-gray-950 bg-gray-50 dark:bg-white/5 dark:text-gray-50 codeblock-light border border-gray-950/10 dark:border-white/10 dark:twoslash-dark p-0.5" numberOfLines="6" language="python"><div class="flex text-gray-400 text-xs rounded-t-[14px] leading-6 font-medium pl-4 pr-2.5 py-1" data-component-part="code-block-header"><div class="flex-grow-0 flex items-center gap-1.5 text-gray-700 dark:text-gray-300 min-w-0" data-component-part="code-block-header-filename"><span class="truncate min-w-0" title="Pseudo-code for AI application tool discovery">Pseudo-code for AI application tool discovery</span></div><div class="flex-1 flex items-center justify-end gap-1.5 print:hidden"><div class="z-10 select-none" data-state="closed"><button class="h-[26px] w-[26px] flex items-center justify-center rounded-md backdrop-blur group/copy-button" data-testid="copy-code-button" aria-label="Copy the contents from the code block"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 group-hover/copy-button:text-gray-500 dark:text-white/40 dark:group-hover/copy-button:text-white/60"><path d="M14.25 5.25H7.25C6.14543 5.25 5.25 6.14543 5.25 7.25V14.25C5.25 15.3546 6.14543 16.25 7.25 16.25H14.25C15.3546 16.25 16.25 15.3546 16.25 14.25V7.25C16.25 6.14543 15.3546 5.25 14.25 5.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.80103 11.998L1.77203 5.07397C1.61003 3.98097 2.36403 2.96397 3.45603 2.80197L10.38 1.77297C11.313 1.63397 12.19 2.16297 12.528 3.00097" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div></div></div><div class="w-0 min-w-full max-w-full py-3.5 px-4 h-full dark:bg-codeblock relative text-sm leading-6 children:!my-0 children:!shadow-none children:!bg-transparent transition-[height] duration-300 ease-in-out code-block-background [&amp;_*]:ring-0 [&amp;_*]:outline-0 [&amp;_*]:focus:ring-0 [&amp;_*]:focus:outline-0 rounded-xt bg-white overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 active:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25 dark:active:scrollbar-thumb-white/25" data-component-part="code-block-root" tabindex="0" style="font-variant-ligatures:none;height:auto;background-color:#ffffff;--shiki-dark-bg:#0B0C0E"><div class="font-mono whitespace-pre leading-6"><pre class="shiki shiki-themes github-light-default dark-plus" style="background-color:#ffffff;--shiki-dark-bg:#0B0C0E;color:#1f2328;--shiki-dark:#D4D4D4" language="python"><code language="python" numberOfLines="6"><span class="line"><span style="color:#6E7781;--shiki-dark:#6A9955"># Pseudo-code using MCP Python SDK patterns</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">available_tools </span><span style="color:#CF222E;--shiki-dark:#D4D4D4">=</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> []</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#C586C0">for</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> session </span><span style="color:#CF222E;--shiki-dark:#C586C0">in</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> app.mcp_server_sessions():</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    tools_response </span><span style="color:#CF222E;--shiki-dark:#D4D4D4">=</span><span style="color:#CF222E;--shiki-dark:#C586C0"> await</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> session.list_tools()</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    available_tools.extend(tools_response.tools)</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">conversation.register_available_tools(available_tools)</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;jsonrpc&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;2.0&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;id&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0550AE;--shiki-dark:#B5CEA8">3</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;method&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;tools/call&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;params&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: {</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">    &quot;name&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;weather_current&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">    &quot;arguments&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: {</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">      &quot;location&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;San Francisco&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">      &quot;units&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;imperial&quot;</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    }</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">  }</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">}</span></span>
+</code></pre></div></div><div class="print:hidden" data-fade-overlay="true" aria-hidden="true" style="--fade-color-light:#ffffff;--fade-color-dark:#0B0C0E"></div></div><div data-state="inactive" data-orientation="horizontal" role="tabpanel" aria-labelledby="radix-_R_4mub5dinpfcqcf9babsnpfdb_-trigger-1" hidden="" id="radix-_R_4mub5dinpfcqcf9babsnpfdb_-content-1" tabindex="-1" class="w-full min-w-full max-w-full h-full max-h-full relative [&amp;_[data-component-part=code-block-root]]:!rounded-xt"></div></div></div><h4 class="flex whitespace-pre-wrap group font-semibold" id="key-elements-of-tool-execution"><div class="absolute" tabindex="-1"><a href="#key-elements-of-tool-execution" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Key Elements of Tool Execution</span></h4><span data-as="p">The request structure includes several important components:</span><ol>
+<li>
+<span data-as="p"><strong><code>name</code></strong>: Must match exactly the tool name from the discovery response (<code>weather_current</code>). This ensures the server can correctly identify which tool to execute.</span>
+</li>
+<li>
+<span data-as="p"><strong><code>arguments</code></strong>: Contains the input parameters as defined by the tool’s <code>inputSchema</code>. In this example:</span>
+<ul>
+<li><code>location</code>: “San Francisco” (required parameter)</li>
+<li><code>units</code>: “imperial” (optional parameter, defaults to “metric” if not specified)</li>
+</ul>
+</li>
+<li>
+<span data-as="p"><strong>JSON-RPC Structure</strong>: Uses standard JSON-RPC 2.0 format with unique <code>id</code> for request-response correlation.</span>
+</li>
+</ol><h4 class="flex whitespace-pre-wrap group font-semibold" id="understanding-the-tool-execution-response"><div class="absolute" tabindex="-1"><a href="#understanding-the-tool-execution-response" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Understanding the Tool Execution Response</span></h4><span data-as="p">The response demonstrates MCP’s flexible content system:</span><ol>
+<li>
+<span data-as="p"><strong><code>content</code> Array</strong>: Tool responses return an array of content objects, allowing for rich, multi-format responses (text, images, resources, etc.)</span>
+</li>
+<li>
+<span data-as="p"><strong>Content Types</strong>: Each content object has a <code>type</code> field. In this example, <code>&quot;type&quot;: &quot;text&quot;</code> indicates plain text content, but MCP supports various content types for different use cases.</span>
+</li>
+<li>
+<span data-as="p"><strong>Structured Output</strong>: The response provides actionable information that the AI application can use as context for language model interactions.</span>
+</li>
+</ol><span data-as="p">This execution pattern allows AI applications to dynamically invoke server functionality and receive structured responses that can be integrated into conversations with language models.</span><h4 class="flex whitespace-pre-wrap group font-semibold" id="how-this-works-in-ai-applications-3"><div class="absolute" tabindex="-1"><a href="#how-this-works-in-ai-applications-3" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">How This Works in AI Applications</span></h4><span data-as="p">When the language model decides to use a tool during a conversation, the AI application intercepts the tool call, routes it to the appropriate MCP server, executes it, and returns the results back to the LLM as part of the conversation flow. This enables the LLM to access real-time data and perform actions in the external world.</span><div class="code-block mt-5 mb-8 not-prose rounded-2xl relative group min-w-0 print:print-color-exact text-gray-950 dark:text-gray-50 codeblock-light border border-gray-950/10 dark:border-white/10 dark:twoslash-dark bg-transparent dark:bg-transparent" numberOfLines="5" language="python"><div data-floating-buttons="true" class="absolute top-3 right-4 flex items-center gap-1.5 print:hidden"><div class="z-10 select-none" data-state="closed"><button class="h-[26px] w-[26px] flex items-center justify-center rounded-md backdrop-blur group/copy-button" data-testid="copy-code-button" aria-label="Copy the contents from the code block"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 group-hover/copy-button:text-gray-500 dark:text-white/40 dark:group-hover/copy-button:text-white/60"><path d="M14.25 5.25H7.25C6.14543 5.25 5.25 6.14543 5.25 7.25V14.25C5.25 15.3546 6.14543 16.25 7.25 16.25H14.25C15.3546 16.25 16.25 15.3546 16.25 14.25V7.25C16.25 6.14543 15.3546 5.25 14.25 5.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.80103 11.998L1.77203 5.07397C1.61003 3.98097 2.36403 2.96397 3.45603 2.80197L10.38 1.77297C11.313 1.63397 12.19 2.16297 12.528 3.00097" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div></div><div class="w-0 min-w-full max-w-full py-3.5 px-4 h-full dark:bg-codeblock relative text-sm leading-6 children:!my-0 children:!shadow-none children:!bg-transparent transition-[height] duration-300 ease-in-out code-block-background [&amp;_*]:ring-0 [&amp;_*]:outline-0 [&amp;_*]:focus:ring-0 [&amp;_*]:focus:outline-0 rounded-2xl bg-white overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 active:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25 dark:active:scrollbar-thumb-white/25" data-component-part="code-block-root" tabindex="0" style="font-variant-ligatures:none;height:auto;background-color:#ffffff;--shiki-dark-bg:#0B0C0E"><div class="font-mono whitespace-pre leading-6"><pre class="shiki shiki-themes github-light-default dark-plus" style="background-color:#ffffff;--shiki-dark-bg:#0B0C0E;color:#1f2328;--shiki-dark:#D4D4D4" language="python"><code language="python" numberOfLines="5"><span class="line"><span style="color:#6E7781;--shiki-dark:#6A9955"># Pseudo-code for AI application tool execution</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#569CD6">async</span><span style="color:#CF222E;--shiki-dark:#569CD6"> def</span><span style="color:#8250DF;--shiki-dark:#DCDCAA"> handle_tool_call</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">(</span><span style="color:#1F2328;--shiki-dark:#9CDCFE">conversation</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">, </span><span style="color:#1F2328;--shiki-dark:#9CDCFE">tool_name</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">, </span><span style="color:#1F2328;--shiki-dark:#9CDCFE">arguments</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">):</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    session </span><span style="color:#CF222E;--shiki-dark:#D4D4D4">=</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> app.find_mcp_session_for_tool(tool_name)</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    result </span><span style="color:#CF222E;--shiki-dark:#D4D4D4">=</span><span style="color:#CF222E;--shiki-dark:#C586C0"> await</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> session.call_tool(tool_name, arguments)</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    conversation.add_tool_result(result.content)</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;jsonrpc&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;2.0&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;method&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;notifications/tools/list_changed&quot;</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">}</span></span>
+</code></pre></div></div><div class="print:hidden" data-fade-overlay="true" aria-hidden="true" style="--fade-color-light:#ffffff;--fade-color-dark:#0B0C0E"></div></div><h4 class="flex whitespace-pre-wrap group font-semibold" id="key-features-of-mcp-notifications"><div class="absolute" tabindex="-1"><a href="#key-features-of-mcp-notifications" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Key Features of MCP Notifications</span></h4><ol>
+<li>
+<span data-as="p"><strong>No Response Required</strong>: Notice there’s no <code>id</code> field in the notification. This follows JSON-RPC 2.0 notification semantics where no response is expected or sent.</span>
+</li>
+<li>
+<span data-as="p"><strong>Capability-Based</strong>: This notification is only sent by servers that declared <code>&quot;listChanged&quot;: true</code> in their tools capability during initialization (as shown in Step 1).</span>
+</li>
+<li>
+<span data-as="p"><strong>Event-Driven</strong>: The server decides when to send notifications based on internal state changes, making MCP connections dynamic and responsive.</span>
+</li>
+</ol><h4 class="flex whitespace-pre-wrap group font-semibold" id="client-response-to-notifications"><div class="absolute" tabindex="-1"><a href="#client-response-to-notifications" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Client Response to Notifications</span></h4><span data-as="p">Upon receiving this notification, the client typically reacts by requesting the updated tool list. This creates a refresh cycle that keeps the client’s understanding of available tools current:</span><div class="code-block mt-5 mb-8 not-prose rounded-2xl relative group min-w-0 print:print-color-exact text-gray-950 bg-gray-50 dark:bg-white/5 dark:text-gray-50 codeblock-light border border-gray-950/10 dark:border-white/10 dark:twoslash-dark p-0.5" numberOfLines="5" language="json"><div class="flex text-gray-400 text-xs rounded-t-[14px] leading-6 font-medium pl-4 pr-2.5 py-1" data-component-part="code-block-header"><div class="flex-grow-0 flex items-center gap-1.5 text-gray-700 dark:text-gray-300 min-w-0" data-component-part="code-block-header-filename"><span class="truncate min-w-0" title="Request">Request</span></div><div class="flex-1 flex items-center justify-end gap-1.5 print:hidden"><div class="z-10 select-none" data-state="closed"><button class="h-[26px] w-[26px] flex items-center justify-center rounded-md backdrop-blur group/copy-button" data-testid="copy-code-button" aria-label="Copy the contents from the code block"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 group-hover/copy-button:text-gray-500 dark:text-white/40 dark:group-hover/copy-button:text-white/60"><path d="M14.25 5.25H7.25C6.14543 5.25 5.25 6.14543 5.25 7.25V14.25C5.25 15.3546 6.14543 16.25 7.25 16.25H14.25C15.3546 16.25 16.25 15.3546 16.25 14.25V7.25C16.25 6.14543 15.3546 5.25 14.25 5.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.80103 11.998L1.77203 5.07397C1.61003 3.98097 2.36403 2.96397 3.45603 2.80197L10.38 1.77297C11.313 1.63397 12.19 2.16297 12.528 3.00097" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div></div></div><div class="w-0 min-w-full max-w-full py-3.5 px-4 h-full dark:bg-codeblock relative text-sm leading-6 children:!my-0 children:!shadow-none children:!bg-transparent transition-[height] duration-300 ease-in-out code-block-background [&amp;_*]:ring-0 [&amp;_*]:outline-0 [&amp;_*]:focus:ring-0 [&amp;_*]:focus:outline-0 rounded-xt bg-white overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 active:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25 dark:active:scrollbar-thumb-white/25" data-component-part="code-block-root" tabindex="0" style="font-variant-ligatures:none;height:auto;background-color:#ffffff;--shiki-dark-bg:#0B0C0E"><div class="font-mono whitespace-pre leading-6"><pre class="shiki shiki-themes github-light-default dark-plus" style="background-color:#ffffff;--shiki-dark-bg:#0B0C0E;color:#1f2328;--shiki-dark:#D4D4D4" language="json"><code language="json" numberOfLines="5"><span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">{</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;jsonrpc&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;2.0&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;id&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0550AE;--shiki-dark:#B5CEA8">4</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">,</span></span>
+<span class="line"><span style="color:#116329;--shiki-dark:#9CDCFE">  &quot;method&quot;</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">: </span><span style="color:#0A3069;--shiki-dark:#CE9178">&quot;tools/list&quot;</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">}</span></span>
+</code></pre></div></div><div class="print:hidden" data-fade-overlay="true" aria-hidden="true" style="--fade-color-light:#ffffff;--fade-color-dark:#0B0C0E"></div></div><h4 class="flex whitespace-pre-wrap group font-semibold" id="why-notifications-matter"><div class="absolute" tabindex="-1"><a href="#why-notifications-matter" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">Why Notifications Matter</span></h4><span data-as="p">This notification system is crucial for several reasons:</span><ol>
+<li><strong>Dynamic Environments</strong>: Tools may come and go based on server state, external dependencies, or user permissions</li>
+<li><strong>Efficiency</strong>: Clients don’t need to poll for changes; they’re notified when updates occur</li>
+<li><strong>Consistency</strong>: Ensures clients always have accurate information about available server capabilities</li>
+<li><strong>Real-time Collaboration</strong>: Enables responsive AI applications that can adapt to changing contexts</li>
+</ol><span data-as="p">This notification pattern extends beyond tools to other MCP primitives, enabling comprehensive real-time synchronization between clients and servers.</span><h4 class="flex whitespace-pre-wrap group font-semibold" id="how-this-works-in-ai-applications-4"><div class="absolute" tabindex="-1"><a href="#how-this-works-in-ai-applications-4" class="-ml-10 flex items-center opacity-0 border-0 group-hover:opacity-100 focus:opacity-100 focus:outline-0 group/link" aria-label="Navigate to header">​<div class="w-6 h-6 rounded-md flex items-center justify-center shadow-sm text-gray-400 dark:text-white/50 dark:bg-background-dark dark:brightness-[1.35] dark:ring-1 dark:hover:brightness-150 bg-white ring-1 ring-gray-400/30 dark:ring-gray-700/25 hover:ring-gray-400/60 dark:hover:ring-white/20 group-focus/link:border-2 group-focus/link:border-primary dark:group-focus/link:border-primary-light"><svg xmlns="http://www.w3.org/2000/svg" fill="gray" height="12px" viewBox="0 0 576 512"><path d="M0 256C0 167.6 71.6 96 160 96h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C98.1 144 48 194.1 48 256s50.1 112 112 112h72c13.3 0 24 10.7 24 24s-10.7 24-24 24H160C71.6 416 0 344.4 0 256zm576 0c0 88.4-71.6 160-160 160H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c61.9 0 112-50.1 112-112s-50.1-112-112-112H344c-13.3 0-24-10.7-24-24s10.7-24 24-24h72c88.4 0 160 71.6 160 160zM184 232H392c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24z"></path></svg></div></a></div><span class="cursor-pointer">How This Works in AI Applications</span></h4><span data-as="p">When the AI application receives a notification about changed tools, it immediately refreshes its tool registry and updates the LLM’s available capabilities. This ensures that ongoing conversations always have access to the most current set of tools, and the LLM can dynamically adapt to new functionality as it becomes available.</span><div class="code-block mt-5 mb-8 not-prose rounded-2xl relative group min-w-0 print:print-color-exact text-gray-950 dark:text-gray-50 codeblock-light border border-gray-950/10 dark:border-white/10 dark:twoslash-dark bg-transparent dark:bg-transparent" numberOfLines="6" language="python"><div data-floating-buttons="true" class="absolute top-3 right-4 flex items-center gap-1.5 print:hidden"><div class="z-10 select-none" data-state="closed"><button class="h-[26px] w-[26px] flex items-center justify-center rounded-md backdrop-blur group/copy-button" data-testid="copy-code-button" aria-label="Copy the contents from the code block"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 group-hover/copy-button:text-gray-500 dark:text-white/40 dark:group-hover/copy-button:text-white/60"><path d="M14.25 5.25H7.25C6.14543 5.25 5.25 6.14543 5.25 7.25V14.25C5.25 15.3546 6.14543 16.25 7.25 16.25H14.25C15.3546 16.25 16.25 15.3546 16.25 14.25V7.25C16.25 6.14543 15.3546 5.25 14.25 5.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.80103 11.998L1.77203 5.07397C1.61003 3.98097 2.36403 2.96397 3.45603 2.80197L10.38 1.77297C11.313 1.63397 12.19 2.16297 12.528 3.00097" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div></div><div class="w-0 min-w-full max-w-full py-3.5 px-4 h-full dark:bg-codeblock relative text-sm leading-6 children:!my-0 children:!shadow-none children:!bg-transparent transition-[height] duration-300 ease-in-out code-block-background [&amp;_*]:ring-0 [&amp;_*]:outline-0 [&amp;_*]:focus:ring-0 [&amp;_*]:focus:outline-0 rounded-2xl bg-white overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 active:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25 dark:active:scrollbar-thumb-white/25" data-component-part="code-block-root" tabindex="0" style="font-variant-ligatures:none;height:auto;background-color:#ffffff;--shiki-dark-bg:#0B0C0E"><div class="font-mono whitespace-pre leading-6"><pre class="shiki shiki-themes github-light-default dark-plus" style="background-color:#ffffff;--shiki-dark-bg:#0B0C0E;color:#1f2328;--shiki-dark:#D4D4D4" language="python"><code language="python" numberOfLines="6"><span class="line"><span style="color:#6E7781;--shiki-dark:#6A9955"># Pseudo-code for AI application notification handling</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#569CD6">async</span><span style="color:#CF222E;--shiki-dark:#569CD6"> def</span><span style="color:#8250DF;--shiki-dark:#DCDCAA"> handle_tools_changed_notification</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">(</span><span style="color:#1F2328;--shiki-dark:#9CDCFE">session</span><span style="color:#1F2328;--shiki-dark:#D4D4D4">):</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    tools_response </span><span style="color:#CF222E;--shiki-dark:#D4D4D4">=</span><span style="color:#CF222E;--shiki-dark:#C586C0"> await</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> session.list_tools()</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">    app.update_available_tools(session, tools_response.tools)</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#C586C0">    if</span><span style="color:#1F2328;--shiki-dark:#D4D4D4"> app.conversation.is_active():</span></span>
+<span class="line"><span style="color:#1F2328;--shiki-dark:#D4D4D4">        app.conversation.notify_llm_of_new_capabilities()</span></span>
+</body></html>

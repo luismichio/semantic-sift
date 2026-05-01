@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE.md)
 [![OSI](https://img.shields.io/badge/OSI-Approved-brightgreen)](https://opensource.org/licenses/Apache-2.0)
 
-> **"It saves tokens while preserving context—maximizing reasoning, minimizing hallucination."**
+> **"It saves tokens while preserving context - maximizing reasoning, minimizing hallucination."**
 
 Semantic-Sift is a local [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that acts as an intelligent "Sanitation Tier" between your raw data and your AI’s context window. 
 
