@@ -188,6 +188,24 @@ def update_instruction_files(
         if merge_hook_json(vscode_path, "PostToolUse", {"type": "command", "command": cmd_str}):
             actions.append("Merged into VS Code hooks.")
 
+    if "gemini" in env_lower:
+        gemini_commands_dir = os.path.join(cwd, ".gemini", "commands")
+        os.makedirs(gemini_commands_dir, exist_ok=True)
+        gemini_command_path = os.path.join(gemini_commands_dir, "sift-stats.toml")
+        
+        gemini_command_content = """description = "View Semantic-Sift token savings and telemetry dashboard"
+prompt = \"\"\"
+!{semantic-sift-stats}
+\"\"\"
+"""
+        if not os.path.exists(gemini_command_path):
+            try:
+                with open(gemini_command_path, "w", encoding="utf-8") as f:
+                    f.write(gemini_command_content)
+                actions.append("Injected `/sift-stats` custom command into Gemini CLI.")
+            except OSError as e:
+                actions.append(f"Error configuring Gemini CLI command: {str(e)}")
+
     if "opencode" in env_lower:
         opencode_plugin_path = os.path.join(cwd, ".opencode", "plugins", "semantic-sift.ts")
         os.makedirs(os.path.dirname(opencode_plugin_path), exist_ok=True)
