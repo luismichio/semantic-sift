@@ -129,7 +129,7 @@ Before marking a PR as ready for review:
 - [ ] `python -m ruff check .` reports 0 violations
 - [ ] `doc/CHANGELOG.md` updated under `[Unreleased]`
 - [ ] New behaviour has at least one test
-- [ ] I have read and agree to the CLA in section 1 of this document
+- [ ] I have read and agree to the licensing terms in section 1 of this document
 
 ---
 
