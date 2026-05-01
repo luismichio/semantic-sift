@@ -157,4 +157,6 @@ Apache License 2.0. See [LICENSE.md](LICENSE.md) for details.
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to set up your environment, run the test suite, and submit pull requests.
+**Semantic-Sift is Open Source, but Closed to Contributions.**
+
+To maintain the strict architectural vision of the "Studio of Two" and keep maintenance overhead at absolute zero, this repository does not accept external pull requests. We encourage you to use, embed, and fork the code under the permissive Apache 2.0 license, but please do not submit PRs for new features or bug fixes. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
