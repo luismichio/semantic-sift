@@ -223,6 +223,29 @@ export default SemanticSiftPlugin;
         except OSError as e:
             actions.append(f"Error configuring OpenCode plugin: {str(e)}")
 
+        opencode_config_path = os.path.join(cwd, "opencode.json")
+        if os.path.exists(opencode_config_path):
+            try:
+                with open(opencode_config_path, "r", encoding="utf-8") as f:
+                    opencode_config = json.load(f)
+                
+                if "commands" not in opencode_config:
+                    opencode_config["commands"] = {}
+                
+                if "/sift-stats" not in opencode_config["commands"]:
+                    opencode_config["commands"]["/sift-stats"] = {
+                        "description": "View Semantic-Sift token savings and telemetry dashboard",
+                        "action": "run_mcp_tool",
+                        "server": "semantic-sift",
+                        "tool": "get_sift_stats",
+                        "args": {"scope": "all"}
+                    }
+                    with open(opencode_config_path, "w", encoding="utf-8") as f:
+                        json.dump(opencode_config, f, indent=2)
+                    actions.append("Injected `/sift-stats` command into opencode.json.")
+            except (OSError, json.JSONDecodeError) as e:
+                actions.append(f"Error updating opencode.json commands: {str(e)}")
+
     if "claude" in env_lower:
         claude_paths = [
             os.path.join(os.path.expanduser("~"), ".claude", "settings.json"),

@@ -32,6 +32,65 @@ START_TIME = datetime.now().isoformat()
 CLIENT_ID = telemetry_core.SIFT_CLIENT_ID
 
 
+def get_sift_stats_logic(scope: str = "current") -> str:
+    if telemetry_core.SIFT_TELEMETRY_DISABLED:
+        return f"--- Telemetry ({scope}) ---\nStatus: DISABLED (Privacy Mode)\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
+    if not os.path.exists(telemetry_core.TELEMETRY_FILE):
+        return "No activity recorded yet."
+    try:
+        with open(telemetry_core.TELEMETRY_FILE, "r") as f:
+            data = json.load(f)
+        target = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
+        if not target:
+            return (
+                f"--- Telemetry ({scope}) ---\nNo activity recorded in the current session (ID: {SESSION_ID[:8]}...).\n\n"
+                "💡 Tip: Try `get_sift_stats(scope='all')` to see historical data.\n\n"
+                f"[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
+            )
+
+        total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = total_hits = 0
+        breakdown = {}
+        for session in target:
+            for tool, stats in session.get("tools", {}).items():
+                c = stats.get("calls", 0)
+                oc = stats.get("original_chars", 0)
+                fc = stats.get("final_chars", 0)
+                ot = stats.get("original_tokens", 0)
+                ft = stats.get("final_tokens", 0)
+                lat = stats.get("total_latency_ms", 0)
+                h = stats.get("cache_hits", 0)
+                total_calls += c
+                total_orig_chars += oc
+                total_final_chars += fc
+                total_orig_tokens += ot
+                total_final_tokens += ft
+                total_lat += lat
+                total_hits += h
+                if tool not in breakdown:
+                    breakdown[tool] = {"calls": 0, "chars_saved": 0, "tokens_saved": 0, "cache_hits": 0}
+                breakdown[tool]["calls"] += c
+                breakdown[tool]["chars_saved"] += oc - fc
+                breakdown[tool]["tokens_saved"] += ot - ft
+                breakdown[tool]["cache_hits"] += h
+
+        tokens_saved = total_orig_tokens - total_final_tokens
+        output = [
+            f"--- Telemetry ({scope}) ---",
+            f"Identity: {telemetry_core.SIFT_CLIENT_ID} (Tier: {telemetry_core.SIFT_TIER})",
+            f"Tool Calls: {total_calls}",
+            f"Tokens Processed: {total_orig_tokens:,}",
+            f"Tokens Saved: {tokens_saved:,} ({(tokens_saved/total_orig_tokens*100) if total_orig_tokens>0 else 0:.1f}%)",
+            f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms",
+            f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)",
+            "\n[Note: Token counts are estimated at 4 chars/token. Actual billed tokens vary by model and content type.]",
+            "Breakdown:",
+        ]
+        for tool, s in sorted(breakdown.items(), key=lambda item: item[1]["tokens_saved"], reverse=True):
+            output.append(f"- {tool}: {s['calls']} calls, {s['tokens_saved']:,} tokens saved ({s['cache_hits']} hits)")
+        return "\n".join(output)
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
+        return f"Error: {str(e)}"
+
 def register_tools(
     mcp: Any,
     runtime_python_exe: str,
@@ -161,63 +220,12 @@ def register_tools(
 
     @mcp.tool()
     async def get_sift_stats(scope: str = "current") -> str:
-        if telemetry_core.SIFT_TELEMETRY_DISABLED:
-            return f"--- Telemetry ({scope}) ---\nStatus: DISABLED (Privacy Mode)\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
-        if not os.path.exists(telemetry_core.TELEMETRY_FILE):
-            return "No activity recorded yet."
-        try:
-            with open(telemetry_core.TELEMETRY_FILE, "r") as f:
-                data = json.load(f)
-            target = [data[SESSION_ID]] if scope == "current" and SESSION_ID in data else list(data.values())
-            if not target:
-                return (
-                    f"--- Telemetry ({scope}) ---\nNo activity recorded in the current session (ID: {SESSION_ID[:8]}...).\n\n"
-                    "💡 Tip: Try `get_sift_stats(scope='all')` to see historical data.\n\n"
-                    f"[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
-                )
+        return get_sift_stats_logic(scope)
 
-            total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = total_hits = 0
-            breakdown = {}
-            for session in target:
-                for tool, stats in session.get("tools", {}).items():
-                    c = stats.get("calls", 0)
-                    oc = stats.get("original_chars", 0)
-                    fc = stats.get("final_chars", 0)
-                    ot = stats.get("original_tokens", 0)
-                    ft = stats.get("final_tokens", 0)
-                    lat = stats.get("total_latency_ms", 0)
-                    h = stats.get("cache_hits", 0)
-                    total_calls += c
-                    total_orig_chars += oc
-                    total_final_chars += fc
-                    total_orig_tokens += ot
-                    total_final_tokens += ft
-                    total_lat += lat
-                    total_hits += h
-                    if tool not in breakdown:
-                        breakdown[tool] = {"calls": 0, "chars_saved": 0, "tokens_saved": 0, "cache_hits": 0}
-                    breakdown[tool]["calls"] += c
-                    breakdown[tool]["chars_saved"] += oc - fc
-                    breakdown[tool]["tokens_saved"] += ot - ft
-                    breakdown[tool]["cache_hits"] += h
-
-            tokens_saved = total_orig_tokens - total_final_tokens
-            output = [
-                f"--- Telemetry ({scope}) ---",
-                f"Identity: {telemetry_core.SIFT_CLIENT_ID} (Tier: {telemetry_core.SIFT_TIER})",
-                f"Tool Calls: {total_calls}",
-                f"Tokens Processed: {total_orig_tokens:,}",
-                f"Tokens Saved: {tokens_saved:,} ({(tokens_saved/total_orig_tokens*100) if total_orig_tokens>0 else 0:.1f}%)",
-                f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms",
-                f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)",
-                "\n[Note: Token counts are estimated at 4 chars/token. Actual billed tokens vary by model and content type.]",
-                "Breakdown:",
-            ]
-            for tool, s in breakdown.items():
-                output.append(f"- {tool}: {s['calls']} calls, {s['tokens_saved']:,} tokens saved ({s['cache_hits']} hits)")
-            return "\n".join(output)
-        except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
-            return f"Error: {str(e)}"
+    @mcp.prompt()
+    def sift_dashboard() -> str:
+        """Show the Semantic-Sift telemetry dashboard."""
+        return get_sift_stats_logic("all")
 
     @mcp.tool()
     async def sift_onboard(environment: str | None = None, target_dir: str | None = None, dry_run: bool = False) -> str:
