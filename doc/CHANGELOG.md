@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✨ New Features
+- **Telemetry Management Commands**: Added `semantic-sift-stats` global CLI for instant terminal-based ROI reporting. Added `sift_dashboard` MCP Prompt to allow humans to trigger telemetry reports via UI buttons or slash commands.
+- **Automated Slash Commands**: `sift_onboard()` now automatically injects a native `/sift-stats` custom command into `opencode.json` and `.gemini/commands/` for OpenCode and Gemini CLI users.
+
+### ⚖️ Licensing & Strategy
+- **Apache 2.0 Transition**: Formally transitioned from BSL 1.1 to the **Apache License 2.0**. All 12 source files updated with `SPDX-License-Identifier: Apache-2.0`. `pyproject.toml` updated with correct OSI classifiers.
+- **"Closed Contribution" Policy**: Adopted an "Open Source, Closed Contribution" model (inspired by SQLite) to protect maintainer focus on the Meechi ecosystem. Permissive use/forking encouraged; external PRs no longer accepted.
+
+### 📊 Benchmarks
+- **Realistic Semantic Metrics**: Updated `benchmark_sift.py` to simulate a realistic 50% reduction for Natural Language scenarios (default `rate=0.5`), replacing the previous mocked 99.9% value for improved credibility.
+
+### 📄 Documentation
+- **Tiered Strategy**: Documented the ecosystem-wide tiered licensing strategy (MIT for utilities, Apache 2.0 for infrastructure) in the Studio of Two course materials.
+- **Manual Updates**: Refreshed `README.md` and `doc/TOOL_REFERENCE.md` with instructions for the new management CLI and MCP prompts.
+
 ### 🐛 Bug Fixes
 - **Google Antigravity telemetry misattribution — systemic fix**: Replaced the mixed identity+parsing block in `sift_hook.py` with a clean two-phase design. Phase 1 resolves platform identity once via `telemetry_core.detect_client_id()` (the same env-var priority chain used by the MCP server). Phase 2 extracts payload content based on hook event structure, orthogonally. This eliminates inherited-env-var pollution (e.g. `CLAUDE_TOOL_NAME` or `VSCODE_PID` leaking from a parent shell into an Antigravity subprocess) causing misattribution to `"Claude"`, `"VSCode"`, or `"Cursor"`. The hardcoded `platform = "OpenCode"` for `Compacting` events is replaced by `detect_client_id()`, so any agent emitting a `Compacting` event is correctly attributed. `telemetry_core._ENV_MAP` now includes `ANTIGRAVITY_AGENT`, `ANTIGRAVITY_EDITOR_APP_ROOT`, and `ANTIGRAVITY_TRAJECTORY_ID` before `VSCODE_PID`; `_PROC_MAP` adds `"antigravity"`. `semantic_sift/tools.py` `CLIENT_ID` documents the known shared-server limitation: in sessions where multiple agents share one MCP server process, MCP tool calls carry the identity of whichever agent's environment was present at server launch; hook-layer telemetry remains the authoritative per-call source. (`telemetry_core.py`, `sift_hook.py`, `semantic_sift/tools.py`)
 
