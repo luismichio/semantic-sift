@@ -157,4 +157,4 @@ Apache License 2.0. See [LICENSE.md](LICENSE.md) for details.
 
 ## Contributing
 
-This project is not currently accepting external contributions.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to set up your environment, run the test suite, and submit pull requests.
