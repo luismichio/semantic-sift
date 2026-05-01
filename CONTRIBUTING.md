@@ -4,17 +4,13 @@ Thank you for your interest in contributing. Before you submit anything, please 
 
 ---
 
-## 1. Contributor License Agreement (CLA)
+## 1. Inbound Contributions & Licensing
 
-Semantic-Sift is published under a **Source-Available Dual License** (see [`LICENSE.md`](LICENSE.md)). This means the project has both a free tier (personal/non-commercial use) and a paid commercial tier.
+Semantic-Sift is published under the **Apache License 2.0** (see [`LICENSE.md`](LICENSE.md)). 
 
-**By submitting a pull request, you agree to the following:**
+By submitting a pull request, you agree that any contributions you provide will be licensed under the same Apache 2.0 terms. You retain copyright over your contribution and will be credited in the commit history. 
 
-> You grant Luis Kobayashi a perpetual, worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and distribute your contribution as part of Semantic-Sift, including in commercial versions of the software. You retain copyright over your contribution and will be credited in the commit history. You confirm that you have the right to make this grant (i.e., the contribution is your own original work or you have the necessary permissions).
-
-This is not a transfer of ownership — you keep your copyright. It is the minimum grant required for a dual-licensed project to legally include your code in its commercial tier.
-
-If you are contributing on behalf of an employer or under a work contract, confirm that your employer has authorised the contribution before submitting.
+You must confirm that you have the right to make this grant (i.e., the contribution is your own original work or you have the necessary permissions from your employer).
 
 ---
 
