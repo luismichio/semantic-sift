@@ -95,6 +95,12 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
 
 ## 4. System Operations
 
+### `get_sift_stats` (Tool) & `sift_dashboard` (Prompt)
+**Intent**: Retrieves the telemetry metrics for token savings, latency, and cache hits. Exposed both as a tool for the agent to call (`get_sift_stats`) and as an MCP Prompt (`sift_dashboard`) for humans to trigger via the UI.
+*   **Arguments (Tool only)**:
+    *   `scope` (str, default: `"current"`): Set to `"current"` for the active session, or `"all"` for the global historical dashboard. The Prompt always defaults to `"all"`.
+*   **Output**: A formatted Markdown dashboard detailing `[Tokens Saved]`, `[Avg Latency]`, and a tool-by-tool breakdown.
+
 ### `sift_onboard`
 **Intent**: Automatically configures the current project workspace for optimal context sifting by injecting instructions, security hooks, and shielding specialized subagent threads. It also ensures critical Semantic-Sift artifacts are protected from version control exposure.
 *   **Arguments**:
@@ -112,16 +118,5 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
         *   Injects **Security Gateways** into `.windsurf/hooks.json` and `.clinerules/hooks/PreToolUse.ps1` to block native file readers > 1KB.
         *   Generates native TypeScript plugins for OpenCode and OpenClaw.
 *   **Output**: A Markdown "Onboarding Report" detailing the environment (Python, CUDA, Device), security status (including Git protection), a list of **Shielded Subagents**, and a bulleted manifest of all modified files and injected hooks.
-
-### `get_sift_stats`
-**Intent**: Retrieves performance metrics and token savings data from the local telemetry registry (`.sift_telemetry.json`).
-*   **Arguments**:
-    *   `scope` (str, default: `"current"`): Use `"current"` for the active session (filtered by `SESSION_ID`) or `"all"` for historical totals across all sessions.
-*   **Logic**:
-    *   Reads `.sift_telemetry.json`.
-    *   Aggregates total tool calls, original tokens processed, final tokens, cache hits, and average latency.
-    *   Provides a per-tool breakdown of savings.
-    *   Respects the `SIFT_TELEMETRY_DISABLED` kill-switch.
-*   **Output**: A formatted string detailing the client identity, tier, aggregate metrics, and the specific per-tool breakdown of tokens saved and cache hits.
 
 > **Note**: Token counts are estimated at 4 chars/token. Actual billed tokens vary by model and content type. For precise billing data, consult your API provider dashboard.
