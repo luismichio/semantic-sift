@@ -1,16 +1,16 @@
-# The Agentic Chain Protocol (ACP)
+# The Context-Pipe Protocol (CPP)
 
 ## Overview
-The **Agentic Chain Protocol (ACP)** is a standard for modular, high-performance context engineering. It allows AI tools to be connected as a series of "Pipes" and "Filters," ensuring that data is refined and noise is eliminated *before* it reaches the LLM's context window.
+The **Context-Pipe Protocol (CPP)** is a standard for modular, high-performance context engineering. It allows AI tools to be connected as a series of "Streams," ensuring that data is refined and noise is eliminated *before* it reaches the LLM's context window.
 
-By following the Unix philosophy—**"Everything is a stream"**—ACP enables seamless interoperability between tools built in different languages (Rust, Python, Node.js) and across different platforms (IDE Hooks, CLI, Native Apps).
+By following the Unix philosophy—**"Everything is a stream"**—CPP enables seamless interoperability between tools built in different languages (Rust, Python, Node.js) and across different platforms (IDE Hooks, CLI, Native Apps).
 
 ---
 
-## The Three Rules of the Chain
+## The Three Rules of the Pipe
 
-### 1. Standard I/O (The Pipe)
-Every tool in the chain must support `stdin` for input and `stdout` for output. 
+### 1. Standard I/O (The Stream)
+Every tool in the pipe must support `stdin` for input and `stdout` for output. 
 - **Upstream tools** (Ingestors) emit raw text or Markdown.
 - **Middleware tools** (Filters/Sifters) process the stream.
 - **Downstream tools** (Consumers) receive the refined signal.
@@ -29,23 +29,23 @@ Orchestrators (like `semantic-sift`) should not force heavy dependencies. They s
 ## Integration Examples
 
 ### Tier 0: Terminal Piping (Manual)
-Developers can manually chain tools to clean logs or summarize files.
+Developers can manually stream tools to clean logs or summarize files.
 ```bash
 # Extract code -> Summarize logic -> Save to file
 serena get-body MyClass | sift-core semantic --rate 0.3 > summary.txt
 ```
 
 ### Tier 1: Subconscious Interception (The Hook)
-The `sift_hook.py` serves as the universal "Polyfill" for the chain. It intercepts tools that don't natively support ACP and applies the distillation automatically.
+The `pipe_hook.py` serves as the universal "Polyfill" for the pipe. It intercepts tools that don't natively support CPP and applies the distillation automatically.
 
 ### Tier 2: Native Adoption (High-Performance)
-Tools like `context-mode` can integrate the chain natively to bypass hook overhead and improve precision.
+Tools like `context-mode` can integrate the pipe natively to bypass hook overhead and improve precision.
 
 **Node.js Example (context-mode integration):**
 ```javascript
 const { spawnSync } = require('child_process');
 
-function searchAndSift(query) {
+function searchAndStream(query) {
     const rawResults = performSearch(query);
     
     // Pipe results through the local Sift Sidecar
@@ -58,7 +58,7 @@ function searchAndSift(query) {
 
 ---
 
-## Why Use the Agentic Chain?
+## Why Use the Context-Pipe?
 
 1.  **Context Protection by Design**: Clean data at the source. Never flood the window.
 2.  **Language Agnostic**: Connect a Rust search engine to a Python neural distiller via a Node.js agent.
