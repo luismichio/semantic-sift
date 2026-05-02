@@ -192,7 +192,7 @@ def update_instruction_files(
         gemini_commands_dir = os.path.join(cwd, ".gemini", "commands")
         os.makedirs(gemini_commands_dir, exist_ok=True)
         gemini_command_path = os.path.join(gemini_commands_dir, "sift-stats.toml")
-        
+
         gemini_command_content = """description = "View Semantic-Sift token savings and telemetry dashboard"
 prompt = \"\"\"
 !{semantic-sift-stats}
@@ -246,10 +246,10 @@ export default SemanticSiftPlugin;
             try:
                 with open(opencode_config_path, "r", encoding="utf-8") as f:
                     opencode_config = json.load(f)
-                
+
                 if "commands" not in opencode_config:
                     opencode_config["commands"] = {}
-                
+
                 if "/sift-stats" not in opencode_config["commands"]:
                     opencode_config["commands"]["/sift-stats"] = {
                         "description": "View Semantic-Sift token savings and telemetry dashboard",

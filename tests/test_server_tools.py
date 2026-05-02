@@ -26,10 +26,18 @@ class _DummyTracer:
 class _DummyMCP:
     def __init__(self):
         self.tools = {}
+        self.prompts = {}
 
     def tool(self):
         def _decorator(fn):
             self.tools[fn.__name__] = fn
+            return fn
+
+        return _decorator
+
+    def prompt(self):
+        def _decorator(fn):
+            self.prompts[fn.__name__] = fn
             return fn
 
         return _decorator
@@ -49,6 +57,11 @@ def _register(monkeypatch):
 def test_sift_read_file_path_traversal_rejected(tmp_path, monkeypatch):
     mcp = _register(monkeypatch)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("SIFT_WORKSPACE_ROOT", str(tmp_path))
+
+    # Create the file outside to ensure we test the security guard, not existence
+    outside_file = tmp_path.parent / "outside.txt"
+    outside_file.write_text("Secret data")
 
     result = asyncio.run(mcp.tools["sift_read_file"](os.path.join("..", "outside.txt")))
     assert "Access denied" in result

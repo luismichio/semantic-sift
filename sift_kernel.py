@@ -30,8 +30,9 @@ def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
     if os.environ.get("SIFT_ALLOW_GLOBAL_READS", "false").lower() == "true":
         return requested_path
 
-    # Resolution chain: explicit arg > env var > cwd > heuristic walk-up
-    candidate_root = workspace_root or os.environ.get("SIFT_WORKSPACE_ROOT") or os.getcwd()
+    # Resolution chain: explicit arg > env var > cwd
+    explicit_root = workspace_root or os.environ.get("SIFT_WORKSPACE_ROOT")
+    candidate_root = explicit_root or os.getcwd()
     root_path = os.path.realpath(os.path.abspath(os.path.expanduser(candidate_root)))
 
     def _in_workspace(req: str, root: str) -> bool:
@@ -43,9 +44,15 @@ def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
     if _in_workspace(requested_path, root_path):
         return requested_path
 
-    # Heuristic fallback: walk up from the requested path looking for workspace markers.
-    # This handles the case where os.getcwd() points to the MCP server binary directory
-    # rather than the user's project root.
+    # Heuristic fallback: only if no explicit root was provided.
+    # Walk up from the requested path looking for workspace markers.
+    if explicit_root:
+        return (
+            f"Error: Access denied for path '{path}'. "
+            "Use a file path inside the current workspace, set SIFT_WORKSPACE_ROOT "
+            "in your MCP configuration, or set SIFT_ALLOW_GLOBAL_READS=true to override."
+        )
+
     _WORKSPACE_MARKERS = {
         "pyproject.toml", ".git", "setup.py", "setup.cfg",
         "package.json", ".vscode", ".idea", "AGENTS.md",
