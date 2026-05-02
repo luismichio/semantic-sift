@@ -27,6 +27,24 @@ Root-level files (`sift_kernel.py`, `sift_hook.py`, `telemetry_core.py`) are ret
 
 ---
 
+## 0. Native Rust Sidecar (`sift-core`)
+
+To support high-performance, local-first desktop applications (like **Meechi**), Semantic-Sift provides a standalone Rust-based distribution located in `crates/sift-core`.
+
+### Heuristic Sieve (Native)
+The Rust core implements a high-fidelity port of the Heuristic Sieve using the `regex` crate. It provides instant, zero-dependency log cleaning suitable for short-lived subprocess execution.
+
+### Semantic Engine (ONNX)
+The Rust core utilizes **ONNX Runtime** (via the `ort` crate) to execute the **LLMLingua-2** token classification model. This allows for neural context distillation without a Python interpreter or a massive PyTorch footprint.
+- **Model Format**: Standard `.onnx` model file + `tokenizer.json`.
+- **Inference Strategy**: Tokenizes input, performs a single-pass classification, and reconstructs the string based on a probability threshold derived from the target `rate`.
+
+### Dual Distribution Model
+- **Python MCP**: Primary path for IDE integration and developer workflows.
+- **Rust Sidecar**: Optimized for native application embedding and CI/CD pipelines.
+
+---
+
 ## 1. Sift Hook Interceptor (`sift_hook.py`)
 
 The Sift Hook Interceptor acts as the "Subconscious Brain" of the system, intercepting JSON payloads from various IDEs and agents via standard input, processing them, and returning the modified payload via standard output.

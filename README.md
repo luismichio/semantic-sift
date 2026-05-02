@@ -121,6 +121,23 @@ Semantic-Sift operates invisibly, but you can always audit its performance and t
 
 ---
 
+## 🦀 Native Rust Sidecar (Meechi & Desktop Apps)
+
+For high-performance, local-first applications (like [Meechi](https://meechi.me)), Semantic-Sift provides a native Rust binary (`sift-core`). This sidecar uses **ONNX Runtime** to run LLMLingua-2 with zero Python dependencies.
+
+Pre-compiled binaries for Windows, macOS, and Linux are available in our [GitHub Releases](https://github.com/luismichio/semantic-sift/releases).
+
+**Usage:**
+```bash
+# Sift a log file instantly
+cat app.log | sift-core logs
+
+# Perform neural semantic compression
+cat document.txt | sift-core semantic --model ./models/llmlingua2 --rate 0.4
+```
+
+---
+
 ## 🤖 For AI Agents: Operational Protocol
 
 If you are an AI Agent (e.g., Gemini CLI, Cursor, Claude Code) reading this repository, follow this protocol:
