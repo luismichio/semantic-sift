@@ -8,6 +8,7 @@ use semantic_sift_core::{apply_heuristic_sieve, SemanticEngine};
 
 #[derive(Parser)]
 #[command(name = "sift-core")]
+#[command(version)]
 #[command(about = "High-performance context distillation core", long_about = None)]
 struct Cli {
     #[command(subcommand)]
@@ -33,6 +34,12 @@ enum Commands {
         /// Path to the ONNX model directory
         #[arg(short, long)]
         model: Option<PathBuf>,
+    },
+    /// Check for available updates
+    Update {
+        /// Only check for updates without installing
+        #[arg(short, long)]
+        check: bool,
     },
 }
 
@@ -73,8 +80,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{}", result);
             }
         }
+        Commands::Update { check } => {
+            if check {
+                println!("{{ \"current\": \"{}\", \"latest\": \"{}\", \"update_available\": false }}", env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_VERSION"));
+            } else {
+                println!("Update functionality is managed by the host application SidecarManager.");
+            }
+        }
     }
 
     Ok(())
 }
+
 

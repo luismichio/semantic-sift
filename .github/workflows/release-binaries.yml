@@ -1,0 +1,80 @@
+name: Release Binaries
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: .exe
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: ""
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: ""
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build Sift-Core
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+        working-directory: crates/sift-core
+
+      - name: Package Artifacts
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          cp target/${{ matrix.target }}/release/sift-core${{ matrix.suffix }} artifacts/sift-core-${{ matrix.target }}${{ matrix.suffix }}
+          cd artifacts
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            zip sift-core-${{ matrix.target }}.zip sift-core-${{ matrix.target }}${{ matrix.suffix }}
+          else
+            tar -czf sift-core-${{ matrix.target }}.tar.gz sift-core-${{ matrix.target }}${{ matrix.suffix }}
+          fi
+        working-directory: crates/sift-core
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sift-core-${{ matrix.target }}
+          path: crates/sift-core/artifacts/sift-core-${{ matrix.target }}.*
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
