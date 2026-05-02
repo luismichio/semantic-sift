@@ -161,6 +161,32 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 
 
 
+## 🟢 Completed (Phase 3: The Native Transition)
+- [x] **Native Rust Sift-Core**: Scaffolding and implementation of `crates/sift-core`, a high-performance Rust port of the distillation engine.
+- [x] **Heuristic Sieve (Native)**: Zero-dependency, ultra-fast regex-based log cleaner.
+- [x] **Semantic Engine (ONNX)**: Native inference wrapper for LLMLingua-2 via `onnxruntime-rs`.
+- [x] **Automated Cross-Platform Releases**: GitHub Actions workflow for building and uploading Windows/macOS/Linux binaries to Releases.
+- [x] **Sidecar Performance Benchmarks**: High-precision `criterion` suite verifying <1ms log sifting.
+- [x] **Interactive Sidecar Demo**: Node.js proof-of-concept for native app integration.
+- [x] **Agentic Chain Protocol (ACP)**: Defined the universal piping standard for modular context distillation.
+- [x] **Management Commands**: Added `semantic-sift-stats` CLI and `/sift-stats` / `/sift-onboard` slash commands.
+- [x] **Apache 2.0 Transition**: Formally transitioned from BSL 1.1 to the Apache License 2.0.
+
+## 🚀 Phase 4: The Intelligent Refinery (Current Roadmap)
+
+### ⛓️ Agentic Chain Evolution
+- [ ] **Orchestrator + Kernel Integration**: Refactor the Python MCP server to optionally call the Rust `sift-core` binary for heavy-duty processing, reducing Python VRAM overhead.
+- [ ] **Multi-Parser Registry**: Implement the dynamic discovery engine in both Python and Rust to support `markitdown`, `pandoc`, and `LlamaIndex` as swappable ingestion nodes.
+- [ ] **Chain-Aware Telemetry**: Extend ROI reporting to track the entire "Chain of Custody" (e.g., Ingest -> Rank -> Sift) and report cumulative savings.
+
+### 🧠 Advanced Neural Kernels
+- [ ] **`reranker-core` (Rust/ONNX)**: Port the BGE-Reranker to a standalone Rust sidecar to complete the zero-Python Intelligence Tier.
+- [ ] **Context-Aware Thresholding**: Dynamically adjust the sifting `rate` based on the agent's current context window pressure (e.g., sift harder as the window fills up).
+
+### 🛠️ Ecosystem Adoption
+- [ ] **"Sift-Aware" context-mode**: Prototype the first Native Integration (Tier 2) in the `context-mode` repository.
+- [ ] **CI/CD "Sanitation" Action**: Publish a GitHub Action that uses the Sift sidecar to clean pipeline logs before they are archived or sent to Slack.
+
 ## 🟢 Completed (Phase 2: Production Hardening — FIX_PLAN_5_STAR)
 - [x] **Runtime Hook Portability**: Hook command derived from `sys.executable` at runtime; no hardcoded paths.
 - [x] **Startup Validation**: Server fails fast with a clear error if `sift_hook.py` is missing.
@@ -202,10 +228,6 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 ---
 
 ## ⚪ Long-term Vision
-
-- [ ] **Tauri Sidecar / ONNX Port**: Bundle Semantic-Sift as a Tauri sidecar. The neural model (LLMLingua-2 / BERT) would be exported to ONNX and loaded via ONNX Runtime, eliminating the PyTorch/Python dependency for desktop distribution. WebGPU would serve as the acceleration backend in the WebView context.
-
-- [ ] **Standalone Binary Distribution (PyInstaller / Nuitka)**: Compile the server and hook into a single self-contained executable so users without a Python environment can run Semantic-Sift. Would unblock the Tauri sidecar path and simplify onboarding significantly.
 
 - [ ] **npm Distribution**: Investigate whether Semantic-Sift can be published as an npm package. Options include: (a) a thin npm wrapper that installs and invokes the Python binary, (b) a full JS/TS reimplementation of the heuristic sieve for Node-native use, or (c) an MCP-compatible JS server wrapping a compiled binary via Nuitka/PyInstaller. Feasibility depends on the binary compilation milestone above.
 
