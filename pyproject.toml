@@ -27,7 +27,6 @@ dependencies = [
   "numpy>=1.24",
   "opentelemetry-api>=1.20",
   "opentelemetry-sdk>=1.20",
-  "markitdown>=0.1",
   "psutil>=5.9"
 ]
 
@@ -37,6 +36,10 @@ neural = [
   "torch",
   "transformers",
   "sentence-transformers"
+]
+
+multi-modal = [
+  "markitdown>=0.1"
 ]
 
 dev = [

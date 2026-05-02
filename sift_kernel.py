@@ -148,7 +148,7 @@ def ensure_markdown_content(path: str) -> str:
 
     md_converter = get_markitdown()
     if not md_converter:
-        return f"Error: MarkItDown not installed. Cannot process {ext} files."
+        return f"Error: Multi-modal dependencies not installed. Cannot process {ext} files. Please run 'pip install semantic-sift[multi-modal]' to enable PDF/Office support."
 
     file_hash = get_file_hash(path)
     cache_path = os.path.join(CACHE_DIR, f"raw_{file_hash}.md")
