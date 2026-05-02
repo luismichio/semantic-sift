@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Heuristic Sieve (Native)**: Zero-dependency, ultra-fast regex-based log cleaner.
     - **Semantic Engine (ONNX)**: Native inference wrapper for LLMLingua-2 via `onnxruntime-rs`.
     - **Dual Distribution**: Exposes both a public Rust library and a standalone CLI binary designed for Tauri/Electron sidecar integration.
-- **Telemetry & Setup Commands**: Added `semantic-sift-stats` and `semantic-sift-onboard` global terminal CLIs for instant ROI reporting and project initialization. Added `sift_dashboard` MCP Prompt for UI-driven telemetry access.
+- **Sidecar Performance Benchmarks**: Integrated a `criterion` suite in `crates/sift-core` to verify ultra-low latency (e.g. **<1ms** for heuristic log sifting).
+- **Interactive Sidecar Demo**: Added a `demo/` directory with a Node.js proof-of-concept showing how to integrate the Rust sidecar into desktop applications in minutes.
+- **Telemetry Management Commands**: Added `semantic-sift-stats` and `semantic-sift-onboard` global terminal CLIs for instant ROI reporting and project initialization. Added `sift_dashboard` MCP Prompt for UI-driven telemetry access.
 - **Automated Slash Command Injection**: `sift_onboard()` now automatically configures project-level slash commands:
     - **OpenCode**: Injects `/sift-stats` and `/sift-onboard` into `opencode.json`.
     - **Gemini CLI**: Generates `.gemini/commands/sift-stats.toml`.
@@ -25,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Apache 2.0 Transition**: Formally transitioned from BSL 1.1 to the **Apache License 2.0** to facilitate community adoption and enterprise integration.
     - Updated all 12 source files with `SPDX-License-Identifier: Apache-2.0`.
     - Updated `pyproject.toml` with `License :: OSI Approved :: Apache Software License` classifiers.
-- **"Closed Contribution" Policy**: Adopted an "Open Source, Closed Contribution" model (inspired by SQLite) to maintain strict architectural integrity. Permissive use, embedding, and forking are encouraged, but external PRs are no longer accepted.
+- **"Closed Contribution" Policy**: Adopted an "Open Source, Closed Contribution" model (inspired by SQLite) to maintain strict architectural integrity. Permissive use, embedding, and forking are encouraged, but external PRs no longer accepted.
 - **Tiered Licensing Documentation**: Documented the ecosystem strategy (MIT for utilities, Apache 2.0 for infrastructure) in the Studio of Two course materials.
 
 ### 📊 Benchmarks
@@ -37,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Git `pre-push` hook**: Automatically runs Ruff, Mypy, Bandit, and Pytest before every push.
     - **Refined `scripts/audit.bat`**: Added Ruff linting and expanded module coverage for type checks.
     - **IDE Automation**: Configured `.vscode/settings.json` for automatic "Fix on Save" using Ruff.
+- **Rust Reliability Tests**: Added integration tests for `sift-core` covering error handling for missing models, empty inputs, and CLI stability.
 - **Monolithic Decomposition**: Completed Phase 3 of server extraction, splitting monolithic `server.py` into encapsulated modules: `semantic_sift/tools.py`, `onboarding.py`, and `hook_injector.py`. Established `sift_kernel.py` as the standalone engine.
 - **Dependency Stability**: Aligned `pyproject.toml` and `requirements.txt` with floor version pins (`mcp>=1.0`, `numpy>=1.24`, `opentelemetry-api>=1.20`, etc.) to prevent silent breakage on future releases.
 - **Zero-Vulnerability Pipeline**: Integrated `bandit` (SAST) and `pip-audit` (SCA) into the mandatory security audit suite.

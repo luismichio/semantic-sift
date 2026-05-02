@@ -1,0 +1,16 @@
+2026-05-01T12:00:00.123Z [DEBUG] Starting webpack-dev-server...
+2026-05-01T12:00:01.456Z [INFO] ℹ ｢wds｣: Project is running at http://localhost:8080/
+2026-05-01T12:00:01.457Z [INFO] ℹ ｢wds｣: webpack output is served from /
+2026-05-01T12:00:01.458Z [INFO] ℹ ｢wds｣: Content not from webpack is served from C:\Users\dev\project\public
+2026-05-01T12:00:01.459Z [INFO] ℹ ｢wds｣: 404s will fallback to /index.html
+2026-05-01T12:00:02.111Z [DEBUG] Checking for updates... [1/1] 100%
+2026-05-01T12:00:02.555Z [WARN] Large bundle detected: main.js (2.4 MB)
+2026-05-01T12:00:03.999Z [ERROR] Failed to compile.
+2026-05-01T12:00:04.001Z [ERROR] Module not found: Error: Can't resolve './Header' in 'C:\Users\dev\project\src'
+2026-05-01T12:00:04.002Z [DEBUG] Cleaning up temporary files... .......................... done.
+2026-05-01T12:00:05.123Z [INFO] ℹ ｢wds｣: Compiling...
+2026-05-01T12:00:06.456Z [INFO] ℹ ｢wds｣: Hash: 7c82b3d9a20ef
+2026-05-01T12:00:06.457Z [INFO] ℹ ｢wds｣: Version: webpack 4.44.2
+2026-05-01T12:00:06.458Z [INFO] ℹ ｢wds｣: Time: 1337ms
+2026-05-01T12:00:07.888Z [INFO] ℹ ｢wds｣: Built at: 05/01/2026 12:00:07 PM
+2026-05-01T12:00:08.123Z [ERROR] src/App.tsx (12:42): Property 'user' does not exist on type 'unknown'.

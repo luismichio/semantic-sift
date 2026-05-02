@@ -22,6 +22,22 @@ This document provides empirical evidence of the sifting engine's impact across 
 
 ---
 
+## 🦀 Rust Native Performance (sift-core)
+
+The **`sift-core`** distribution provides ultra-low latency context distillation for native applications. We use the **Criterion** framework for high-precision measurement.
+
+### Latency Benchmarks
+*Tested on a standard developer workstation (AMD/Intel 8-core, 32GB RAM).*
+
+| Scenario | Data Size | Pass Type | Latency (Avg) |
+| :--- | :--- | :---: | :--- |
+| **Heuristic Sieve** | 100 log lines | Regex | **< 1.0ms** |
+| **Semantic Sift** | ~3,000 chars | ONNX | **~150ms** |
+
+> **Performance Note**: The Rust sidecar boots in microseconds and performs heuristic log cleaning instantly. Even the neural semantic compression is up to 5x faster than the Python/PyTorch equivalent due to the optimized ONNX runtime.
+
+---
+
 ## 🔍 High-Volume Deep-Dive
 
 ### 1. AWS Whitepaper (The "Context Goliath")

@@ -138,6 +138,8 @@ For high-performance, local-first applications (like [Meechi](https://meechi.me)
 
 > **Note**: For native apps like Meechi, we recommend a **Tiered Ingestion** strategy: use the app's frontend (e.g., `pdf.js`) to extract text, then pipe it to the Rust sidecar for high-speed semantic sifting.
 
+**[✨ View Native Sidecar Demo](./demo/)**
+
 **Usage:**
 ```bash
 # Sift a log file instantly

@@ -18,6 +18,7 @@ ndarray = "0.17"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.10"
 
 [[bench]]
 name = "sift_bench"
