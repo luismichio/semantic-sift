@@ -250,6 +250,15 @@ export default SemanticSiftPlugin;
                 if "commands" not in opencode_config:
                     opencode_config["commands"] = {}
 
+                if "/sift-onboard" not in opencode_config["commands"]:
+                    opencode_config["commands"]["/sift-onboard"] = {
+                        "description": "Initialize Semantic-Sift in this project",
+                        "action": "run_mcp_tool",
+                        "server": "semantic-sift",
+                        "tool": "sift_onboard",
+                        "args": {"environment": "OpenCode"}
+                    }
+
                 if "/sift-stats" not in opencode_config["commands"]:
                     opencode_config["commands"]["/sift-stats"] = {
                         "description": "View Semantic-Sift token savings and telemetry dashboard",
