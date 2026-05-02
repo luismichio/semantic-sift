@@ -33,13 +33,22 @@ if %errorlevel% neq 0 (
 echo "✅ Dependencies Clean."
 echo.
 
-echo "[4/4] Running Type Checks (mypy)..."
+echo "[4/5] Running Type Checks (mypy)..."
 mypy server.py sift_kernel.py sift_hook.py telemetry_core.py semantic_sift
 if %errorlevel% neq 0 (
     echo "❌ Type checking failed!"
     exit /b %errorlevel%
 )
 echo "✅ Type checks passed."
+echo.
+
+echo "[5/5] Running Linting (ruff)..."
+ruff check .
+if %errorlevel% neq 0 (
+    echo "❌ Linting violations found!"
+    exit /b %errorlevel%
+)
+echo "✅ Code Idiomatic."
 echo.
 
 echo ==========================================

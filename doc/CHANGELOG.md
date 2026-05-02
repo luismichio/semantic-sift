@@ -118,7 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Extraction Diff View**: Added `show_diff` support to `sift_extraction` via `perform_extraction_cleaning(..., show_diff=True)` with a `--- REMOVED CONTENT ---` section for source-fidelity review.
 - **Compaction Fidelity Signal**: Added vocabulary-overlap scoring in `perform_compaction_summary` with threshold control (`SIFT_COMPACTION_FIDELITY_THRESHOLD`) and low-fidelity warning injection.
 
-### 🛠️ Infrastructure & Maintenance
+### 🏗️ Infrastructure & Maintenance
+- **Local Quality Gates**: Implemented a comprehensive pre-push strategy including a Git `pre-push` hook, updated `scripts/audit.bat`, and VS Code `settings.json` for automatic linting on save. This prevents broken code or linting violations from reaching the remote repository.
 - **Security Cleanup**: Removed `.gemini/` and other sensitive directories from Git tracking.
 - **History Scrubbing**: Sanitized Git history to remove a compromised GitHub token while maintaining configuration integrity.
 - **Encoding Correction**: Fixed corrupted `.gitignore` and `requirements.txt` files which contained mixed UTF-8 and UTF-16 encoding and non-printable characters.
