@@ -113,9 +113,11 @@ Once connected, ask your AI Assistant:
 
 Semantic-Sift operates invisibly, but you can always audit its performance and token savings without burning LLM tokens to do so.
 
-*   **Terminal CLI**: Run `semantic-sift-stats` in any terminal to print a global dashboard of your token savings, latency, and cache hits.
+*   **Terminal CLI**: 
+    *   Run `semantic-sift-stats` to print a global dashboard of your token savings, latency, and cache hits.
+    *   Run `semantic-sift-onboard` to manually initialize Sift in any project (supports `--env` and `--dry-run`).
 *   **MCP Prompts**: Compatible clients (Claude Desktop, Cursor, Zed) will surface a `sift_dashboard` prompt in their UI (often via a slash command or button) to instantly inject your telemetry stats into the chat.
-*   **OpenCode & Gemini CLI**: The `sift_onboard()` tool automatically injects a native `/sift-stats` custom slash command into your IDE configuration.
+*   **OpenCode & Gemini CLI**: The `sift_onboard()` tool automatically injects native `/sift-stats` and `/sift-onboard` custom slash commands into your IDE configuration.
 
 ---
 

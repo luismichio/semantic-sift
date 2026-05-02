@@ -102,8 +102,8 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
 *   **Output**: A formatted Markdown dashboard detailing `[Tokens Saved]`, `[Avg Latency]`, and a tool-by-tool breakdown.
 
 ### `sift_onboard`
-**Intent**: Automatically configures the current project workspace for optimal context sifting by injecting instructions, security hooks, and shielding specialized subagent threads. It also ensures critical Semantic-Sift artifacts are protected from version control exposure.
-*   **Arguments**:
+**Intent**: Automatically configures the current project workspace for optimal context sifting. Exposed as an MCP tool (`sift_onboard`), an IDE slash command (`/sift-onboard`), and a terminal CLI (`semantic-sift-onboard`).
+*   **Arguments (Tool only)**:
     *   `environment` (str, default: `None`): The name of your current active environment (e.g., `'Gemini'`, `'Cursor'`, `'OpenCode'`, `'VSCode'`, `'Cline'`). Recommended for optimal automated configuration and to prevent environment bloat.
     *   `target_dir` (str, default: `None`): Optional absolute path to the project root. Defaults to the current working directory.
     *   `dry_run` (bool, default: `False`): When `True`, reports all planned actions (files that would be modified, hooks that would be injected) without writing any files. Use this to preview the impact before committing to a full onboard.
