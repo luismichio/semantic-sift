@@ -1,0 +1,25 @@
+[package]
+name = "semantic-sift-core"
+version = "0.1.0"
+edition = "2024"
+authors = ["Luis Kobayashi"]
+description = "High-performance Rust core for context distillation (Studio of Two)"
+license = "Apache-2.0"
+
+[dependencies]
+regex = "1.11"
+clap = { version = "4.5", features = ["derive"] }
+once_cell = "1.19"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ort = { version = "2.0.0-rc.12", features = ["ndarray"] }
+tokenizers = { version = "0.21", default-features = false, features = ["onig"] }
+ndarray = "0.17"
+
+[lib]
+name = "semantic_sift_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "sift-core"
+path = "src/main.rs"

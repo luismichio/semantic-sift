@@ -35,6 +35,12 @@ benchmarks/data/*.docx
 dist/
 build/
 
+# Rust packaging artifacts
+target/
+crates/**/target/
+crates/**/models/
+Cargo.lock
+
 # Tests
 test_sift.py
 .pytest_cache/
