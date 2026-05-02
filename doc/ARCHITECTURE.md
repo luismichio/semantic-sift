@@ -40,8 +40,8 @@ The Rust core utilizes **ONNX Runtime** (via the `ort` crate) to execute the **L
 - **Inference Strategy**: Tokenizes input, performs a single-pass classification, and reconstructs the string based on a probability threshold derived from the target `rate`.
 
 ### Dual Distribution Model
-- **Python MCP**: Primary path for IDE integration and developer workflows.
-- **Rust Sidecar**: Optimized for native application embedding and CI/CD pipelines.
+- **Python MCP**: The **"Full-Featured"** distribution. Primary path for IDE integration and developer workflows. Includes the **MarkItDown** multi-modal ingestion pipeline for binary file support (.pdf, .xlsx, etc.).
+- **Rust Sidecar**: The **"High-Performance"** engine. Optimized for native application embedding, sidecars, and CI/CD pipelines. Currently limited to **Text-only** ingestion; assumes format conversion has already occurred in the host application or a previous pipeline stage.
 
 ---
 

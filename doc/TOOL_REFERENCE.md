@@ -13,7 +13,8 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
     *   `rate` (float, default: `0.5`): The compression target used when the Semantic Engine is engaged. Lower is more aggressive.
     *   `type` (str, default: `"auto"`): The specific sifter pipeline to force. Options are `"logs"`, `"chat"`, `"doc"`, `"extraction"`, or `"auto"`.
 *   **Routing & Multi-Modal Logic**:
-    *   **Binary Files**: If the extension is `.pdf`, `.docx`, `.xlsx`, `.pptx`, `.zip`, or `.html`, the tool automatically uses **MarkItDown** to convert the content to Markdown.
+    *   **Binary Files (Python MCP Only)**: If the extension is `.pdf`, `.docx`, `.xlsx`, `.pptx`, `.zip`, or `.html`, the tool automatically uses **MarkItDown** to convert the content to Markdown.
+    *   **Native Rust Sidecar Note**: The `sift-core` binary does not include the MarkItDown pipeline. It is optimized for **Raw Text** (Logs, Prose, Code) ingestion. For native apps, perform format conversion in the frontend (e.g., `pdf.js`) before calling the sidecar.
     *   **Two-Stage Cache**: Raw Markdown conversions are stored in `.sift_cache/raw_[hash].md` to ensure subsequent sifts (at different rates) are near-instant.
     *   **Auto-Detection** (for `type="auto"`):
         *   `.log`, `.out` routes to the **Heuristic Engine** (`sift_kernel.apply_heuristic_sieve`).

@@ -123,9 +123,20 @@ Semantic-Sift operates invisibly, but you can always audit its performance and t
 
 ## 🦀 Native Rust Sidecar (Meechi & Desktop Apps)
 
-For high-performance, local-first applications (like [Meechi](https://meechi.me)), Semantic-Sift provides a native Rust binary (`sift-core`). This sidecar uses **ONNX Runtime** to run LLMLingua-2 with zero Python dependencies.
+For high-performance, local-first applications (like [Meechi](https://meechi.me)), Semantic-Sift provides a native Rust binary (`sift-core`). This sidecar is optimized for portability and speed, with zero Python dependencies.
 
-Pre-compiled binaries for Windows, macOS, and Linux are available in our [GitHub Releases](https://github.com/luismichio/semantic-sift/releases).
+### Feature Comparison
+
+| Feature | Python MCP Server | Rust Sift-Core (Sidecar) |
+| :--- | :---: | :---: |
+| **Heuristic Log Sifting** | ✅ | ✅ (Native) |
+| **Semantic Compression** | ✅ (PyTorch) | ✅ (ONNX) |
+| **Multi-Modal Ingestion** | ✅ (**MarkItDown**) | ❌ (Text Only) |
+| **Supported Formats** | .pdf, .xlsx, .docx, .html, .txt | .txt, .log, .out (Text) |
+| **Startup Latency** | 3-5 seconds | **~10ms** |
+| **Binary Size** | ~1.5GB (bundled) | **~15MB** |
+
+> **Note**: For native apps like Meechi, we recommend a **Tiered Ingestion** strategy: use the app's frontend (e.g., `pdf.js`) to extract text, then pipe it to the Rust sidecar for high-speed semantic sifting.
 
 **Usage:**
 ```bash
