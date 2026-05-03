@@ -28,7 +28,7 @@ Semantic-Sift is a strategic layer designed to manage attention across four key 
 
 *   **For the Senior Engineer:** A local-first, low-latency middleware using a dual-engine approach (Heuristic Sieve + Neural Reranker). It refined timestamps, repetitive boilerplate, and redundant JSON before they hit the wire, reducing latency and preventing "Lost in the Middle" reasoning failures.
 *   **For the Project Manager:** "Context Insurance." By reducing token overhead by 30-70%, Sift provides direct ROI on API costs and reduces the "retry loop" caused by model hallucinations in messy data environments.
-*   **For the Researcher:** Data integrity at scale. Native **MarkItDown** integration converts complex `.pdf`, `.docx`, and `.xlsx` into structured, distilled Markdown, allowing for the rapid synthesis of massive technical repositories without losing critical semantic anchors.
+*   **For the Researcher:** Data integrity at scale. Supports **MarkItDown** (via the `[multi-modal]` optional extra) to convert complex `.pdf`, `.docx`, and `.xlsx` into structured, distilled Markdown, allowing for the rapid synthesis of massive technical repositories without losing critical semantic anchors.
 *   **For the Knowledge Partner:** Cognitive Load Management. Sift manages the friction of raw data ingestion, allowing the human-AI partnership to focus on high-level strategy and architectural decisions rather than manual data triage.
 
 ---
@@ -138,10 +138,10 @@ To provide the best of both worlds, installing the Python package also exposes t
 | :--- | :---: | :---: |
 | **Heuristic Log Sifting** | ✅ | ✅ (Native) |
 | **Semantic Compression** | ✅ (PyTorch) | ✅ (ONNX) |
-| **Multi-Modal Ingestion** | ✅ (**MarkItDown**) | ❌ (Text Only) |
+| **Multi-Modal Ingestion** | ✅ (via `[multi-modal]`) | ❌ (Text Only) |
 | **Supported Formats** | .pdf, .xlsx, .docx, .html, .txt | .txt, .log, .out (Text) |
 | **Startup Latency** | 3-5 seconds | **~10ms** |
-| **Binary Size** | ~1.5GB (bundled) | **~15MB** |
+| **Binary Size** | ~1.5GB (with models) | **~15MB** |
 
 > **Note**: For native apps like Meechi, we recommend a **Tiered Ingestion** strategy: use the app's frontend (e.g., `pdf.js`) to extract text, then pipe it to the Rust sidecar for high-speed semantic sifting.
 

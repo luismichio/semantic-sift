@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Automated Slash Command Injection**: `sift_onboard()` now automatically configures project-level slash commands:
     - **OpenCode**: Injects `/sift-stats` and `/sift-onboard` into `opencode.json`.
     - **Gemini CLI**: Generates `.gemini/commands/sift-stats.toml`.
-- **MarkItDown Multi-Modal Ingestion**: Integrated Microsoft's `MarkItDown` as a structural pre-processor. Semantic-Sift now natively supports converting **PDF, DOCX, XLSX, and PPTX** to Markdown before sifting.
+- **MarkItDown Multi-Modal Ingestion**: Integrated Microsoft's `MarkItDown` as an optional structural pre-processor (via `[multi-modal]`). Semantic-Sift now supports converting **PDF, DOCX, XLSX, and PPTX** to Markdown before sifting.
 - **Subconscious HTML Normalization**: Upgraded the `sift_hook.py` interceptor to automatically detect HTML content (e.g., from web search results) and convert it to clean Markdown using MarkItDown before semantic compression.
 - **Multi-Agent & Subagent Shielding**: Implemented a workspace crawler in `server.py` that automatically detects and shields specialized agent folders (`.codex/agents/`, `.cursor/agents/`, `.junie/agents/`) and scoped `AGENTS.md` mandates.
 - **OpenTelemetry Tracing**: Integrated OTel with an isolated TracerProvider to provide a traceable "Chain of Custody" for data without interfering with host applications.
