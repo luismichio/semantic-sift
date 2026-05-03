@@ -130,7 +130,7 @@ def register_tools(
         elif sifter_type == "extraction":
             result = sift_kernel.perform_extraction_cleaning(content)
         else:
-            result = sift_kernel.perform_semantic_sift(content, rate=rate)
+            result = sift_kernel.perform_hybrid_sift(content, rate=rate)
 
         latency = (time.time() - start_t) * 1000
         file_ext = os.path.splitext(safe_path)[1].lower() or "txt"
@@ -197,7 +197,7 @@ def register_tools(
     @mcp.tool()
     async def sift_chat(text: str, rate: float = 0.5) -> str:
         start_t = time.time()
-        result = sift_kernel.perform_semantic_sift(text, rate=rate)
+        result = sift_kernel.perform_hybrid_sift(text, rate=rate)
         latency = (time.time() - start_t) * 1000
         telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency, client_id_override=CLIENT_ID)
         return result

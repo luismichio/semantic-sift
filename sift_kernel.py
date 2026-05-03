@@ -6,6 +6,7 @@ import json
 import hashlib
 import threading
 import difflib
+import subprocess
 from typing import Any
 
 # Cache Configuration
@@ -226,8 +227,39 @@ def set_cache(key: str, result: str) -> None:
     with open(cache_path, "w", encoding="utf-8", errors="replace") as f:
         f.write(result)
 
+def _call_rust_sifter(text: str, rate: float) -> str | None:
+    """Shells out to the Rust sift-core binary for low-latency ONNX sifting."""
+    try:
+        process = subprocess.Popen(
+            ["sift-core", "semantic", "--rate", str(rate)],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        stdout, stderr = process.communicate(input=text)
+        if process.returncode == 0:
+            return stdout
+        return None
+    except FileNotFoundError:
+        return None
+
+def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
+    """
+    Intelligent router that chooses the optimal engine:
+    1. Small/Medium texts (<30,000 chars) -> Rust/ONNX (Fast, low RAM).
+    2. Large texts (>30,000 chars) -> Python/PyTorch (Flash Attention).
+    """
+    if len(text) < 30000:
+        rust_result = _call_rust_sifter(text, rate)
+        if rust_result:
+            return rust_result
+
+    # Fallback to PyTorch for large text or if Rust is missing
+    return perform_semantic_sift(text, rate=rate)
+
 def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
-    """Performs BERT-based prompt compression."""
+    """Performs BERT-based prompt compression using PyTorch."""
     cache_key = get_cache_key("sift_chat", text, rate=rate)
     if cached := check_cache(cache_key):
         return cached
@@ -277,25 +309,13 @@ def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tu
 def perform_doc_sift(text: str, rate: float = 0.4) -> str:
     """Hybrid sifting for long documentation."""
     cleaned = apply_heuristic_sieve(text)
-    return perform_semantic_sift(cleaned, rate=rate)
+    return perform_hybrid_sift(cleaned, rate=rate)
 
 def perform_compaction_summary(text: str) -> str:
-    """Sifts session history for structural compaction snapshots.
-
-    Priority lines (Decision/Status/File/Task markers) are extracted first and
-    placed in a Structural Snapshot header.  They are stripped from the text
-    passed to semantic compression so they appear exactly once in the output,
-    preventing duplicate-line overhead that causes negative token savings.
-
-    If stripping priority lines leaves nothing meaningful to compress, the
-    Structural Snapshot alone is returned — no Semantic Summary section is
-    emitted — guaranteeing the output is never longer than the input.
-    """
-    # Heuristically find 'Decision', 'Status', 'File', 'Task' markers
+    """Sifts session history for structural compaction snapshots."""
     priorities = re.findall(r'(?:Decision|Status|File|Task).*?:.*', text, re.IGNORECASE)
     context_hint = "\n".join(priorities) if priorities else ""
 
-    # Strip priority lines from the source before semantic compression
     priority_set = set(priorities)
     remaining_lines = [
         line for line in text.splitlines()
@@ -303,18 +323,12 @@ def perform_compaction_summary(text: str) -> str:
     ]
     text_for_summary = "\n".join(remaining_lines).strip()
 
-    # If nothing remains after stripping, the snapshot IS the full summary —
-    # skip semantic compression entirely to guarantee no negative savings.
     if not text_for_summary:
-        if context_hint:
-            return f"## Structural Snapshot\n{context_hint}"
-        return text
+        return f"## Structural Snapshot\n{context_hint}" if context_hint else text
 
-    # Aggressive rate for compaction (0.2) to save maximum space
-    summary = perform_semantic_sift(text_for_summary, rate=0.2)
-
-    # Fidelity signal: vocabulary overlap against the original full text
+    summary = perform_hybrid_sift(text_for_summary, rate=0.2)
     fidelity_score = calculate_vocabulary_overlap(text, summary)
+
     raw_threshold = os.environ.get("SIFT_COMPACTION_FIDELITY_THRESHOLD", "0.3")
     try:
         fidelity_threshold = max(0.0, min(1.0, float(raw_threshold)))
@@ -322,11 +336,7 @@ def perform_compaction_summary(text: str) -> str:
         fidelity_threshold = 0.3
 
     if fidelity_score < fidelity_threshold:
-        summary = (
-            summary
-            + f"\n\n[Semantic-Sift: Low fidelity compaction detected - vocabulary overlap: {fidelity_score:.1%}. "
-            "Consider reviewing session manually.]"
-        )
+        summary += f"\n\n[Semantic-Sift: Low fidelity compaction detected - vocabulary overlap: {fidelity_score:.1%}.]"
 
     if context_hint:
         return f"## Structural Snapshot\n{context_hint}\n\n## Semantic Summary\n{summary}"
@@ -340,26 +350,17 @@ def calculate_vocabulary_overlap(original: str, compressed: str) -> float:
     compressed_words = set(re.findall(r"\w+", compressed.lower()))
     return len(original_words & compressed_words) / len(original_words)
 
-
 def perform_extraction_cleaning(content: str, show_diff: bool = False) -> str:
     """Sifts raw OCR/Docling extractions."""
     refined = content
     for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']:
         refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
 
-    cleaned = perform_semantic_sift(refined, rate=0.7)
+    cleaned = perform_hybrid_sift(refined, rate=0.7)
     if not show_diff:
         return cleaned
 
-    diff_lines = list(
-        difflib.unified_diff(
-            content.splitlines(),
-            cleaned.splitlines(),
-            fromfile="original",
-            tofile="sifted",
-            lineterm="",
-        )
-    )
+    diff_lines = list(difflib.unified_diff(content.splitlines(), cleaned.splitlines(), fromfile="original", tofile="sifted", lineterm=""))
     removed_lines = [line[1:] for line in diff_lines if line.startswith("-") and not line.startswith("---")]
     removed_section = "\n".join(removed_lines) if removed_lines else "(No explicit line removals detected.)"
     return cleaned + "\n\n--- REMOVED CONTENT ---\n" + removed_section
