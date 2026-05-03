@@ -53,6 +53,7 @@ dev = [
 semantic-sift = "server:main"
 semantic-sift-stats = "semantic_sift.telemetry_cli:main"
 semantic-sift-onboard = "semantic_sift.onboarding_cli:main"
+semantic-sift-cli = "semantic_sift.cli:main"
 
 [tool.setuptools]
 py-modules = ["server", "sift_kernel", "sift_hook", "telemetry_core"]
