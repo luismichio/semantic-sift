@@ -41,6 +41,25 @@ def update_gitignore(target_dir: str) -> str:
     except OSError as e:
         return f"Error updating `.gitignore`: {str(e)}"
 
+def _is_cpp_present(target_dir: str) -> bool:
+    """Checks if the Context-Pipe Protocol orchestrator is already active."""
+    cursor_hook = os.path.join(target_dir, ".cursor", "hooks.json")
+    if os.path.exists(cursor_hook):
+        try:
+            with open(cursor_hook, "r") as f:
+                if "context-pipe" in f.read():
+                    return True
+        except OSError: pass
+
+    opencode = os.path.join(target_dir, "opencode.json")
+    if os.path.exists(opencode):
+        try:
+            with open(opencode, "r") as f:
+                if "context-pipe" in f.read():
+                    return True
+        except OSError: pass
+
+    return False
 
 def apply_onboarding(
     environment: str,
@@ -52,6 +71,13 @@ def apply_onboarding(
 ) -> list[str]:
     actions = []
     cwd = target_dir if target_dir else os.getcwd()
+
+    if _is_cpp_present(cwd):
+        return [
+            "🚨 Context-Pipe (CPP) orchestrator detected.",
+            "Skipping Sift hook injection and prompt overrides to preserve your advanced pipeline routing.",
+            "Semantic-Sift will continue to operate as a Node in your chain."
+        ]
 
     if dry_run:
         actions.append("Git Protection (dry-run): would ensure .sift_identity/.sift_telemetry.json/.sift_cache are ignored.")

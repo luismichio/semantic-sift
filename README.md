@@ -94,6 +94,8 @@ For full semantic/reranking features (LLMLingua, Transformers, sentence-transfor
 pip install .[neural]
 ```
 
+> **Note on Orchestration:** Semantic-Sift is an "Intelligence Kernel." For complex multi-tool workflows, we strongly recommend installing [Context-Pipe](https://github.com/luismichio/context-pipe), the universal switchboard that natively routes data to Semantic-Sift without blocking your IDE.
+
 For development tools (mypy, pytest):
 ```bash
 pip install .[dev]

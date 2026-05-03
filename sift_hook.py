@@ -214,7 +214,7 @@ def main() -> None:
                 sys.stdout.write(json.dumps(data))
                 return
 
-            if "--- [Semantic-Sift Audit] ---" in raw_content:
+            if "--- [Semantic-Sift Audit] ---" in raw_content or "--- [Context-Pipe: Native Execution] ---" in raw_content:
                 log(f"Bypassing Native Execution for {tool_name}")
                 sys.stdout.write(raw_input)
                 return
