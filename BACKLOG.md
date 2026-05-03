@@ -174,8 +174,8 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 
 ## 🚀 Phase 4: The Intelligent Refinery (Current Roadmap)
 
-### ⛓️ Agentic Chain Evolution
-- [ ] **Orchestrator + Kernel Integration**: Refactor the Python MCP server to optionally call the Rust `sift-core` binary for heavy-duty processing, reducing Python VRAM overhead.
+### ⛓️ Context-Pipe Evolution
+- [ ] **Dynamic Backend Routing (Hybrid Engine)**: Refactor the Python MCP server to dynamically switch between backends. Use the low-footprint Rust `sift-core` (ONNX) for daily tasks and short contexts, but dynamically load PyTorch (with Flash Attention) for massive documents (>8K tokens) to prevent ONNX $O(n^2)$ memory scaling issues.
 - [ ] **Multi-Parser Registry**: Implement the dynamic discovery engine in both Python and Rust to support `markitdown`, `pandoc`, and `LlamaIndex` as swappable ingestion nodes.
 - [ ] **Chain-Aware Telemetry**: Extend ROI reporting to track the entire "Chain of Custody" (e.g., Ingest -> Rank -> Sift) and report cumulative savings.
 
