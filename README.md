@@ -103,7 +103,7 @@ pip install .[dev]
 
 ### 2. Connect the MCP
 
-> **CRITICAL**: For exact configuration paths for Cursor, Gemini, OpenCode, VS Code, and Claude, reference the **[Master Configuration Matrix in the Integration Encyclopedia](doc/INTEGRATION_ENCYCLOPEDIA.md#5-master-configuration-matrix-mcp-server-installation)**.
+> **CRITICAL**: For exact configuration paths for Cursor, Gemini, OpenCode, VS Code, and Claude, reference the **[Master Configuration Matrix in the Context-Pipe Documentation](https://github.com/luismichio/context-pipe/blob/main/doc/INTEGRATION_ENCYCLOPEDIA.md#5-master-configuration-matrix-mcp-server-installation)**.
 
 ### 3. Auto-Onboard
 Once connected, ask your AI Assistant:

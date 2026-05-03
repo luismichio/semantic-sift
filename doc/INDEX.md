@@ -41,15 +41,7 @@ This document defines the decoupled structure of the Semantic-Sift documentation
         *   `sift_onboard`: Configures workspace rules and native IDE hooks.
         *   `get_sift_stats`: Retrieves local telemetry and token savings.
 
-### 4. [`doc/INTEGRATION_ENCYCLOPEDIA.md`](INTEGRATION_ENCYCLOPEDIA.md)
-*   **Intent**: Compatibility map, hook payload specifications, and onboarding logic.
-*   **Topic Index**:
-    *   **Supported Environments**: Handling for Gemini CLI, Antigravity, VSCode, Copilot, Cursor, Windsurf, OpenCode, Claude Desktop, Zed, and Continue.
-    *   **Hook Injector (`server.py`)**: Automated modification of instruction files (`AGENTS.md`, `GEMINI.md`, `.clinerules`, `.cursorrules`, `.windsurfrules`, `.github/copilot-instructions.md`) and injection of `sift_hook.py` execution commands into `.cursor/hooks.json`, `.github/hooks/semantic-sift.json`, and `.opencode/plugins/semantic-sift.ts`.
-    *   **Payload Structures**: Analysis of environment-specific JSON responses (e.g., `tool_response.llmContent`, `result`, `context`, and `hookSpecificOutput.additionalContext`).
-    *   **Master Configuration Matrix**: The absolute configuration paths used by IDEs (as parsed by `get_global_mcp_configs()`) and their expected MCP schema configurations.
-
-### 5. [`doc/TELEMETRY_SPEC.md`](TELEMETRY_SPEC.md)
+### 4. [`doc/TELEMETRY_SPEC.md`](TELEMETRY_SPEC.md)
 *   **Intent**: Technical design of data tracing, privacy controls, and the pulse system (`telemetry_core.py`).
 *   **Topic Index**:
     *   **OpenTelemetry (OTel)**: Isolated `TracerProvider`, custom span attributes (`tool.name`, `platform`, `is_echo`, `sift.reduction_pct`, `file.path`), and `ConsoleSpanExporter`.
@@ -57,7 +49,7 @@ This document defines the decoupled structure of the Semantic-Sift documentation
     *   **Audit Headers**: Configurable Markdown headers (`SIFT_AUDIT_HEADER`: `silent`, `minimal`, `full`) for logging reductions and execution latency.
     *   **Telemetry Pulse API**: Local logging (`.sift_telemetry.json`), global anonymous metric submission (`SIFT_TELEMETRY_URL` pointing to `luiskobayashi.com`), gated by the `SIFT_TELEMETRY_DISABLED` kill-switch, with `SIFT_LICENSE_KEY` checking for `Commercial` vs `Community` tiers, and `.sift_identity` for machine UUIDs.
 
-### 6. [`doc/ORCHESTRATION_BLUEPRINTS.md`](ORCHESTRATION_BLUEPRINTS.md)
+### 5. [`doc/ORCHESTRATION_BLUEPRINTS.md`](ORCHESTRATION_BLUEPRINTS.md)
 *   **Intent**: Workflow guides and recipes for maximizing the utility of Semantic-Sift tools.
 *   **Topic Index**:
     *   **Decision Trees**: When to use `sift_read_file` vs standard reading based on `sift_analyze_file` output.
