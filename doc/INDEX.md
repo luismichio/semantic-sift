@@ -51,6 +51,9 @@ This document defines the decoupled structure of the Semantic-Sift documentation
 
 ### 5. [`doc/ORCHESTRATION_BLUEPRINTS.md`](ORCHESTRATION_BLUEPRINTS.md)
 *   **Intent**: Workflow guides and recipes for maximizing the utility of Semantic-Sift tools.
+
+### 6. [`doc/MCP_CONFIG_EXAMPLES.md`](MCP_CONFIG_EXAMPLES.md)
+*   **Intent**: Ready-to-use configuration blocks for all major AI platforms.
 *   **Topic Index**:
     *   **Decision Trees**: When to use `sift_read_file` vs standard reading based on `sift_analyze_file` output.
     *   **Context Optimization**: Managing context limits using `sift_rank` and targeted semantic compression.
