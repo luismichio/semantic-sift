@@ -200,12 +200,18 @@ Telemetry schema and endpoint details are documented in [doc/TELEMETRY_SPEC.md](
 
 ---
 
-## License
+## 🔗 The Ecosystem (Studio of Two)
 
-Apache License 2.0. See [LICENSE.md](LICENSE.md) for details.
+Semantic-Sift is a flagship member of the **Studio of Two** infrastructure. It is designed to work in high-fidelity harmony with:
 
-## Contributing
+*   **[Context-Pipe](https://github.com/luismichio/context-pipe)**: The universal switchboard for context engineering. While Sift provides the intelligence, Context-Pipe provides the orchestration. We highly recommend using Context-Pipe to chain Sift nodes with masking, search, and multi-modal ingestion tools.
 
+---
+
+## ⚖️ Licensing
+Semantic-Sift is licensed under the **Apache License 2.0**. See [LICENSE.md](LICENSE.md) for details.
+
+## 🤝 Contributing
 **Semantic-Sift is Open Source, but Closed to Contributions.**
 
 To maintain the strict architectural vision of the "Studio of Two" and keep maintenance overhead at absolute zero, this repository does not accept external pull requests. We encourage you to use, embed, and fork the code under the permissive Apache 2.0 license, but please do not submit PRs for new features or bug fixes. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
