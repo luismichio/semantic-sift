@@ -49,7 +49,8 @@ def _is_cpp_present(target_dir: str) -> bool:
             with open(cursor_hook, "r") as f:
                 if "context-pipe" in f.read():
                     return True
-        except OSError: pass
+        except OSError:
+            pass
 
     opencode = os.path.join(target_dir, "opencode.json")
     if os.path.exists(opencode):
@@ -57,7 +58,8 @@ def _is_cpp_present(target_dir: str) -> bool:
             with open(opencode, "r") as f:
                 if "context-pipe" in f.read():
                     return True
-        except OSError: pass
+        except OSError:
+            pass
 
     return False
 
