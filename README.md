@@ -67,7 +67,7 @@ All technical details, architectural logic, and integration guides are strictly 
 
 ### 📚 The Knowledge Hunter (Researchers & Architects)
 *   **The Pain**: Reading 50-page PDFs, complex Word specs, or cluttered documentation sites.
-*   **The Sift**: Uses **MarkItDown** to natively ingest `.pdf`, `.docx`, and `.xlsx`. It converts corporate "noise" into structured Markdown, allowing your agent to synthesize multiple 14MB documents in a single turn.
+*   **The Sift**: Supports **MarkItDown** via the `[multi-modal]` optional extra to natively ingest `.pdf`, `.docx`, and `.xlsx`. It converts corporate "noise" into structured Markdown, allowing your agent to synthesize multiple 14MB documents in a single turn.
 
 ### 🛠️ The Log Hunter (DevOps & SREs)
 *   **The Pain**: Finding a single error in 100,000 lines of technical logs.
