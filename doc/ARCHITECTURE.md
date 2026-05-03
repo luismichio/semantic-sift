@@ -43,6 +43,11 @@ The Rust core utilizes **ONNX Runtime** (via the `ort` crate) to execute the **L
 - **Python MCP**: The **"Full-Featured"** distribution. Primary path for IDE integration and developer workflows. Includes the **MarkItDown** multi-modal ingestion pipeline for binary file support (.pdf, .xlsx, etc.).
 - **Rust Sidecar**: The **"High-Performance"** engine. Optimized for native application embedding, sidecars, and CI/CD pipelines. Currently limited to **Text-only** ingestion; assumes format conversion has already occurred in the host application or a previous pipeline stage.
 
+### The Hybrid Engine (`semantic-sift-cli`)
+To provide the best of both worlds, the Python package exposes the `semantic-sift-cli` command. This acts as an **Intelligent Router**:
+- For **short tasks** (<30,000 chars), it instantly shells out to the low-latency Rust `sift-core` (ONNX).
+- For **massive batch tasks**, it dynamically loads the high-throughput PyTorch framework with Flash Attention to prevent memory explosion, leveraging $O(n)$ memory scaling.
+
 ---
 
 ## 1. Distillation Kernel (`sift_kernel.py`)

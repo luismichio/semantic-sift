@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### ✨ New Features
+- **Hybrid Engine CLI (`semantic-sift-cli`)**: Added a Python-based CLI router that dynamically switches between low-latency Rust/ONNX execution and high-throughput PyTorch execution (Flash Attention) based on payload size.
 - **Native Rust Sift-Core**: Scaffolding and implementation of `crates/sift-core`, a high-performance Rust port of the distillation engine.
     - **Heuristic Sieve (Native)**: Zero-dependency, ultra-fast regex-based log cleaner.
     - **Semantic Engine (ONNX)**: Native inference wrapper for LLMLingua-2 via `onnxruntime-rs`.

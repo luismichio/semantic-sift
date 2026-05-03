@@ -127,6 +127,11 @@ Semantic-Sift operates invisibly, but you can always audit its performance and t
 
 For high-performance, local-first applications (like [Meechi](https://meechi.me)), Semantic-Sift provides a native Rust binary (`sift-core`). This sidecar is optimized for portability and speed, with zero Python dependencies.
 
+### 🔀 The Hybrid Engine (`semantic-sift-cli`)
+To provide the best of both worlds, installing the Python package also exposes the `semantic-sift-cli` command. This acts as an **Intelligent Router**:
+- For **short tasks** (<30,000 chars), it instantly shells out to the low-latency Rust `sift-core` (ONNX).
+- For **massive batch tasks**, it dynamically loads the high-throughput PyTorch framework with Flash Attention to prevent memory explosion.
+
 ### Feature Comparison
 
 | Feature | Python MCP Server | Rust Sift-Core (Sidecar) |

@@ -120,4 +120,23 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
         *   Generates native TypeScript plugins for OpenCode and OpenClaw.
 *   **Output**: A Markdown "Onboarding Report" detailing the environment (Python, CUDA, Device), security status (including Git protection), a list of **Shielded Subagents**, and a bulleted manifest of all modified files and injected hooks.
 
+---
+
+## 5. Command-Line Interfaces (CLI)
+
+While Semantic-Sift is primarily designed as an MCP server, it also exposes powerful terminal commands for standalone use and integration into external pipes (like Context-Pipe).
+
+### `semantic-sift-cli` (The Hybrid Engine)
+**Intent**: The universal router for Context-Pipe workflows. It dynamically switches between the fast Rust/ONNX engine for small payloads and the high-throughput PyTorch engine for massive documents.
+*   **Usage**: `cat file.log | semantic-sift-cli [type] [--rate RATE]`
+*   **Arguments**:
+    *   `type`: `logs`, `semantic`, `doc`, `extraction`, or `auto` (default).
+    *   `--rate`: Compression target (default `0.5`).
+
+### `semantic-sift-stats`
+**Intent**: Prints a global dashboard of token savings, latency, and cache hits to the terminal.
+
+### `semantic-sift-onboard`
+**Intent**: Manually initializes the sifting environment and hooks in the current directory.
+
 > **Note**: Token counts are estimated at 4 chars/token. Actual billed tokens vary by model and content type. For precise billing data, consult your API provider dashboard.
