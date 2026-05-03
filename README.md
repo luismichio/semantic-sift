@@ -86,8 +86,22 @@ Clone the repository and install:
 ```bash
 git clone https://github.com/luismichio/semantic-sift.git
 cd semantic-sift
+# Dedicated environment (Recommended)
+python -m venv venv
+.\venv\Scripts\activate
 pip install .
 ```
+
+### 🐍 Python Environment Guidance
+
+Choosing the right Python path for your MCP configuration is critical for stability:
+
+| Setup Type | Path Example | Pros | Cons |
+| :--- | :--- | :--- | :--- |
+| **Dedicated Venv** | `.../semantic-sift/venv/Scripts/python.exe` | **Isolated dependencies**, no version conflicts with other tools. | Slightly more disk space. |
+| **Global Python** | `C:/Users/User/AppData/Local/.../python.exe` | Shared libraries, fast setup. | High risk of version conflicts (e.g., `transformers` mismatches). |
+
+**Recommendation:** Always use the **Dedicated Venv** path in your `mcp_config.json` to ensure the sifting kernel is isolated and reliable.
 
 For full semantic/reranking features (LLMLingua, Transformers, sentence-transformers):
 ```bash
