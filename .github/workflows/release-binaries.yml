@@ -46,7 +46,7 @@ jobs:
           cp target/${{ matrix.target }}/release/sift-core${{ matrix.suffix }} artifacts/sift-core-${{ matrix.target }}${{ matrix.suffix }}
           cd artifacts
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            zip sift-core-${{ matrix.target }}.zip sift-core-${{ matrix.target }}${{ matrix.suffix }}
+            7z a sift-core-${{ matrix.target }}.zip sift-core-${{ matrix.target }}${{ matrix.suffix }}
           else
             tar -czf sift-core-${{ matrix.target }}.tar.gz sift-core-${{ matrix.target }}${{ matrix.suffix }}
           fi
