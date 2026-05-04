@@ -1,0 +1,24 @@
+name: Contribution Gatekeeper
+
+on:
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  welcome-and-warn:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentBody = `Thank you for your interest in the Studio of Two! 🌿\n\nPlease note that as outlined in our [CONTRIBUTING.md](CONTRIBUTING.md), this project follows an **"Open Source, Closed Contribution"** model to maintain strict architectural integrity.\n\n**What this means:**\n- We generally do not accept external feature requests or architectural changes.\n- If this PR fixes a critical bug or typo, we will review it! However, we may choose to implement the fix ourselves rather than merging this PR directly.\n\nThank you for understanding and for helping us keep the ecosystem robust!`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
