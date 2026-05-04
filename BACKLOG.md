@@ -180,6 +180,7 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 - [ ] **Chain-Aware Telemetry**: Extend ROI reporting to track the entire "Chain of Custody" (e.g., Ingest -> Rank -> Sift) and report cumulative savings.
 
 ### 🧠 Advanced Neural Kernels
+- [ ] **Knapsack Context Optimizer (`sift_pack`)**: Implement a 0/1 Knapsack dynamic programming algorithm to mathematically select the optimal combination of text chunks that maximizes semantic relevance (value) while strictly adhering to a target token limit (weight). This prevents context window overflow and maximizes utilization.
 - [ ] **`reranker-core` (Rust/ONNX)**: Port the BGE-Reranker to a standalone Rust sidecar to complete the zero-Python Intelligence Tier.
 - [ ] **Context-Aware Thresholding**: Dynamically adjust the sifting `rate` based on the agent's current context window pressure (e.g., sift harder as the window fills up).
 
