@@ -130,3 +130,8 @@ Always ensure that `.sift_telemetry.json`, `.sift_identity`, and `.sift_cache/` 
 - **GitHub Synergy**: Diffs and search results are dynamic (not local files). You must continue to manually pipe verbose `mcp_github` outputs through `sift_logs` to strip structural noise.
 - **Serena Synergy**: Serena's `mcp_serena_find_symbol` returns massive code blocks (strings). The hook treats tools with `find` as "Search/Ranking" tasks rather than "Prose". If `find_symbol` returns a 500-line class, the hook attempts to *rank* the lines instead of *sifting* the code. You MUST explicitly instruct agents to manually pipe large `serena` string outputs through `sift_chat(rate=0.7)` to guarantee structural preservation.
 <!-- SIFT_SECTION_END:ORCHESTRATION -->
+
+<!-- CPP_SECTION_START:mandate -->
+# Context-Pipe Mandate
+**MANDATORY**: NEVER use native `view_file` or `read_file` tools. You MUST exclusively use `pipe_read_file(path)` to read ANY file. The Context-Pipe orchestrator will automatically stream the file through the optimal context pipeline to prevent window flooding. For large architectural searches, use `pipe_analyze_file(path)` first to determine the best approach.
+<!-- CPP_SECTION_END:mandate -->

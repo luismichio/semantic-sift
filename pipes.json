@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "description": "Standard high-fidelity context pipe templates for the Studio of Two.",
+  "pipes": [
+    {
+      "name": "standard-distill",
+      "description": "The flagship log sifting template.",
+      "nodes": [
+        {
+          "cmd": "semantic-sift-cli",
+          "args": ["logs"],
+          "help_msg": "semantic-sift-cli not found. Please install the Python orchestrator via 'pip install semantic-sift'."
+        }
+      ]
+    },
+    {
+      "name": "semantic-refinery",
+      "description": "High-intelligence neural distillation template (Hybrid Engine).",
+      "nodes": [
+        {
+          "cmd": "semantic-sift-cli",
+          "args": ["semantic", "--rate", "0.5"],
+          "help_msg": "semantic-sift-cli not found. Please install the Python orchestrator via 'pip install semantic-sift'."
+        }
+      ]
+    },
+    {
+      "name": "full-refinery",
+      "description": "Complete ingestion and distillation chain (Smart Sift).",
+      "nodes": [
+        {
+          "cmd": "semantic-sift-cli",
+          "args": ["auto", "--rate", "0.3"],
+          "help_msg": "semantic-sift-cli not found. Please install the Python orchestrator via 'pip install semantic-sift'."
+        }
+      ]
+    },
+    {
+      "name": "test-pipe",
+      "description": "Verification pipe using findstr.",
+      "nodes": [
+        {
+          "cmd": "findstr",
+          "args": ["SIGNAL"]
+        }
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "trigger": "tool:search|grep|find",
+      "pipe": "semantic-refinery"
+    },
+    {
+      "trigger": "size:>10000",
+      "pipe": "semantic-refinery"
+    },
+    {
+      "trigger": "default",
+      "pipe": "standard-distill"
+    }
+  ]
+}

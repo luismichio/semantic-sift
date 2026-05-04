@@ -44,3 +44,6 @@ Cargo.lock
 # Tests
 test_sift.py
 .pytest_cache/
+.pipe_identity
+.pipe_telemetry.json
+.pipe_cache/

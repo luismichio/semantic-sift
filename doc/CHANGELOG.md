@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🏗️ Strategic Milestones
+- **Orchestration Decoupling (The Switchboard Shift)**: Formally extracted all IDE orchestration, hook interception, and pipeline management logic into the standalone **[Context-Pipe Platform (CPP)](https://github.com/luismichio/context-pipe)** repository.
+    - **Refinery Role**: Semantic-Sift has transitioned from a monolithic server to a specialized **Intelligence Refinery**. It now functions as the flagship "Node" for CPP while remaining fully functional as a standalone kernel.
+    - **Transport Separation**: Removed the universal hook interceptor (`sift_hook.py`) and project-onboarding logic from the primary architecture documents, delegating these responsibilities to the CPP Switchboard.
+
 ### ✨ New Features
 - **Hybrid Engine CLI (`semantic-sift-cli`)**: Added a Python-based CLI router that dynamically switches between low-latency Rust/ONNX execution and high-throughput PyTorch execution (Flash Attention) based on payload size.
 - **Native Rust Sift-Core**: Scaffolding and implementation of `crates/sift-core`, a high-performance Rust port of the distillation engine.
