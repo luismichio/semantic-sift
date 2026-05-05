@@ -5,7 +5,12 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.3] - 2026-05-05
+
+### Fixed
+- **Installation instructions** (`README.md`): Sovereign Pattern block now uses `python3.12 -m venv venv312` with dual-OS activate comments (Windows + macOS/Linux). Removed Windows-only `.\venv\Scripts\activate` shortcut.
+- **Python environment table** (`README.md`): Updated venv path examples to reference `venv312` (not `venv`) with separate rows for Windows (`Scripts/python.exe`) and macOS/Linux (`bin/python`).
+- Added cross-install note: when using Context-Pipe's Sovereign Dual-Repo Pattern, `semantic-sift` is cross-installed into `context-pipe/venv` — `venv312` is only needed for standalone ML runtime use.
 
 ### 🏗️ Strategic Milestones
 - **Orchestration Decoupling (The Switchboard Shift)**: Formally extracted all IDE orchestration, hook interception, and pipeline management logic into the standalone **[Context-Pipe Platform (CPP)](https://github.com/luismichio/context-pipe)** repository.
