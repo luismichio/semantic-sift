@@ -7,8 +7,10 @@
       "description": "The flagship log sifting template.",
       "nodes": [
         {
-          "cmd": "semantic-sift-cli",
-          "args": ["logs"],
+          "cmd": "C:\\Users\\luism\\Workbench\\GitHub\\context-pipe\\venv\\Scripts\\semantic-sift-cli.exe",
+          "args": [
+            "logs"
+          ],
           "help_msg": "semantic-sift-cli not found. Please install the Python orchestrator via 'pip install semantic-sift'."
         }
       ]
@@ -18,8 +20,12 @@
       "description": "High-intelligence neural distillation template (Hybrid Engine).",
       "nodes": [
         {
-          "cmd": "semantic-sift-cli",
-          "args": ["semantic", "--rate", "0.5"],
+          "cmd": "C:\\Users\\luism\\Workbench\\GitHub\\context-pipe\\venv\\Scripts\\semantic-sift-cli.exe",
+          "args": [
+            "semantic",
+            "--rate",
+            "0.5"
+          ],
           "help_msg": "semantic-sift-cli not found. Please install the Python orchestrator via 'pip install semantic-sift'."
         }
       ]
@@ -29,8 +35,12 @@
       "description": "Complete ingestion and distillation chain (Smart Sift).",
       "nodes": [
         {
-          "cmd": "semantic-sift-cli",
-          "args": ["auto", "--rate", "0.3"],
+          "cmd": "C:\\Users\\luism\\Workbench\\GitHub\\context-pipe\\venv\\Scripts\\semantic-sift-cli.exe",
+          "args": [
+            "auto",
+            "--rate",
+            "0.3"
+          ],
           "help_msg": "semantic-sift-cli not found. Please install the Python orchestrator via 'pip install semantic-sift'."
         }
       ]
@@ -41,7 +51,9 @@
       "nodes": [
         {
           "cmd": "findstr",
-          "args": ["SIGNAL"]
+          "args": [
+            "SIGNAL"
+          ]
         }
       ]
     }

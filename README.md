@@ -93,11 +93,16 @@ Clone the repository to gain access to the native Rust sidecar source code and b
 ```bash
 git clone https://github.com/luismichio/semantic-sift.git
 cd semantic-sift
-# Dedicated environment (Recommended)
-python -m venv venv
-.\venv\Scripts\activate
+# Dedicated environment — use Python 3.12 for torch/CUDA compatibility
+python3.12 -m venv venv312
+# Windows:
+.\venv312\Scripts\activate
+# macOS/Linux:
+# source venv312/bin/activate
 pip install .[neural,multi-modal]
 ```
+
+> **Note:** If you are using Context-Pipe's **Sovereign Dual-Repo Pattern**, `semantic-sift` is cross-installed into `context-pipe/venv` instead (via `pip install -e ../semantic-sift`). The `venv312` above is only needed if you want a standalone ML runtime or are running `server.py` directly.
 
 ### 🐍 Python Environment Guidance
 
@@ -105,7 +110,8 @@ Choosing the right Python path for your MCP configuration is critical for stabil
 
 | Setup Type | Path Example | Pros | Cons |
 | :--- | :--- | :--- | :--- |
-| **Dedicated Venv** | `.../semantic-sift/venv/Scripts/python.exe` | **Isolated dependencies**, no version conflicts with other tools. | Slightly more disk space. |
+| **Dedicated Venv (Win)** | `.../semantic-sift/venv312/Scripts/python.exe` | **Isolated dependencies**, no torch version conflicts. | Slightly more disk space. |
+| **Dedicated Venv (Mac/Linux)** | `.../semantic-sift/venv312/bin/python` | Same isolation benefit on Unix. | Same. |
 | **Global Python** | `C:/Users/User/AppData/Local/.../python.exe` | Shared libraries, fast setup. | High risk of version conflicts (e.g., `transformers` mismatches). |
 
 **Recommendation:** Always use the **Dedicated Venv** path in your `mcp_config.json` to ensure the sifting kernel is isolated and reliable.
