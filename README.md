@@ -82,14 +82,21 @@ All technical details, architectural logic, and integration guides are strictly 
 ## 🚀 Quick Start
 
 ### 1. Installation
-Clone the repository and install:
+
+**Option A: Quick Install (PyPI)**
+```bash
+pip install semantic-sift[neural,multi-modal]
+```
+
+**Option B: Sovereign Pattern (Recommended)**
+Clone the repository to gain access to the native Rust sidecar source code and benchmarks:
 ```bash
 git clone https://github.com/luismichio/semantic-sift.git
 cd semantic-sift
 # Dedicated environment (Recommended)
 python -m venv venv
 .\venv\Scripts\activate
-pip install .
+pip install .[neural,multi-modal]
 ```
 
 ### 🐍 Python Environment Guidance
