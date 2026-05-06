@@ -7,6 +7,7 @@ import argparse
 from semantic_sift.onboarding import apply_onboarding
 from semantic_sift.hook_injector import build_runtime_hook_command
 
+
 def main():
     """Terminal CLI for running Semantic-Sift onboarding."""
     parser = argparse.ArgumentParser(description="Semantic-Sift: Automate project onboarding and hook configuration.")
@@ -37,7 +38,7 @@ def main():
             dry_run=args.dry_run,
             runtime_python_exe=python_exe,
             runtime_hook_script=hook_script,
-            runtime_hook_command=hook_cmd
+            runtime_hook_command=hook_cmd,
         )
 
         for action in actions:
@@ -52,6 +53,7 @@ def main():
     except Exception as e:
         print(f"❌ Error during onboarding: {str(e)}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

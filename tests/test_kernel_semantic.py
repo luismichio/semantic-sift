@@ -1,4 +1,3 @@
-
 import sift_kernel
 
 

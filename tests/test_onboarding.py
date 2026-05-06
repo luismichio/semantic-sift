@@ -8,7 +8,8 @@ def test_update_gitignore_adds_entries(tmp_path):
     result = onboarding.update_gitignore(str(tmp_path))
     content = gitignore.read_text(encoding="utf-8")
 
-    assert ".sift_identity" in content
+    assert ".sift_telemetry.json" in content
+    assert ".sift_cache/" in content
     assert ".sift_telemetry.json" in content
     assert ".sift_cache/" in content
     assert "Added artifacts" in result or "Already properly ignored." in result

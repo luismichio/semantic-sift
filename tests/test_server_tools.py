@@ -54,6 +54,7 @@ def _register(monkeypatch):
 # Existing tests
 # ---------------------------------------------------------------------------
 
+
 def test_sift_read_file_path_traversal_rejected(tmp_path, monkeypatch):
     mcp = _register(monkeypatch)
     monkeypatch.chdir(tmp_path)
@@ -93,6 +94,7 @@ def test_sift_onboard_dry_run_reports_no_writes(tmp_path, monkeypatch):
 # sift_logs
 # ---------------------------------------------------------------------------
 
+
 def test_sift_logs_reduces_noisy_input(monkeypatch):
     mcp = _register(monkeypatch)
     noisy = (
@@ -115,6 +117,7 @@ def test_sift_logs_returns_string_for_empty_input(monkeypatch):
 # sift_chat
 # ---------------------------------------------------------------------------
 
+
 def test_sift_chat_calls_semantic_sift(monkeypatch):
     mcp = _register(monkeypatch)
     called_with = {}
@@ -135,6 +138,7 @@ def test_sift_chat_calls_semantic_sift(monkeypatch):
 # sift_doc
 # ---------------------------------------------------------------------------
 
+
 def test_sift_doc_calls_doc_sift(monkeypatch):
     mcp = _register(monkeypatch)
     called_with = {}
@@ -153,6 +157,7 @@ def test_sift_doc_calls_doc_sift(monkeypatch):
 # sift_extraction
 # ---------------------------------------------------------------------------
 
+
 def test_sift_extraction_calls_extraction_cleaning(monkeypatch):
     mcp = _register(monkeypatch)
 
@@ -168,6 +173,7 @@ def test_sift_extraction_calls_extraction_cleaning(monkeypatch):
 # sift_rank
 # ---------------------------------------------------------------------------
 
+
 def test_sift_rank_returns_top_n_results(monkeypatch):
     mcp = _register(monkeypatch)
     docs = [f"Document about topic {i}" for i in range(10)]
@@ -180,6 +186,7 @@ def test_sift_rank_returns_top_n_results(monkeypatch):
 # ---------------------------------------------------------------------------
 # get_sift_stats — scope="all" markdown table
 # ---------------------------------------------------------------------------
+
 
 def test_get_sift_stats_all_scope_returns_table(tmp_path, monkeypatch):
     mcp = _register(monkeypatch)
@@ -213,6 +220,7 @@ def test_get_sift_stats_all_scope_returns_table(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 # sift_onboard — environment=None falls back gracefully
 # ---------------------------------------------------------------------------
+
 
 def test_sift_onboard_none_environment_does_not_crash(tmp_path, monkeypatch):
     mcp = _register(monkeypatch)

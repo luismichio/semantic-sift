@@ -47,7 +47,7 @@ This document defines the decoupled structure of the Semantic-Sift documentation
     *   **OpenTelemetry (OTel)**: Isolated `TracerProvider`, custom span attributes (`tool.name`, `platform`, `is_echo`, `sift.reduction_pct`, `file.path`), and `ConsoleSpanExporter`.
     *   **Echo Detector**: Disk-based caching (`.sift_cache/echo_*.tmp`) with 30s TTL to prevent duplicate content processing.
     *   **Audit Headers**: Configurable Markdown headers (`SIFT_AUDIT_HEADER`: `silent`, `minimal`, `full`) for logging reductions and execution latency.
-    *   **Telemetry Pulse API**: Local logging (`.sift_telemetry.json`), global anonymous metric submission (`SIFT_TELEMETRY_URL` pointing to `luiskobayashi.com`), gated by the `SIFT_TELEMETRY_DISABLED` kill-switch, with `SIFT_LICENSE_KEY` checking for `Commercial` vs `Community` tiers, and `.sift_identity` for machine UUIDs.
+    *   **Telemetry Pulse API**: Local logging (`.sift_telemetry.json`), global anonymous metric submission (`SIFT_TELEMETRY_URL` pointing to `luiskobayashi.com`), gated by the `SIFT_TELEMETRY_DISABLED` kill-switch, with anonymous transient pulses and timezone-aware timestamps.
 
 ### 5. [`doc/ORCHESTRATION_BLUEPRINTS.md`](ORCHESTRATION_BLUEPRINTS.md)
 *   **Intent**: Workflow guides and recipes for maximizing the utility of Semantic-Sift tools.

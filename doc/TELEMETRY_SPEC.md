@@ -11,7 +11,7 @@ To provide a verifiable "Chain of Custody" for all data transformations without 
 ### Tracer Configuration
 *   **Provider**: An isolated `TracerProvider` is instantiated specifically for Semantic-Sift to prevent span collision with the host agent's native tracing.
 *   **Resource Attributes**: The provider is bound to the `service.name`: `"semantic-sift-mcp"`.
-*   **Exporter**: Uses a `SimpleSpanProcessor` with a `ConsoleSpanExporter`. This ensures that span data is printed directly to the standard error/output stream for local verification by the developer, validating the exact character reduction at runtime.
+*   **Exporter**: Uses a `SimpleSpanProcessor` with an `InMemorySpanExporter`. This ensures that span data remains isolated and does not pollute standard output streams required by MCP protocols.
 *   **Fallback**: If the `opentelemetry` library is unavailable or `SIFT_TELEMETRY_DISABLED=true`, it falls back to a dummy `MockTracer` to prevent runtime crashes.
 
 ### Custom Span Attributes
@@ -83,10 +83,8 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 *   **Payload Schema**:
     ```json
     {
-        "machine_id": "anonymous-uuid",
         "client_id": "Claude",
         "agent_label": "researcher-subagent",
-        "tier": "Community",
         "tool_name": "sift_chat:fetch",
         "file_ext": "html",
         "original_chars": 15000,
@@ -95,7 +93,7 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
         "final_tokens": 1250,
         "tokens_saved": 2500,
         "latency_ms": 145.2,
-        "timestamp": "2026-04-25T10:00:00.000"
+        "timestamp": "2026-04-25T10:00:00.000+02:00"
     }
     ```
 
@@ -110,9 +108,8 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 *   **Shared-Server Limitation**: When multiple agents connect to the same MCP server process (e.g., Zed running Gemini CLI + OpenCode simultaneously), `SIFT_CLIENT_ID` reflects whichever agent's environment was present at server launch and cannot be updated per-call. MCP tool calls in such sessions carry a best-effort session-level identity. Hook-layer telemetry (resolved independently per subprocess) remains accurate per-call.
 *   **Aggressive Tool Sniffing**: To minimize `unknown` tool entries, the interceptor uses a recursive discovery engine that searches for tool names across common JSON keys (`tool_name`, `tool`, `call`, etc.) and nested payload structures.
 *   **Subagent Tracking (`agent_label`)**: The interceptor further "sniffs" the payload for subagent markers (e.g., `CLAUDE_AGENT_NAME`, `threadLabel`, or result prefixes like `[Explore]`) to attribute context savings to specific specialized agent threads.
-*   **`SIFT_LICENSE_KEY`**: If present, sets the `tier` payload attribute to `"Commercial"`. Otherwise, it defaults to `"Community"`. Testing/Diagnostic tools automatically override the tier to `"Internal-Testing"`.
-*   **`.sift_identity`**: Generates and stores a persistent, anonymous `uuid.uuid4()` machine ID to prevent metric duplication across sessions without storing PII. **Proactive Git Protection**: The identity file is only written after `_ensure_identity_ignored()` has verified that `.sift_identity` is present in `.gitignore` — adding it automatically if absent. This prevents the file from being committed even if `sift_onboard` has not yet been run.
-*   **Git Protection**: During the `sift_onboard` process, both `.sift_identity` and `.sift_telemetry.json` are automatically added to the project's `.gitignore` to prevent accidental exposure of machine IDs or usage patterns.
+*   **Anonymous Pulses**: All telemetry is fully transient and anonymous. No machine identifiers or license keys are stored or transmitted.
+*   **Git Protection**: During the `sift_onboard` process, `.sift_telemetry.json` is automatically added to the project's `.gitignore` to prevent accidental exposure of usage patterns.
 
 ### Retention and Deletion
 

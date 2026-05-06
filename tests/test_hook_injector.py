@@ -8,6 +8,7 @@ Coverage targets:
 - discover_agent_configs()
 - update_instruction_files() — one environment per major platform
 """
+
 import json
 import os
 import sys
@@ -26,6 +27,7 @@ from semantic_sift.hook_injector import (
 # build_runtime_hook_command
 # ---------------------------------------------------------------------------
 
+
 def test_build_runtime_hook_command_returns_tuple():
     python_exe, hook_script, cmd_str = build_runtime_hook_command()
     assert isinstance(python_exe, str)
@@ -37,9 +39,7 @@ def test_build_runtime_hook_command_exe_is_current_python():
     python_exe, _, _ = build_runtime_hook_command()
     assert os.path.isabs(python_exe)
     # Should resolve to the same interpreter we're running under
-    assert os.path.normcase(python_exe) == os.path.normcase(
-        os.path.abspath(sys.executable)
-    )
+    assert os.path.normcase(python_exe) == os.path.normcase(os.path.abspath(sys.executable))
 
 
 def test_build_runtime_hook_command_hook_script_exists():
@@ -56,6 +56,7 @@ def test_build_runtime_hook_command_cmd_str_contains_both_parts():
 # ---------------------------------------------------------------------------
 # merge_hook_json
 # ---------------------------------------------------------------------------
+
 
 def test_merge_hook_json_creates_file_when_missing(tmp_path):
     target = tmp_path / "hooks.json"
@@ -105,6 +106,7 @@ def test_merge_hook_json_appends_to_existing_file(tmp_path):
 # update_toml_config
 # ---------------------------------------------------------------------------
 
+
 def test_update_toml_config_injects_block_when_missing(tmp_path):
     cfg = tmp_path / "mcp.toml"
     cfg.write_text("[mcp]\nenabled = true\n", encoding="utf-8")
@@ -149,6 +151,7 @@ def test_update_toml_config_idempotent_on_re_run(tmp_path):
 # discover_agent_configs
 # ---------------------------------------------------------------------------
 
+
 def test_discover_agent_configs_finds_agents_md(tmp_path):
     # discover_agent_configs only picks up AGENTS.md in subdirectories (not root)
     sub = tmp_path / "subproject"
@@ -183,6 +186,7 @@ def test_discover_agent_configs_returns_empty_for_empty_dir(tmp_path):
 # ---------------------------------------------------------------------------
 # update_instruction_files — platform smoke tests
 # ---------------------------------------------------------------------------
+
 
 def _run_onboard(env: str, tmp_path) -> list[str]:
     """Run update_instruction_files for *env* in an isolated tmp directory."""

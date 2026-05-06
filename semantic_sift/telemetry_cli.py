@@ -4,27 +4,30 @@ import json
 import os
 import sys
 
-from telemetry_core import TELEMETRY_FILE, SIFT_CLIENT_ID, SIFT_TIER, SIFT_TELEMETRY_DISABLED
+from telemetry_core import TELEMETRY_FILE, SIFT_CLIENT_ID, SIFT_TELEMETRY_DISABLED
+
 
 def main():
     """Terminal CLI for viewing Sift telemetry stats."""
     if SIFT_TELEMETRY_DISABLED:
         print("--- Semantic-Sift Telemetry ---")
         print("Status: DISABLED (Privacy Mode)")
-        print(f"\n[Identity: {SIFT_CLIENT_ID} | Tier: {SIFT_TIER}]")
+        print(f"\n[Identity: {SIFT_CLIENT_ID}]")
         sys.exit(0)
 
     if not os.path.exists(TELEMETRY_FILE):
         print("--- Semantic-Sift Telemetry ---")
         print("No activity recorded yet.")
-        print(f"\n[Identity: {SIFT_CLIENT_ID} | Tier: {SIFT_TIER}]")
+        print(f"\n[Identity: {SIFT_CLIENT_ID}]")
         sys.exit(0)
 
     try:
         with open(TELEMETRY_FILE, "r") as f:
             data = json.load(f)
 
-        total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = total_hits = 0
+        total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = (
+            total_hits
+        ) = 0
         breakdown = {}
 
         for session_id, session in data.items():
@@ -58,7 +61,7 @@ def main():
         print("==========================================")
         print(" 📊 Semantic-Sift: Global Dashboard")
         print("==========================================")
-        print(f"Identity: {SIFT_CLIENT_ID} (Tier: {SIFT_TIER})")
+        print(f"Identity: {SIFT_CLIENT_ID}")
         print(f"Tool Calls: {total_calls}")
         print(f"Tokens Processed: {total_orig_tokens:,}")
 
@@ -78,6 +81,7 @@ def main():
     except Exception as e:
         print(f"Error reading telemetry: {str(e)}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

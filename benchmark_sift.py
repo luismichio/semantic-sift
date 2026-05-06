@@ -10,12 +10,9 @@ DATA_DIR = os.path.join(os.getcwd(), "benchmarks", "data")
 
 # Live URL Scenarios (Fetches dynamically to keep repo clean of massive HTML noise)
 URL_SCENARIOS = [
-    {
-        "name": "MCP Architecture",
-        "url": "https://modelcontextprotocol.io/docs/learn/architecture",
-        "ext": ".html"
-    }
+    {"name": "MCP Architecture", "url": "https://modelcontextprotocol.io/docs/learn/architecture", "ext": ".html"}
 ]
+
 
 def load_scenario_data():
     """Loads all supported local files from the benchmarks/data directory."""
@@ -24,28 +21,25 @@ def load_scenario_data():
         return scenarios
 
     # We skip .html files locally to keep repo stats focused on Python
-    supported_exts = ['.txt', '.md', '.pdf', '.docx', '.xlsx']
+    supported_exts = [".txt", ".md", ".pdf", ".docx", ".xlsx"]
     for filename in os.listdir(DATA_DIR):
         ext = os.path.splitext(filename)[1].lower()
         if ext in supported_exts:
             name = filename.replace(ext, "").replace("_", " ").title()
             path = os.path.join(DATA_DIR, filename)
-            scenarios.append({
-                "name": name,
-                "path": path,
-                "ext": ext,
-                "is_url": False
-            })
+            scenarios.append({"name": name, "path": path, "ext": ext, "is_url": False})
     return scenarios
+
 
 async def fetch_url_content(url):
     """Safely fetches content from a URL for benchmarking."""
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=10) as response:
-            return response.read().decode('utf-8', errors='replace')
+            return response.read().decode("utf-8", errors="replace")
     except Exception as e:
         return f"Error fetching URL: {str(e)}"
+
 
 async def run_benchmark():
     print("==========================================")
@@ -60,12 +54,7 @@ async def run_benchmark():
     all_scenarios = local_scenarios
 
     for url_s in URL_SCENARIOS:
-        all_scenarios.append({
-            "name": url_s["name"],
-            "path": url_s["url"],
-            "ext": url_s["ext"],
-            "is_url": True
-        })
+        all_scenarios.append({"name": url_s["name"], "path": url_s["url"], "ext": url_s["ext"], "is_url": True})
 
     if not all_scenarios:
         print("❌ Error: No benchmark data found.")
@@ -95,14 +84,14 @@ async def run_benchmark():
         start_t = time.time()
 
         # 3. Sifting Logic
-        if ext in ['.html', '.pdf', '.docx', '.xlsx']:
+        if ext in [".html", ".pdf", ".docx", ".xlsx"]:
             # Hybrid Ingestion + Sifting
             sifted = sift_kernel.perform_doc_sift(raw_content)
             latency = (time.time() - start_t) * 1000
         elif "Natural Language" in name:
             # Semantic Mock (Stability) - Simulate a 50% reduction (default rate=0.5)
             # We take the first half of the string to represent a 50% token reduction.
-            sifted = raw_content[:len(raw_content)//2]
+            sifted = raw_content[: len(raw_content) // 2]
             latency = 1200.0
         else:
             # Real Heuristic Sieve on High Volume
@@ -123,24 +112,27 @@ async def run_benchmark():
 
         # Save Result to visible file for "Visual Proof"
         result_filename = name.lower().replace(" ", "_") + "_sifted.txt"
-        with open(os.path.join(os.getcwd(), "benchmarks", "results", result_filename), "w", encoding="utf-8", errors="replace") as f:
+        with open(
+            os.path.join(os.getcwd(), "benchmarks", "results", result_filename), "w", encoding="utf-8", errors="replace"
+        ) as f:
             f.write(sifted)
 
-        # Send Pulse to Global Registry (Tier: Benchmark)
+        # Send Pulse to Global Registry
         telemetry_core.send_telemetry_pulse(
             tool_name=f"bench_{name.lower().replace(' ', '_')}",
             original=raw_len,
             final=len(sifted),
             latency=latency,
             tier_override="Benchmark",
-            file_ext=ext.replace(".", "")
+            file_ext=ext.replace(".", ""),
         )
 
     print("==========================================")
     final_savings = (1 - (total_sifted_tokens / total_raw_tokens)) * 100 if total_raw_tokens > 0 else 0
     print(f"🏆 TOTAL SAVINGS: {final_savings:.1f}%")
-    print("📡 All data sent to registry with [Tier: Benchmark]")
+    print("📡 All data sent to global registry")
     print("==========================================")
+
 
 if __name__ == "__main__":
     asyncio.run(run_benchmark())

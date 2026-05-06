@@ -5,6 +5,23 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2026-05-06
+
+### ✨ New Features
+- **Reranking CLI Support**: Added a `rank` command to `semantic-sift-cli` for Top-N context optimization using the neural kernel.
+- **High-Fidelity Telemetry Attribution**: The CLI now extracts the actual tool name (e.g., `grep_search`) from environment variables (`SIFT_TOOL_NAME`, `CLAUDE_TOOL_NAME`, `GEMINI_TOOL_NAME`) instead of defaulting to generic `cli_logs`, drastically improving the quality of the ROI dashboard.
+
+### 🛡️ Security & Privacy
+- **Anonymous Transient Telemetry**: Fully removed persistent `machine_id` (UUID) tracking and the `.sift_identity` file to align with the Apache 2.0 license and privacy-first principles.
+- **Timezone-Aware Pulses**: Telemetry pulses now use `astimezone()` to include the local UTC offset, ensuring accurate global aggregation.
+- **Operational Tiers**: Replaced licensing tiers (Commercial/Community) with operational context labels (`Real-World`, `Benchmark`, `Structural`, `Internal-Testing`) to preserve dashboard filtering without licensing baggage.
+
+### 🏗️ Infrastructure & Maintenance
+- **CLI Telemetry Integration**: Integrated `telemetry_core` into `semantic_sift/cli.py` and added a `flush_telemetry_pulses()` mechanism to prevent daemon threads from being killed before network requests complete.
+- **Onboarding Delegation**: Updated `semantic-sift` onboarding to automatically detect and delegate hook management to the `context-pipe` orchestrator, preventing configuration conflicts in dual-repo setups.
+- **Unified Caching**: Standardized echo detection to use the shared `.pipe_cache` directory and a 500-character floor, syncing behavior with Context-Pipe.
+- **Environment Standardization**: Adopted the `CPP_` prefix for unified environment variables across the Studio of Two ecosystems.
+
 ## [0.2.3] - 2026-05-05
 
 ### Fixed

@@ -9,13 +9,15 @@ def test_token_estimation():
     assert telemetry_core.estimate_tokens("ABCDEFGHIJKL") == 3
     assert telemetry_core.estimate_tokens("") == 0
 
-@patch('urllib.request.urlopen')
+
+@patch("urllib.request.urlopen")
 def test_telemetry_pulse_honors_disabled_flag(mock_urlopen):
     # Setup: Disable telemetry
     with patch.dict(os.environ, {"SIFT_TELEMETRY_DISABLED": "true"}):
         telemetry_core.SIFT_TELEMETRY_DISABLED = True
         telemetry_core.send_telemetry_pulse("sift_logs", 1000, 500, 10.0)
         mock_urlopen.assert_not_called()
+
 
 @patch("telemetry_core._send_telemetry_pulse_now")
 def test_telemetry_pulse_sends_correct_payload(mock_send_now, monkeypatch):
@@ -40,20 +42,11 @@ def test_telemetry_pulse_sends_correct_payload(mock_send_now, monkeypatch):
 
     assert mock_send_now.called
     args, _ = mock_send_now.call_args
-    assert args[0] == "sift_logs"   # tool_name
-    assert args[1] == 1000          # original
-    assert args[2] == 500           # final
+    assert args[0] == "sift_logs"  # tool_name
+    assert args[1] == 1000  # original
+    assert args[2] == 500  # final
 
 
-def test_machine_identity_is_added_to_gitignore(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    (tmp_path / ".gitignore").write_text("# test\n", encoding="utf-8")
-    monkeypatch.setattr(telemetry_core, "SIFT_TELEMETRY_DISABLED", False)
-
-    _ = telemetry_core.get_machine_id()
-
-    content = (tmp_path / ".gitignore").read_text(encoding="utf-8")
-    assert ".sift_identity" in content
 
 
 @patch("telemetry_core._send_telemetry_pulse_now")
@@ -89,10 +82,21 @@ def test_detect_client_id_explicit_env_var(monkeypatch):
 def test_detect_client_id_via_env_fingerprint(monkeypatch):
     monkeypatch.delenv("SIFT_CLIENT_ID", raising=False)
     # Clear all ambient IDE env vars that take priority over per-call hook vars
-    for ambient in ("OPENCODE", "OPENCODE_PID", "OPENCODE_RUN_ID", "VSCODE_PID",
-                    "VSCODE_IPC_HOOK_CLI", "CURSOR_TRACE_ID", "WINDSURF_TOOL_ARGS",
-                    "WINDSURF_SESSION_ID", "__KIRO_MCP", "KIRO_SESSION_ID",
-                    "CONTINUE_SERVER_PORT", "JETBRAINS_IDE_URL", "CLINE_TASK_ID"):
+    for ambient in (
+        "OPENCODE",
+        "OPENCODE_PID",
+        "OPENCODE_RUN_ID",
+        "VSCODE_PID",
+        "VSCODE_IPC_HOOK_CLI",
+        "CURSOR_TRACE_ID",
+        "WINDSURF_TOOL_ARGS",
+        "WINDSURF_SESSION_ID",
+        "__KIRO_MCP",
+        "KIRO_SESSION_ID",
+        "CONTINUE_SERVER_PORT",
+        "JETBRAINS_IDE_URL",
+        "CLINE_TASK_ID",
+    ):
         monkeypatch.delenv(ambient, raising=False)
     monkeypatch.setenv("CLAUDE_TOOL_NAME", "read_file")
     assert telemetry_core.detect_client_id() == "Claude"
@@ -100,9 +104,18 @@ def test_detect_client_id_via_env_fingerprint(monkeypatch):
 
 def test_detect_client_id_fallback(monkeypatch):
     # Strip all known fingerprint env vars
-    for var in ["SIFT_CLIENT_ID", "CLAUDE_TOOL_NAME", "CLAUDE_AGENT_NAME",
-                "QWEN_TOOL_NAME", "CODEX_TOOL_NAME", "GEMINI_SESSION_ID",
-                "CURSOR_TRACE_ID", "WINDSURF_TOOL_ARGS", "JETBRAINS_IDE_URL", "CLINE_TASK_ID"]:
+    for var in [
+        "SIFT_CLIENT_ID",
+        "CLAUDE_TOOL_NAME",
+        "CLAUDE_AGENT_NAME",
+        "QWEN_TOOL_NAME",
+        "CODEX_TOOL_NAME",
+        "GEMINI_SESSION_ID",
+        "CURSOR_TRACE_ID",
+        "WINDSURF_TOOL_ARGS",
+        "JETBRAINS_IDE_URL",
+        "CLINE_TASK_ID",
+    ]:
         monkeypatch.delenv(var, raising=False)
     # Without psutil matching a known process, should fall back to Generic CLI
     # (parent process in test runner is pytest, not a known IDE)

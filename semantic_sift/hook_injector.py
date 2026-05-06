@@ -23,9 +23,9 @@ def get_windsurf_gateway_command() -> str:
     if sys.platform == "win32":
         return (
             'pwsh -NoProfile -Command "$p=$env:WINDSURF_TOOL_ARGS; '
-            'if (Test-Path $p) { '
-            'if ((Get-Item $p).Length -gt 1024) { '
-            '[Console]::Error.WriteLine(\"[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead.\"); '
+            "if (Test-Path $p) { "
+            "if ((Get-Item $p).Length -gt 1024) { "
+            '[Console]::Error.WriteLine("[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead."); '
             'exit 2 } }"'
         )
 
@@ -33,7 +33,7 @@ def get_windsurf_gateway_command() -> str:
         'SIZE=$(stat -c %s "$WINDSURF_TOOL_ARGS" 2>/dev/null || stat -f %z "$WINDSURF_TOOL_ARGS" 2>/dev/null || wc -c < "$WINDSURF_TOOL_ARGS" 2>/dev/null); '
         'if [ "$SIZE" -gt 1024 ] 2>/dev/null; then '
         'echo "[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead." > /dev/stderr; '
-        'exit 2; fi'
+        "exit 2; fi"
     )
 
 
@@ -49,7 +49,7 @@ def discover_agent_configs(target_dir: str) -> list[str]:
                     found_paths.append(os.path.join(full_dir, f))
 
     for root, _, files in os.walk(target_dir):
-        depth = root[len(target_dir):].count(os.sep)
+        depth = root[len(target_dir) :].count(os.sep)
         if depth > 3:
             continue
         if "AGENTS.md" in files and root != target_dir:
@@ -67,12 +67,12 @@ def update_toml_config(path: str, section_id: str, content: str) -> bool:
         block_end = f"# SIFT_SECTION_END:{section_id}"
         full_payload = f"\n{block_id}\n# ---\n# {content}\n{block_end}\n"
 
-        pattern = re.compile(rf'{re.escape(block_id)}.*?{re.escape(block_end)}', re.DOTALL)
+        pattern = re.compile(rf"{re.escape(block_id)}.*?{re.escape(block_end)}", re.DOTALL)
         if pattern.search(file_content):
             new_content = pattern.sub(full_payload.strip(), file_content)
         else:
             if "instructions =" in file_content:
-                new_content = file_content.replace("instructions = \"\"\"", f"instructions = \"\"\"\n{content}\n")
+                new_content = file_content.replace('instructions = """', f'instructions = """\n{content}\n')
             else:
                 new_content = file_content + full_payload
 
@@ -150,10 +150,15 @@ def update_instruction_files(
                 with open(target_path, "r", encoding="utf-8", errors="replace") as f:
                     file_content = f.read()
 
-                if any(x in file_content.lower() for x in ["always use view_file", "read the full file", "read entire file"]):
-                    actions.append(f"⚠️ WARNING: Found potentially contradictory 'read full file' instructions in `{filename}`. The Sift Mandate override has been appended.")
+                if any(
+                    x in file_content.lower()
+                    for x in ["always use view_file", "read the full file", "read entire file"]
+                ):
+                    actions.append(
+                        f"⚠️ WARNING: Found potentially contradictory 'read full file' instructions in `{filename}`. The Sift Mandate override has been appended."
+                    )
 
-                pattern = re.compile(rf'{re.escape(block_id)}.*?{re.escape(block_end)}', re.DOTALL)
+                pattern = re.compile(rf"{re.escape(block_id)}.*?{re.escape(block_end)}", re.DOTALL)
                 if pattern.search(file_content):
                     new_content = pattern.sub(full_payload.strip(), file_content)
                     with open(target_path, "w", encoding="utf-8", errors="replace") as f:
@@ -175,7 +180,9 @@ def update_instruction_files(
                 with open(cursor_path, "r", encoding="utf-8") as f:
                     cursor_data = json.load(f)
                 if "hooks" in cursor_data and "beforeMCPExecution" in cursor_data["hooks"]:
-                    actions.append("🚨 ALERT: `beforeMCPExecution` security gateway detected in Cursor hooks. You MUST whitelist `sift_read_file` and `sift_analyze_file` or they will be blocked.")
+                    actions.append(
+                        "🚨 ALERT: `beforeMCPExecution` security gateway detected in Cursor hooks. You MUST whitelist `sift_read_file` and `sift_analyze_file` or they will be blocked."
+                    )
             except (OSError, json.JSONDecodeError):
                 pass
 
@@ -256,7 +263,7 @@ export default SemanticSiftPlugin;
                         "action": "run_mcp_tool",
                         "server": "semantic-sift",
                         "tool": "sift_onboard",
-                        "args": {"environment": "OpenCode"}
+                        "args": {"environment": "OpenCode"},
                     }
 
                 if "/sift-stats" not in opencode_config["commands"]:
@@ -265,7 +272,7 @@ export default SemanticSiftPlugin;
                         "action": "run_mcp_tool",
                         "server": "semantic-sift",
                         "tool": "get_sift_stats",
-                        "args": {"scope": "all"}
+                        "args": {"scope": "all"},
                     }
                     with open(opencode_config_path, "w", encoding="utf-8") as f:
                         json.dump(opencode_config, f, indent=2)

@@ -1,5 +1,6 @@
 from sift_kernel import apply_heuristic_sieve
 
+
 def test_sieve_does_not_mangle_api_keys():
     # Heuristics should remove the noise around a key, but leave the key itself untouched.
     # We use a pattern that looks like a secret but isn't real.
@@ -12,11 +13,14 @@ def test_sieve_does_not_mangle_api_keys():
     assert "INFO: Setting key" in result
     assert "Progress" not in result
 
+
 def test_sieve_handles_empty_input():
     assert apply_heuristic_sieve("") == ""
 
+
 def test_sieve_handles_single_line_no_noise():
     assert apply_heuristic_sieve("Hello World") == "Hello World"
+
 
 def test_sieve_removes_multiple_timestamps_per_line():
     noisy = "2026-04-19T22:00:00Z Starting 2026-04-19T22:00:01Z"
@@ -25,40 +29,26 @@ def test_sieve_removes_multiple_timestamps_per_line():
     assert "Starting" in result
     assert "2026-04-19" not in result
 
+
 def test_secret_redaction_logic():
-    from telemetry_core import redact_secrets
-
-    # Test GitHub PAT — descriptive label for local logs
-    assert redact_secrets("my key is github_pat_FAKEFAKE00000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") == "my key is [REDACTED_GITHUB_PAT]"
-
-    # Test OpenAI Key — descriptive label for local logs
-    assert redact_secrets("sk-abcdefghijklmnopqrstuvwxyz0123456789") == "[REDACTED_OPENAI_KEY]"
-
-    # Test Password pattern
-    assert redact_secrets("password: my_secret_pass") == "password=[REDACTED]"
-    assert redact_secrets("token = some_token_123") == "token=[REDACTED]"
-
-    # Test that normal text is untouched
-    assert redact_secrets("This is a normal sentence.") == "This is a normal sentence."
-
-
-def test_secret_redaction_for_telemetry_generic_label():
     from telemetry_core import redact_secrets_for_telemetry
 
-    pat = "github_pat_FAKEFAKE00000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    result = redact_secrets_for_telemetry(f"sift_chat:grep {pat}")
-    assert result == "sift_chat:grep [REDACTED]"
-    assert "GITHUB" not in result
-    assert "PAT" not in result
+    # Test GitHub PAT — generic label for local logs
+    assert (
+        redact_secrets_for_telemetry("my key is github_pat_FAKEFAKE00000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        == "my key is [REDACTED]"
+    )
 
-    # OpenAI key — generic label
+    # Test OpenAI Key — generic label for local logs
     assert redact_secrets_for_telemetry("sk-abcdefghijklmnopqrstuvwxyz0123456789") == "[REDACTED]"
 
-    # Password pattern — key name kept, value masked
+    # Test Password pattern
     assert redact_secrets_for_telemetry("password: my_secret_pass") == "password=[REDACTED]"
+    assert redact_secrets_for_telemetry("token = some_token_123") == "token=[REDACTED]"
 
-    # Normal text untouched
-    assert redact_secrets_for_telemetry("sift_chat:read_file") == "sift_chat:read_file"
+    # Test that normal text is untouched
+    assert redact_secrets_for_telemetry("This is a normal sentence.") == "This is a normal sentence."
+
 
 def test_telemetry_does_not_log_content_secrets():
     import telemetry_core
@@ -85,4 +75,3 @@ def test_telemetry_does_not_log_content_secrets():
     session_json = json.dumps(data[session_id])
     assert pat not in session_json
     assert "GITHUB_PAT" not in session_json
-

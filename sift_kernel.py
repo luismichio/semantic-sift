@@ -55,8 +55,14 @@ def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
         )
 
     _WORKSPACE_MARKERS = {
-        "pyproject.toml", ".git", "setup.py", "setup.cfg",
-        "package.json", ".vscode", ".idea", "AGENTS.md",
+        "pyproject.toml",
+        ".git",
+        "setup.py",
+        "setup.cfg",
+        "package.json",
+        ".vscode",
+        ".idea",
+        "AGENTS.md",
     }
     probe = os.path.dirname(requested_path)
     while True:
@@ -75,22 +81,26 @@ def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
         "in your MCP configuration, or set SIFT_ALLOW_GLOBAL_READS=true to override."
     )
 
+
 def get_device() -> str:
     global _DEVICE, DEVICE
     if _DEVICE is None:
         try:
             import torch
+
             _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
         except ImportError:
             _DEVICE = "cpu"
         DEVICE = _DEVICE
     return _DEVICE
 
+
 def get_markitdown() -> Any | None:
     global _MARKITDOWN
     if _MARKITDOWN is None:
         try:
             from markitdown import MarkItDown
+
             _MARKITDOWN = MarkItDown()
         except ImportError:
             _MARKITDOWN = None
@@ -99,10 +109,11 @@ def get_markitdown() -> Any | None:
 
 def _build_prompt_compressor() -> Any:
     from llmlingua import PromptCompressor
+
     return PromptCompressor(
         model_name="microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
         use_llmlingua2=True,
-        device_map=get_device()
+        device_map=get_device(),
     )
 
 
@@ -128,6 +139,7 @@ def start_model_warmup() -> None:
         thread = threading.Thread(target=_warm_up_models, daemon=True, name="semantic-sift-model-warmup")
         thread.start()
 
+
 def get_file_hash(path: str) -> str:
     """Generates a stable hash for a file's content."""
     try:
@@ -139,10 +151,11 @@ def get_file_hash(path: str) -> str:
     except OSError:
         return hashlib.sha256(path.encode()).hexdigest()
 
+
 def ensure_markdown_content(path: str) -> str:
     """Converts binary files to Markdown using MarkItDown with local caching."""
     ext = os.path.splitext(path)[1].lower()
-    binary_exts = ['.pdf', '.docx', '.xlsx', '.pptx', '.zip', '.html', '.htm']
+    binary_exts = [".pdf", ".docx", ".xlsx", ".pptx", ".zip", ".html", ".htm"]
 
     if ext not in binary_exts:
         return load_raw_text(path)
@@ -169,6 +182,7 @@ def ensure_markdown_content(path: str) -> str:
     except (OSError, AttributeError, RuntimeError, ValueError) as e:
         return f"Error converting {ext} file: {str(e)}"
 
+
 def load_raw_text(path: str) -> str:
     """Safely loads plain text with encoding fallbacks."""
     try:
@@ -185,35 +199,43 @@ def load_raw_text(path: str) -> str:
     except OSError as e:
         return f"Error reading file: {str(e)}"
 
+
 def load_file_content(path: str) -> str:
     """Main ingestion entry point supporting both text and binary formats."""
     return ensure_markdown_content(path)
 
+
 # --- Core Heuristic Logic ---
+
 
 def apply_heuristic_sieve(text: str) -> str:
     """Sifts through raw technical logs to remove noise."""
     lines = text.splitlines()
     sifted = []
     # Broad timestamp support: ISO-8601, Legacy (YYMMDD), and Bracketed (Vercel)
-    timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?)|(\d{6}\s\d{6}\s\d+)|(\[\d{2}:\d{2}:\d{2}(\.\d+)?\])')
-    progress_pattern = re.compile(r'\[\d+/\d+\]|[\.]{3,}|\d+%\s*')
-    metadata_pattern = re.compile(r'\s*(INFO|DEBUG|WARN|ERROR)\s+dfs\..*?:\s*')
-    module_pattern = re.compile(r'^\s*[\d\.]+\s+(MB|KB|bytes|B)\s+[\w\-\.\/]+.*$', re.IGNORECASE)
+    timestamp_pattern = re.compile(
+        r"(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?)|(\d{6}\s\d{6}\s\d+)|(\[\d{2}:\d{2}:\d{2}(\.\d+)?\])"
+    )
+    progress_pattern = re.compile(r"\[\d+/\d+\]|[\.]{3,}|\d+%\s*")
+    metadata_pattern = re.compile(r"\s*(INFO|DEBUG|WARN|ERROR)\s+dfs\..*?:\s*")
+    module_pattern = re.compile(r"^\s*[\d\.]+\s+(MB|KB|bytes|B)\s+[\w\-\.\/]+.*$", re.IGNORECASE)
 
     for line in lines:
-        clean_line = timestamp_pattern.sub('', line).strip()
-        clean_line = metadata_pattern.sub('', clean_line).strip()
+        clean_line = timestamp_pattern.sub("", line).strip()
+        clean_line = metadata_pattern.sub("", clean_line).strip()
         if not clean_line or progress_pattern.search(clean_line) or module_pattern.match(clean_line):
             continue
         sifted.append(clean_line)
     return "\n".join(sifted)
 
+
 # --- Core Semantic Logic ---
+
 
 def get_cache_key(tool_name: str, text: str, **kwargs: Any) -> str:
     payload = f"{tool_name}:{text}:{json.dumps(kwargs, sort_keys=True)}"
     return hashlib.sha256(payload.encode()).hexdigest()
+
 
 def check_cache(key: str) -> str | None:
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
@@ -222,10 +244,12 @@ def check_cache(key: str) -> str | None:
             return f.read()
     return None
 
+
 def set_cache(key: str, result: str) -> None:
     cache_path = os.path.join(CACHE_DIR, f"{key}.txt")
     with open(cache_path, "w", encoding="utf-8", errors="replace") as f:
         f.write(result)
+
 
 def _call_rust_sifter(text: str, rate: float) -> str | None:
     """Shells out to the Rust sift-core binary for low-latency ONNX sifting."""
@@ -235,7 +259,7 @@ def _call_rust_sifter(text: str, rate: float) -> str | None:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
         )
         stdout, stderr = process.communicate(input=text)
         if process.returncode == 0:
@@ -243,6 +267,7 @@ def _call_rust_sifter(text: str, rate: float) -> str | None:
         return None
     except FileNotFoundError:
         return None
+
 
 def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
     """
@@ -257,6 +282,7 @@ def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
 
     # Fallback to PyTorch for large text or if Rust is missing
     return perform_semantic_sift(text, rate=rate)
+
 
 def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
     """Performs BERT-based prompt compression using PyTorch."""
@@ -278,49 +304,48 @@ def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
     if _COMPRESSOR is None:
         fallback = apply_heuristic_sieve(text)
         if _MODEL_WARMUP_ERROR:
-            return f"[Semantic-Sift: Semantic model unavailable - heuristic mode active]\n{fallback if fallback else text}"
+            return (
+                f"[Semantic-Sift: Semantic model unavailable - heuristic mode active]\n{fallback if fallback else text}"
+            )
         return fallback if fallback else text
 
     try:
         results = _COMPRESSOR.compress_prompt(
-            [text],
-            rate=rate,
-            force_tokens=['\n', '?'],
-            chunk_end_tokens=['.', '\n'],
-            return_word_label=False
+            [text], rate=rate, force_tokens=["\n", "?"], chunk_end_tokens=[".", "\n"], return_word_label=False
         )
-        result = results.get('compressed_prompt', text)
+        result = results.get("compressed_prompt", text)
         set_cache(cache_key, result)
         return result
     except (AttributeError, RuntimeError, ValueError, TypeError) as e:
         return f"Error: {str(e)}"
 
+
 def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tuple[float, str]]:
     """Performs semantic re-ranking using BGE-Reranker."""
     try:
         from sentence_transformers import CrossEncoder
-        model = CrossEncoder('BAAI/bge-reranker-base', device=get_device())
+
+        model = CrossEncoder("BAAI/bge-reranker-base", device=get_device())
         scores = model.predict([[query, doc] for doc in documents])
         scored_docs = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)[:top_n]
         return scored_docs
     except (ImportError, RuntimeError, ValueError):
         return []
 
+
 def perform_doc_sift(text: str, rate: float = 0.4) -> str:
     """Hybrid sifting for long documentation."""
     cleaned = apply_heuristic_sieve(text)
     return perform_hybrid_sift(cleaned, rate=rate)
 
+
 def perform_compaction_summary(text: str) -> str:
     """Sifts session history for structural compaction snapshots."""
-    priorities = re.findall(r'(?:Decision|Status|File|Task).*?:.*', text, re.IGNORECASE)
+    priorities = re.findall(r"(?:Decision|Status|File|Task).*?:.*", text, re.IGNORECASE)
     context_hint = "\n".join(priorities) if priorities else ""
 
     priority_set = set(priorities)
-    remaining_lines = [
-        line for line in text.splitlines()
-        if line.strip() not in priority_set
-    ]
+    remaining_lines = [line for line in text.splitlines() if line.strip() not in priority_set]
     text_for_summary = "\n".join(remaining_lines).strip()
 
     if not text_for_summary:
@@ -342,6 +367,7 @@ def perform_compaction_summary(text: str) -> str:
         return f"## Structural Snapshot\n{context_hint}\n\n## Semantic Summary\n{summary}"
     return summary
 
+
 def calculate_vocabulary_overlap(original: str, compressed: str) -> float:
     """Returns vocabulary overlap ratio between original and compressed text."""
     original_words = set(re.findall(r"\w+", original.lower()))
@@ -350,17 +376,22 @@ def calculate_vocabulary_overlap(original: str, compressed: str) -> float:
     compressed_words = set(re.findall(r"\w+", compressed.lower()))
     return len(original_words & compressed_words) / len(original_words)
 
+
 def perform_extraction_cleaning(content: str, show_diff: bool = False) -> str:
     """Sifts raw OCR/Docling extractions."""
     refined = content
-    for pattern in [r'Page \d+ of \d+', r'© .*? All rights reserved', r'---+\s*$', r'^\s*·\s*$']:
-        refined = re.sub(pattern, '', refined, flags=re.MULTILINE | re.IGNORECASE)
+    for pattern in [r"Page \d+ of \d+", r"© .*? All rights reserved", r"---+\s*$", r"^\s*·\s*$"]:
+        refined = re.sub(pattern, "", refined, flags=re.MULTILINE | re.IGNORECASE)
 
     cleaned = perform_hybrid_sift(refined, rate=0.7)
     if not show_diff:
         return cleaned
 
-    diff_lines = list(difflib.unified_diff(content.splitlines(), cleaned.splitlines(), fromfile="original", tofile="sifted", lineterm=""))
+    diff_lines = list(
+        difflib.unified_diff(
+            content.splitlines(), cleaned.splitlines(), fromfile="original", tofile="sifted", lineterm=""
+        )
+    )
     removed_lines = [line[1:] for line in diff_lines if line.startswith("-") and not line.startswith("---")]
     removed_section = "\n".join(removed_lines) if removed_lines else "(No explicit line removals detected.)"
     return cleaned + "\n\n--- REMOVED CONTENT ---\n" + removed_section

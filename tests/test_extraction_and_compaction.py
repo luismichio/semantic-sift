@@ -62,9 +62,7 @@ def test_compaction_no_negative_token_savings(monkeypatch):
 
     for line in text.splitlines():
         count = result.count(line)
-        assert count == 1, (
-            f"Line '{line}' appeared {count} times in output — duplicate detected"
-        )
+        assert count == 1, f"Line '{line}' appeared {count} times in output — duplicate detected"
 
 
 def test_compaction_structural_snapshot_branch(monkeypatch):

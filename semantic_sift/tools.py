@@ -11,6 +11,7 @@ from typing import Any
 
 try:
     import torch as _torch
+
     _TORCH_AVAILABLE = True
 except ImportError:
     _torch = None  # type: ignore[assignment]
@@ -34,7 +35,7 @@ CLIENT_ID = telemetry_core.SIFT_CLIENT_ID
 
 def get_sift_stats_logic(scope: str = "current") -> str:
     if telemetry_core.SIFT_TELEMETRY_DISABLED:
-        return f"--- Telemetry ({scope}) ---\nStatus: DISABLED (Privacy Mode)\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
+        return f"--- Telemetry ({scope}) ---\nStatus: DISABLED (Privacy Mode)\n\n[Identity: {telemetry_core.SIFT_CLIENT_ID}]"
     if not os.path.exists(telemetry_core.TELEMETRY_FILE):
         return "No activity recorded yet."
     try:
@@ -45,10 +46,12 @@ def get_sift_stats_logic(scope: str = "current") -> str:
             return (
                 f"--- Telemetry ({scope}) ---\nNo activity recorded in the current session (ID: {SESSION_ID[:8]}...).\n\n"
                 "💡 Tip: Try `get_sift_stats(scope='all')` to see historical data.\n\n"
-                f"[Identity: {telemetry_core.SIFT_CLIENT_ID} | Tier: {telemetry_core.SIFT_TIER}]"
+                f"[Identity: {telemetry_core.SIFT_CLIENT_ID}]"
             )
 
-        total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = total_hits = 0
+        total_calls = total_orig_chars = total_final_chars = total_orig_tokens = total_final_tokens = total_lat = (
+            total_hits
+        ) = 0
         breakdown = {}
         for session in target:
             for tool, stats in session.get("tools", {}).items():
@@ -76,12 +79,12 @@ def get_sift_stats_logic(scope: str = "current") -> str:
         tokens_saved = total_orig_tokens - total_final_tokens
         output = [
             f"--- Telemetry ({scope}) ---",
-            f"Identity: {telemetry_core.SIFT_CLIENT_ID} (Tier: {telemetry_core.SIFT_TIER})",
+            f"Identity: {telemetry_core.SIFT_CLIENT_ID}",
             f"Tool Calls: {total_calls}",
             f"Tokens Processed: {total_orig_tokens:,}",
-            f"Tokens Saved: {tokens_saved:,} ({(tokens_saved/total_orig_tokens*100) if total_orig_tokens>0 else 0:.1f}%)",
-            f"Avg Latency: {(total_lat/total_calls) if total_calls>0 else 0:.1f}ms",
-            f"Cache Hits: {total_hits} ({(total_hits/total_calls*100) if total_calls>0 else 0:.1f}%)",
+            f"Tokens Saved: {tokens_saved:,} ({(tokens_saved / total_orig_tokens * 100) if total_orig_tokens > 0 else 0:.1f}%)",
+            f"Avg Latency: {(total_lat / total_calls) if total_calls > 0 else 0:.1f}ms",
+            f"Cache Hits: {total_hits} ({(total_hits / total_calls * 100) if total_calls > 0 else 0:.1f}%)",
             "\n[Note: Token counts are estimated at 4 chars/token. Actual billed tokens vary by model and content type.]",
             "Breakdown:",
         ]
@@ -90,6 +93,7 @@ def get_sift_stats_logic(scope: str = "current") -> str:
         return "\n".join(output)
     except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
         return f"Error: {str(e)}"
+
 
 def register_tools(
     mcp: Any,
@@ -134,7 +138,16 @@ def register_tools(
 
         latency = (time.time() - start_t) * 1000
         file_ext = os.path.splitext(safe_path)[1].lower() or "txt"
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, f"sift_read_file_{sifter_type}", len(content), len(result), latency, client_id_override=CLIENT_ID, file_ext=file_ext)
+        telemetry_core.log_telemetry(
+            SESSION_ID,
+            START_TIME,
+            f"sift_read_file_{sifter_type}",
+            len(content),
+            len(result),
+            latency,
+            client_id_override=CLIENT_ID,
+            file_ext=file_ext,
+        )
 
         tracer = telemetry_core.get_tracer()
         with tracer.start_as_current_span(f"sift_read_file:{sifter_type}") as span:
@@ -159,7 +172,9 @@ def register_tools(
         timestamps = len(re.findall(r"\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?", content))
         uuids = len(re.findall(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", content))
         repetition = len(re.findall(r"[=\-]{5,}|[\.]{3,}", content))
-        noise_ratio = min((((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0)
+        noise_ratio = min(
+            (((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0
+        )
 
         report = [
             f"## 📊 Context Analysis Report for `{os.path.basename(safe_path)}`",
@@ -172,12 +187,22 @@ def register_tools(
         elif char_count > 8000:
             report.extend(["- **Action**: Run `sift_read_file(type='doc' or 'chat')`.", "- Reason: Long-form context."])
         elif char_count < 1000:
-            report.extend(["- **Action**: No sifting required. Safe to read natively.", "- Reason: Context is already concise."])
+            report.extend(
+                ["- **Action**: No sifting required. Safe to read natively.", "- Reason: Context is already concise."]
+            )
         else:
             report.extend(["- **Action**: Optional `sift_read_file`.", "- Reason: Moderate length."])
 
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze_file", len(content), len(content), latency, client_id_override=CLIENT_ID)
+        telemetry_core.log_telemetry(
+            SESSION_ID,
+            START_TIME,
+            "sift_analyze_file",
+            len(content),
+            len(content),
+            latency,
+            client_id_override=CLIENT_ID,
+        )
 
         tracer = telemetry_core.get_tracer()
         with tracer.start_as_current_span("sift_analyze_file") as span:
@@ -191,7 +216,9 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.apply_heuristic_sieve(raw_text)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_logs", len(raw_text), len(result), latency, client_id_override=CLIENT_ID)
+        telemetry_core.log_telemetry(
+            SESSION_ID, START_TIME, "sift_logs", len(raw_text), len(result), latency, client_id_override=CLIENT_ID
+        )
         return result
 
     @mcp.tool()
@@ -199,7 +226,9 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.perform_hybrid_sift(text, rate=rate)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency, client_id_override=CLIENT_ID)
+        telemetry_core.log_telemetry(
+            SESSION_ID, START_TIME, "sift_chat", len(text), len(result), latency, client_id_override=CLIENT_ID
+        )
         return result
 
     @mcp.tool()
@@ -207,7 +236,9 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.perform_doc_sift(text, rate=rate)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_doc", len(text), len(result), latency, client_id_override=CLIENT_ID)
+        telemetry_core.log_telemetry(
+            SESSION_ID, START_TIME, "sift_doc", len(text), len(result), latency, client_id_override=CLIENT_ID
+        )
         return result
 
     @mcp.tool()
@@ -215,7 +246,9 @@ def register_tools(
         start_t = time.time()
         result = sift_kernel.perform_extraction_cleaning(content, show_diff=show_diff)
         latency = (time.time() - start_t) * 1000
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_extraction", len(content), len(result), latency, client_id_override=CLIENT_ID)
+        telemetry_core.log_telemetry(
+            SESSION_ID, START_TIME, "sift_extraction", len(content), len(result), latency, client_id_override=CLIENT_ID
+        )
         return result
 
     @mcp.tool()
@@ -240,12 +273,16 @@ def register_tools(
         ]
 
         cwd = target_dir if target_dir else os.getcwd()
-        actions = apply_onboarding(environment or "", cwd, dry_run, runtime_python_exe, runtime_hook_script, runtime_hook_command)
+        actions = apply_onboarding(
+            environment or "", cwd, dry_run, runtime_python_exe, runtime_hook_script, runtime_hook_command
+        )
         for action in actions:
             report.append(f"- {action}")
 
         report.append("\n**Setup status recorded. This was a utility configuration step.**")
-        report.append("⚠️ **PROTOCOL REMINDER**: You are currently in **Read-Only Mode**. Do NOT initiate new tasks or research `task.md` until the user provides an explicit **Directive**.")
+        report.append(
+            "⚠️ **PROTOCOL REMINDER**: You are currently in **Read-Only Mode**. Do NOT initiate new tasks or research `task.md` until the user provides an explicit **Directive**."
+        )
         return "\n".join(report)
 
     @mcp.tool()
@@ -257,8 +294,15 @@ def register_tools(
         timestamps = len(re.findall(r"\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}([\.,]\d+)?Z?", text))
         uuids = len(re.findall(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", text))
         repetition = len(re.findall(r"[=\-]{5,}|[\.]{3,}", text))
-        noise_ratio = min((((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0)
-        report = ["## 📊 Context Analysis Report", f"- Length: {char_count:,} chars", f"- Estimated Noise: {noise_ratio:.1f}%", "\n### 🎯 Recommendation"]
+        noise_ratio = min(
+            (((timestamps * 10) + (uuids * 5) + (repetition * 2)) / char_count * 100) if char_count > 0 else 0, 100.0
+        )
+        report = [
+            "## 📊 Context Analysis Report",
+            f"- Length: {char_count:,} chars",
+            f"- Estimated Noise: {noise_ratio:.1f}%",
+            "\n### 🎯 Recommendation",
+        ]
         if noise_ratio > 15.0:
             report.extend(["- **Action**: Run `sift_logs`.", "- Reason: High structural noise."])
         elif char_count > 8000:
@@ -268,7 +312,9 @@ def register_tools(
         else:
             report.extend(["- **Action**: Optional `sift_chat`.", "- Reason: Moderate length."])
 
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_analyze", char_count, char_count, 0, client_id_override=CLIENT_ID)
+        telemetry_core.log_telemetry(
+            SESSION_ID, START_TIME, "sift_analyze", char_count, char_count, 0, client_id_override=CLIENT_ID
+        )
         return "\n".join(report)
 
     @mcp.tool()
@@ -279,10 +325,16 @@ def register_tools(
 
         total_chars = sum(len(d) for d in documents)
         returned_chars = sum(len(doc) for _, doc in scored_docs)
-        telemetry_core.log_telemetry(SESSION_ID, START_TIME, "sift_rank", total_chars, returned_chars, 0, client_id_override=CLIENT_ID)
+        telemetry_core.log_telemetry(
+            SESSION_ID, START_TIME, "sift_rank", total_chars, returned_chars, 0, client_id_override=CLIENT_ID
+        )
 
         report = [f"## 🎯 Reranking Results (Top {top_n})\n"]
         for i, (score, doc) in enumerate(scored_docs):
-            report.append(f"### Rank {i+1} (Score: {score:.4f})\n{doc[:500]}..." if len(doc) > 500 else f"### Rank {i+1} (Score: {score:.4f})\n{doc}")
+            report.append(
+                f"### Rank {i + 1} (Score: {score:.4f})\n{doc[:500]}..."
+                if len(doc) > 500
+                else f"### Rank {i + 1} (Score: {score:.4f})\n{doc}"
+            )
             report.append("\n---\n")
         return "\n".join(report)

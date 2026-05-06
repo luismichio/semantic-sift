@@ -7,6 +7,7 @@ avoids platform-specific process spawning issues on Windows.
 
 Each test covers a distinct platform detection + injection path.
 """
+
 import io
 import json
 import os
@@ -20,6 +21,7 @@ import sift_hook
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def run_hook(payload: dict, env_overrides: dict | None = None) -> dict:
     """Feed *payload* through sift_hook.main() and return the parsed output."""
@@ -48,6 +50,7 @@ def _long_text(n: int = 1200) -> str:
 # ---------------------------------------------------------------------------
 # Short-circuit paths (no sifting)
 # ---------------------------------------------------------------------------
+
 
 def test_hook_returns_input_unchanged_when_empty():
     """Empty stdin → hook should write nothing (early return)."""
@@ -82,6 +85,7 @@ def test_hook_passes_through_structured_json_content():
 # Platform detection: Claude
 # ---------------------------------------------------------------------------
 
+
 def test_hook_detects_claude_platform():
     """CLAUDE_TOOL_NAME env var → platform detected as Claude, result key used."""
     payload = {"result": _long_text()}
@@ -105,6 +109,7 @@ def test_hook_claude_injects_into_tool_response():
 # Platform detection: Cursor
 # ---------------------------------------------------------------------------
 
+
 def test_hook_detects_cursor_platform():
     """Payload with top-level 'result' string (no AfterTool event) → Cursor path."""
     payload = {"result": _long_text()}
@@ -116,6 +121,7 @@ def test_hook_detects_cursor_platform():
 # ---------------------------------------------------------------------------
 # Platform detection: Gemini (AfterTool, no tool_args)
 # ---------------------------------------------------------------------------
+
 
 def test_hook_detects_gemini_aftertool():
     """AfterTool without tool_args → Gemini platform, llmContent extracted."""
@@ -134,6 +140,7 @@ def test_hook_detects_gemini_aftertool():
 # ---------------------------------------------------------------------------
 # Platform detection: OpenCode (AfterTool with tool_args)
 # ---------------------------------------------------------------------------
+
 
 def test_hook_detects_opencode_aftertool():
     """AfterTool WITH tool_args → OpenCode platform, llmContent extracted."""
@@ -165,6 +172,7 @@ def test_hook_detects_opencode_compacting():
 # Platform detection: VSCode
 # ---------------------------------------------------------------------------
 
+
 def test_hook_detects_vscode_platform():
     """tool_response.llmContent present, no AfterTool event → VSCode path."""
     long = _long_text(2000)
@@ -179,6 +187,7 @@ def test_hook_detects_vscode_platform():
 # ---------------------------------------------------------------------------
 # Sifting actually reduces content
 # ---------------------------------------------------------------------------
+
 
 def test_hook_reduces_long_log_content():
     """A long repetitive log payload (Cursor path) should be shorter after hook."""
@@ -201,6 +210,7 @@ def test_hook_reduces_long_log_content():
 # ---------------------------------------------------------------------------
 # Echo bypass
 # ---------------------------------------------------------------------------
+
 
 def test_hook_bypasses_already_sifted_content():
     """Content already containing the audit header must pass through untouched."""
