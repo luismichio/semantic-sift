@@ -1,0 +1,2 @@
+recursive-include crates *
+prune crates/sift-core/target
