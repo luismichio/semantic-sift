@@ -85,7 +85,7 @@ All technical details, architectural logic, and integration guides are strictly 
 
 **Option A: Quick Install (PyPI)**
 ```bash
-pip install semantic-sift[neural,multi-modal]
+uv pip install semantic-sift[neural,multi-modal]
 ```
 
 **Option B: Sovereign Pattern (Recommended)**
@@ -99,10 +99,14 @@ python3.12 -m venv venv312
 .\venv312\Scripts\activate
 # macOS/Linux:
 # source venv312/bin/activate
-pip install .[neural,multi-modal]
+uv pip install .[neural,multi-modal]
 ```
 
-> **Note:** If you are using Context-Pipe's **Sovereign Dual-Repo Pattern**, `semantic-sift` is cross-installed into `context-pipe/venv` instead (via `pip install -e ../semantic-sift`). The `venv312` above is only needed if you want a standalone ML runtime or are running `server.py` directly.
+> **Windows Tip (`uv` environment discovery)**: If `uv` fails to find your environment (error: *"No virtual environment found"*), explicitly point to your interpreter using the `--python` flag:
+> `uv pip install -e . --python venv/Scripts/python.exe`
+
+> **Note:** If you are using Context-Pipe's **Sovereign Dual-Repo Pattern**, `semantic-sift` is cross-installed into `context-pipe/venv` instead (via `uv pip install -e ../semantic-sift`).
+ The `venv312` above is only needed if you want a standalone ML runtime or are running `server.py` directly.
 
 ### 🐍 Python Environment Guidance
 
@@ -118,14 +122,14 @@ Choosing the right Python path for your MCP configuration is critical for stabil
 
 For full semantic/reranking features (LLMLingua, Transformers, sentence-transformers):
 ```bash
-pip install .[neural]
+uv pip install .[neural]
 ```
 
 > **Note on Orchestration:** Semantic-Sift is an "Intelligence Kernel." For complex multi-tool workflows, we strongly recommend installing [Context-Pipe](https://github.com/luismichio/context-pipe), the universal switchboard that natively routes data to Semantic-Sift without blocking your IDE.
 
 For development tools (mypy, pytest):
 ```bash
-pip install .[dev]
+uv pip install .[dev]
 ```
 
 ### 2. Connect the MCP
