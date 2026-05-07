@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.7] - 2026-05-07
 
+### Added
+- **`scripts/fetch_sift_core.py`**: New helper script for editable/dev installs. Downloads the pre-built `sift-core` binary for the current platform from the matching GitHub release and installs it into the active Python environment's `Scripts`/`bin` directory — no Rust compiler required. Run once after `pip install -e .`: `python scripts/fetch_sift_core.py`.
+
 ### Fixed
 - **`crates/sift-core/Cargo.toml`**: Pinned `ort` to `=2.0.0-rc.10`. `ort-sys@2.0.0-rc.12` removed `x86_64-apple-darwin` from its prebuilt ONNX Runtime binary table (`dist.txt`), causing all macOS Intel builds to fail at compile time. rc.10 retains prebuilt support for all required targets: Windows MSVC, macOS Intel, macOS ARM, Linux x86_64, Linux aarch64.
 - **`crates/sift-core/Cargo.toml`**: Pinned `ndarray` to `=0.16.1`. `ort` rc.10's `OwnedTensorArrayData` trait is implemented for `ndarray 0.16`'s two-parameter `ArrayBase`; `ndarray 0.17` introduced a third generic parameter that breaks the trait bound, causing a compile error on all platforms.

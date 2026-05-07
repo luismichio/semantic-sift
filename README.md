@@ -136,6 +136,12 @@ For development tools (mypy, pytest):
 uv pip install -e .[dev]
 ```
 
+> **Rust binary for editable installs**: `pip install -e .` skips the Rust compile step, so `sift-core` won't be on your PATH. Instead of compiling from source, download the pre-built binary for your platform from the matching GitHub release in one command:
+> ```bash
+> python scripts/fetch_sift_core.py
+> ```
+> This places `sift-core[.exe]` directly into your active environment's `Scripts`/`bin` directory. Re-run it whenever you bump the version.
+
 ### 2. Connect the MCP
 
 > **CRITICAL**: For exact configuration paths for Cursor, Gemini, OpenCode, VS Code, and Claude, reference the **[Master Configuration Matrix](doc/MCP_CONFIG_EXAMPLES.md)**.
