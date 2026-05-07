@@ -90,6 +90,9 @@ uv pip install semantic-sift[neural,multi-modal]
 
 **Option B: Sovereign Pattern (Recommended)**
 Clone the repository to gain access to the native Rust sidecar source code and benchmarks:
+
+> **⚠️ Rust Compiler Required:** Because the Sovereign Pattern builds the package from your local source code, you **must have the Rust compiler installed** (`rustup`) on your machine. If you do not want to install Rust, use Option A (PyPI) to download the pre-compiled binaries instead.
+
 ```bash
 git clone https://github.com/luismichio/semantic-sift.git
 cd semantic-sift

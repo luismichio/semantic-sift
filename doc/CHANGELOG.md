@@ -5,6 +5,11 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2026-05-06
+
+### 📦 Packaging & Distribution
+- **Cross-Platform Prebuilt Wheels**: Transitioned GitHub Actions release workflow to use `cibuildwheel`. PyPI now hosts pre-compiled binaries for Windows, Linux, and macOS (Intel & Apple Silicon), eliminating the need for end-users to install a Rust compiler.
+
 ## [0.2.4] - 2026-05-06
 
 ### ✨ New Features
