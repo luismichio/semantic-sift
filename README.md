@@ -84,34 +84,38 @@ All technical details, architectural logic, and integration guides are strictly 
 ### 1. Installation
 
 **Option A: Quick Install (PyPI)**
+
+> **ℹ️ What you get:** The PyPI wheel includes the pre-compiled `sift-core` Rust binary — no Rust toolchain required. The `[neural]` extra adds PyTorch (~1.5 GB) for large-payload fallback; `[multi-modal]` adds MarkItDown for PDF/DOCX/XLSX ingestion. Expect several minutes for the first install due to PyTorch download size.
+
 ```bash
 uv venv
-# Windows: .\.venv\Scripts\activate | Mac/Linux: source .venv/bin/activate
+# Windows: .\.venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 uv pip install semantic-sift[neural,multi-modal]
 ```
 
 **Option B: Sovereign Pattern (Recommended)**
+
 Clone the repository to gain access to the native Rust sidecar source code and benchmarks:
 
-> **⚠️ Rust Compiler Required:** Because the Sovereign Pattern builds the package from your local source code, you **must have the Rust compiler installed** (`rustup`) on your machine. If you do not want to install Rust, use Option A (PyPI) to download the pre-compiled binaries instead.
+> **⚠️ Rust Compiler Required:** The Sovereign Pattern builds `sift-core` from source. You **must have the Rust compiler installed** ([rustup.rs](https://rustup.rs)) before running the install command below. If you do not want to install Rust, use Option A (PyPI) instead.
 
 ```bash
 git clone https://github.com/luismichio/semantic-sift.git
 cd semantic-sift
-# Dedicated environment — use Python 3.12 for torch/CUDA compatibility
+# Use Python 3.12 for torch/CUDA compatibility
 python3.12 -m venv venv312
 # Windows:
 .\venv312\Scripts\activate
 # macOS/Linux:
 # source venv312/bin/activate
-uv pip install .[neural,multi-modal]
+uv pip install -e .[neural,multi-modal]
 ```
 
-> **Windows Tip (`uv` environment discovery)**: If `uv` fails to find your environment (error: *"No virtual environment found"*), explicitly point to your interpreter using the `--python` flag:
-> `uv pip install -e . --python venv/Scripts/python.exe`
+> **Windows Tip (`uv` environment discovery)**: If `uv` fails to find your environment (error: *"No virtual environment found"*), explicitly point to your interpreter:
+> `uv pip install -e . --python venv312\Scripts\python.exe`
 
-> **Note:** If you are using Context-Pipe's **Sovereign Dual-Repo Pattern**, `semantic-sift` is cross-installed into `context-pipe/venv` instead (via `uv pip install -e ../semantic-sift`).
- The `venv312` above is only needed if you want a standalone ML runtime or are running `server.py` directly.
+> **Note:** If you are using Context-Pipe's **Sovereign Dual-Repo Pattern**, `semantic-sift` is cross-installed into `context-pipe/venv` instead (via `uv pip install -e ../semantic-sift`). The `venv312` above is only needed for the standalone ML runtime or running `server.py` directly.
 
 ### 🐍 Python Environment Guidance
 
@@ -125,16 +129,11 @@ Choosing the right Python path for your MCP configuration is critical for stabil
 
 **Recommendation:** Always use the **Dedicated Venv** path in your `mcp_config.json` to ensure the sifting kernel is isolated and reliable.
 
-For full semantic/reranking features (LLMLingua, Transformers, sentence-transformers):
-```bash
-uv pip install .[neural]
-```
-
 > **Note on Orchestration:** Semantic-Sift is an "Intelligence Kernel." For complex multi-tool workflows, we strongly recommend installing [Context-Pipe](https://github.com/luismichio/context-pipe), the universal switchboard that natively routes data to Semantic-Sift without blocking your IDE.
 
 For development tools (mypy, pytest):
 ```bash
-uv pip install .[dev]
+uv pip install -e .[dev]
 ```
 
 ### 2. Connect the MCP

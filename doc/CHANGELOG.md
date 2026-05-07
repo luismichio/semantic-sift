@@ -5,6 +5,16 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7] - 2026-05-07
+
+### Fixed
+- **`crates/sift-core/Cargo.toml`**: Pinned `ort` to `=2.0.0-rc.10`. `ort-sys@2.0.0-rc.12` removed `x86_64-apple-darwin` from its prebuilt ONNX Runtime binary table (`dist.txt`), causing all macOS Intel builds to fail at compile time. rc.10 retains prebuilt support for all required targets: Windows MSVC, macOS Intel, macOS ARM, Linux x86_64, Linux aarch64.
+- **`crates/sift-core/Cargo.toml`**: Pinned `ndarray` to `=0.16.1`. `ort` rc.10's `OwnedTensorArrayData` trait is implemented for `ndarray 0.16`'s two-parameter `ArrayBase`; `ndarray 0.17` introduced a third generic parameter that breaks the trait bound, causing a compile error on all platforms.
+- **CI: `release.yml`**: Replaced `macos-13` (no longer a valid GitHub-hosted runner image) with `macos-14` (ARM64). Added `CIBW_ARCHS_MACOS: "arm64 x86_64"` so both Apple Silicon and Intel wheels are cross-compiled from the single ARM runner. Added `targets: x86_64-apple-darwin` to the `dtolnay/rust-toolchain` step so `cargo` has the cross-compile target registered before cibuildwheel invokes `setup.py` for the Intel wheel.
+- **CI: `release.yml`**: Re-enabled Linux wheel builds using `ubuntu-latest` + `manylinux_2_28`. Rust is installed inside the manylinux Docker container via `CIBW_BEFORE_ALL_LINUX` so `setuptools-rust` can compile `sift-core`. This produces `x86_64` and `aarch64` manylinux wheels on PyPI, eliminating the Rust requirement for Linux users installing from PyPI.
+- **CI: `release.yml`**: Removed stale `CIBW_SKIP: *linux*` pattern that was causing cibuildwheel to exit with code 3 on the ubuntu runner when all build identifiers were skipped.
+- **CI: `release-binaries.yml`**: Replaced `macos-latest` (resolves to ARM64/macOS 15) with explicit `macos-14` for both macOS matrix entries to make cross-compile intent stable against future `-latest` migrations.
+
 ## [0.2.6] - 2026-05-06
 
 ### 📦 Packaging & Distribution
