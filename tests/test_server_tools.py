@@ -127,7 +127,7 @@ def test_sift_chat_calls_semantic_sift(monkeypatch):
         called_with["rate"] = rate
         return "compressed"
 
-    monkeypatch.setattr(sift_kernel, "perform_semantic_sift", fake_semantic_sift)
+    monkeypatch.setattr(sift_kernel, "perform_hybrid_sift", fake_semantic_sift)
     result = asyncio.run(mcp.tools["sift_chat"]("some long prose", rate=0.4))
     assert called_with["text"] == "some long prose"
     assert called_with["rate"] == 0.4

@@ -85,6 +85,8 @@ All technical details, architectural logic, and integration guides are strictly 
 
 **Option A: Quick Install (PyPI)**
 ```bash
+uv venv
+# Windows: .\.venv\Scripts\activate | Mac/Linux: source .venv/bin/activate
 uv pip install semantic-sift[neural,multi-modal]
 ```
 
