@@ -47,7 +47,7 @@ jobs:
           CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_34"
           # Install Rust + OpenSSL headers inside the manylinux container.
           # openssl-devel is required by the openssl-sys crate (pulled in by ort's reqwest dep).
-          CIBW_BEFORE_ALL_LINUX: "microdnf install -y openssl-devel && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y"
+          CIBW_BEFORE_ALL_LINUX: "dnf install -y openssl-devel && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y"
           CIBW_ENVIRONMENT_LINUX: "PATH=$PATH:$HOME/.cargo/bin"
 
       - uses: actions/upload-artifact@v4
