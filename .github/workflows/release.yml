@@ -29,7 +29,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
-          CIBW_SKIP: "pp* cp36-* cp37-* cp38-* cp39-*" # Skip PyPy and old Python versions
+          CIBW_SKIP: "pp* cp36-* cp37-* cp38-* cp39-* *linux*" # Skip Linux wheels due to ONNX glibc mismatch (Linux users build from source)
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
           CIBW_BEFORE_ALL_LINUX: "dnf install -y openssl-devel perl && curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y"
