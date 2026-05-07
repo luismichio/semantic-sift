@@ -6,6 +6,6 @@ from setuptools_rust import RustBin
 
 setup(
     rust_extensions=[
-        RustBin("sift-core", path="crates/sift-core/Cargo.toml")
+        RustBin("sift-core", path="crates/sift-core/Cargo.toml", optional=True)
     ],
 )
