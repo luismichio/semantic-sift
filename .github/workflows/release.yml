@@ -38,6 +38,8 @@ jobs:
         env:
           CIBW_SKIP: "pp* cp36-* cp37-* cp38-* cp39-*" # PyPy and old CPython
           CIBW_ARCHS_MACOS: "arm64 x86_64" # build both Apple Silicon and Intel wheels on the ARM runner
+          # ort rc.10 prebuilt ONNX Runtime dylib requires macOS 10.12+; set deployment target to match.
+          CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.12"
           # Linux: build inside manylinux_2_28 container (glibc 2.28 compatible with ort rc.10 prebuilts)
           # Full image URIs avoid cibuildwheel resolving non-existent date-pinned tags.
           CIBW_MANYLINUX_X86_64_IMAGE: "quay.io/pypa/manylinux_2_28_x86_64:latest"
