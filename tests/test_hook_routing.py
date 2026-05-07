@@ -1,10 +1,30 @@
+import glob
 import json
 import os
 import subprocess
 import sys
 
+import pytest
+
 
 HOOK_SCRIPT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "sift_hook.py"))
+CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".pipe_cache"))
+
+
+@pytest.fixture()
+def clean_echo_cache():
+    """Remove all echo cache files before and after the test to ensure isolation."""
+    for f in glob.glob(os.path.join(CACHE_DIR, "echo_*.tmp")):
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+    yield
+    for f in glob.glob(os.path.join(CACHE_DIR, "echo_*.tmp")):
+        try:
+            os.remove(f)
+        except OSError:
+            pass
 
 
 def _run_hook(payload: dict) -> str:
@@ -52,7 +72,7 @@ def test_gemini_aftertool_no_tool_args():
     assert "tool_response" in data
 
 
-def test_hook_echo_bypass_header_present():
+def test_hook_echo_bypass_header_present(clean_echo_cache):
     content = "repeat-content " * 200
     payload = {"tool_name": "test_tool", "result": content}
 
