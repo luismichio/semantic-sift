@@ -15,7 +15,6 @@ the binary that matches the checked-out source tree.
 
 from __future__ import annotations
 
-import os
 import platform
 import shutil
 import stat
