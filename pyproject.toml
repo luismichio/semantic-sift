@@ -83,6 +83,3 @@ omit = ["tests/*", "benchmark_sift.py"]
 
 [tool.coverage.report]
 show_missing = true
-
-[tool.coverage.report]
-show_missing = true

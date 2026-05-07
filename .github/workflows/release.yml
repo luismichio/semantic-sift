@@ -30,7 +30,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.22.0
         env:
           CIBW_SKIP: "pp* cp36-* cp37-* cp38-* cp39-*" # Skip PyPy and old Python versions
-          CIBW_BEFORE_ALL_LINUX: "curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y"
+          CIBW_BEFORE_ALL_LINUX: "yum install -y openssl-devel && curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y"
           CIBW_ENVIRONMENT_LINUX: "PATH=$PATH:$HOME/.cargo/bin"
 
       - uses: actions/upload-artifact@v4
