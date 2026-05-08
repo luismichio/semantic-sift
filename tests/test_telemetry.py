@@ -81,8 +81,14 @@ def test_detect_client_id_explicit_env_var(monkeypatch):
 
 def test_detect_client_id_via_env_fingerprint(monkeypatch):
     monkeypatch.delenv("SIFT_CLIENT_ID", raising=False)
+    monkeypatch.delenv("CPP_CLIENT_ID", raising=False)
     # Clear all ambient IDE env vars that take priority over per-call hook vars
     for ambient in (
+        # Antigravity (host IDE for this repo — must be cleared first)
+        "ANTIGRAVITY_AGENT",
+        "ANTIGRAVITY_EDITOR_APP_ROOT",
+        "ANTIGRAVITY_TRAJECTORY_ID",
+        # Other IDEs
         "OPENCODE",
         "OPENCODE_PID",
         "OPENCODE_RUN_ID",

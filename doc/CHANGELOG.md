@@ -5,6 +5,15 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🛡️ Security & Privacy
+- **Opt-In Telemetry (3.1)**: Flipped telemetry default from opt-out to **opt-in**. Telemetry is now a no-op unless `SIFT_TELEMETRY_OPTED_IN=true` is set. Legacy `SIFT_TELEMETRY_DISABLED=true` kill-switch is retained for backward compatibility. GDPR/CCPA alignment complete.
+- **Telemetry Endpoint Hardening (3.3)**: Reduced HTTP timeout from 5s to 2s. Exception scope explicitly covers `urllib.error.URLError`, `socket.timeout`, `OSError`, and `ConnectionRefusedError`. Telemetry failures are fully silent and never block the main flow.
+- **Path Bypass Audit Log (3.2)**: `resolve_safe_path()` now emits a `WARNING` via the `semantic_sift.security` logger to `stderr` whenever `SIFT_ALLOW_GLOBAL_READS=true` bypasses workspace sandboxing. Log includes the full resolved path.
+- **Input Size Guard (3.4)**: Added `_enforce_input_size_guard()` to `sift_kernel.py`. All public processing entry points (`apply_heuristic_sieve`, `perform_hybrid_sift`, `perform_semantic_sift`, `perform_doc_sift`, `perform_compaction_summary`, `perform_extraction_cleaning`) now enforce a configurable input cap (default 50MB). Inputs exceeding the limit are truncated with a notice prepended; a warning is emitted via `semantic_sift.input_guard` logger. Override: `SIFT_MAX_INPUT_MB`.
+- **SECURITY.md Rewrite**: Updated `SECURITY.md` to document opt-in consent model, path-bypass audit log, input size limits, 2s timeout guarantee, and GDPR/CCPA compliance stance.
+
 ## [0.2.7] - 2026-05-07
 
 ### Added

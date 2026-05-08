@@ -50,10 +50,15 @@ def test_secret_redaction_logic():
     assert redact_secrets_for_telemetry("This is a normal sentence.") == "This is a normal sentence."
 
 
-def test_telemetry_does_not_log_content_secrets():
+def test_telemetry_does_not_log_content_secrets(monkeypatch, tmp_path):
     import telemetry_core
     import json
     import uuid
+
+    # Enable telemetry opt-in and redirect file to a temp path to avoid cross-test pollution
+    telemetry_file = str(tmp_path / "telemetry.json")
+    monkeypatch.setattr(telemetry_core, "SIFT_TELEMETRY_DISABLED", False)
+    monkeypatch.setattr(telemetry_core, "TELEMETRY_FILE", telemetry_file)
 
     # Use a unique session ID to avoid collisions with stale test data in the telemetry file
     session_id = f"test-pat-redaction-{uuid.uuid4().hex}"
@@ -63,7 +68,7 @@ def test_telemetry_does_not_log_content_secrets():
 
     telemetry_core.log_telemetry(session_id, start_time, secret_tool, 1000, 500, 10.0)
 
-    with open(telemetry_core.TELEMETRY_FILE, "r") as f:
+    with open(telemetry_file, "r") as f:
         data = json.load(f)
 
     assert session_id in data

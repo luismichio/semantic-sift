@@ -13,6 +13,49 @@ from typing import Any
 CACHE_DIR = ".sift_cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+# Input Size Guard — protects against OOM in the MCP server process.
+# Default: 50MB. Override via SIFT_MAX_INPUT_MB environment variable.
+def _get_max_input_bytes() -> int:
+    raw = os.environ.get("SIFT_MAX_INPUT_MB", "50")
+    try:
+        return max(1, int(raw)) * 1024 * 1024
+    except ValueError:
+        return 50 * 1024 * 1024
+
+
+MAX_INPUT_SIZE_BYTES: int = _get_max_input_bytes()
+_SIZE_GUARD_LOGGER = None
+
+
+def _get_size_guard_logger():  # type: ignore[return]
+    global _SIZE_GUARD_LOGGER
+    if _SIZE_GUARD_LOGGER is None:
+        import logging
+        _SIZE_GUARD_LOGGER = logging.getLogger("semantic_sift.input_guard")
+    return _SIZE_GUARD_LOGGER
+
+
+def _enforce_input_size_guard(text: str) -> str:
+    """
+    Checks that the input does not exceed MAX_INPUT_SIZE_BYTES.
+    On breach: logs a warning to stderr, truncates to the limit, and prepends a notice.
+    Returns the (possibly truncated) text.
+    """
+    limit = MAX_INPUT_SIZE_BYTES
+    encoded = text.encode("utf-8", errors="replace")
+    if len(encoded) <= limit:
+        return text
+
+    truncated = encoded[:limit].decode("utf-8", errors="replace")
+    mb_limit = limit // (1024 * 1024)
+    _get_size_guard_logger().warning(
+        "Input exceeds maximum size (%dMB). Truncated from %d to %d bytes. "
+        "Set SIFT_MAX_INPUT_MB to increase the limit.",
+        mb_limit, len(encoded), limit,
+    )
+    notice = f"[Semantic-Sift: Input truncated at {mb_limit}MB limit — set SIFT_MAX_INPUT_MB to increase]\n\n"
+    return notice + truncated
+
 # Lazy Device Detection
 DEVICE = "cpu"
 _DEVICE = None
@@ -29,6 +72,12 @@ def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
     requested_path = os.path.realpath(os.path.abspath(os.path.expanduser(path)))
 
     if os.environ.get("SIFT_ALLOW_GLOBAL_READS", "false").lower() == "true":
+        import logging
+        logging.getLogger("semantic_sift.security").warning(
+            "SIFT_ALLOW_GLOBAL_READS is enabled — workspace path safety checks are BYPASSED. "
+            "Path: %s. Set SIFT_ALLOW_GLOBAL_READS=false to re-enable sandboxing.",
+            requested_path,
+        )
         return requested_path
 
     # Resolution chain: explicit arg > env var > cwd
@@ -210,6 +259,7 @@ def load_file_content(path: str) -> str:
 
 def apply_heuristic_sieve(text: str) -> str:
     """Sifts through raw technical logs to remove noise."""
+    text = _enforce_input_size_guard(text)
     lines = text.splitlines()
     sifted = []
     # Broad timestamp support: ISO-8601, Legacy (YYMMDD), and Bracketed (Vercel)
@@ -275,6 +325,7 @@ def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
     1. Small/Medium texts (<30,000 chars) -> Rust/ONNX (Fast, low RAM).
     2. Large texts (>30,000 chars) -> Python/PyTorch (Flash Attention).
     """
+    text = _enforce_input_size_guard(text)
     if len(text) < 30000:
         rust_result = _call_rust_sifter(text, rate)
         if rust_result:
@@ -286,6 +337,7 @@ def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
 
 def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
     """Performs BERT-based prompt compression using PyTorch."""
+    text = _enforce_input_size_guard(text)
     cache_key = get_cache_key("sift_chat", text, rate=rate)
     if cached := check_cache(cache_key):
         return cached
@@ -335,12 +387,14 @@ def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tu
 
 def perform_doc_sift(text: str, rate: float = 0.4) -> str:
     """Hybrid sifting for long documentation."""
+    text = _enforce_input_size_guard(text)
     cleaned = apply_heuristic_sieve(text)
     return perform_hybrid_sift(cleaned, rate=rate)
 
 
 def perform_compaction_summary(text: str) -> str:
     """Sifts session history for structural compaction snapshots."""
+    text = _enforce_input_size_guard(text)
     priorities = re.findall(r"(?:Decision|Status|File|Task).*?:.*", text, re.IGNORECASE)
     context_hint = "\n".join(priorities) if priorities else ""
 
@@ -379,6 +433,7 @@ def calculate_vocabulary_overlap(original: str, compressed: str) -> float:
 
 def perform_extraction_cleaning(content: str, show_diff: bool = False) -> str:
     """Sifts raw OCR/Docling extractions."""
+    content = _enforce_input_size_guard(content)
     refined = content
     for pattern in [r"Page \d+ of \d+", r"© .*? All rights reserved", r"---+\s*$", r"^\s*·\s*$"]:
         refined = re.sub(pattern, "", refined, flags=re.MULTILINE | re.IGNORECASE)

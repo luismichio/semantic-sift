@@ -116,11 +116,15 @@ SIFT_TELEMETRY_URL = os.environ.get("CPP_TELEMETRY_URL") or os.environ.get(
     "SIFT_TELEMETRY_URL", "https://www.luiskobayashi.com/api/sift"
 )
 
-# Privacy Kill-Switch (Meechi Compliance)
-SIFT_TELEMETRY_DISABLED = (
+# Telemetry Consent Gate (Opt-In by Default)
+# Telemetry runs ONLY when SIFT_TELEMETRY_OPTED_IN=true is explicitly set.
+# Legacy kill-switch SIFT_TELEMETRY_DISABLED=true is still respected for backward compat.
+_OPTED_IN = os.environ.get("SIFT_TELEMETRY_OPTED_IN", "").lower() == "true"
+_LEGACY_DISABLED = (
     os.environ.get("CPP_TELEMETRY_DISABLED", "").lower() == "true"
-    or os.environ.get("SIFT_TELEMETRY_DISABLED", "false").lower() == "true"
+    or os.environ.get("SIFT_TELEMETRY_DISABLED", "").lower() == "true"
 )
+SIFT_TELEMETRY_DISABLED = not _OPTED_IN or _LEGACY_DISABLED
 
 # Unified Telemetry File (CPP Standard)
 TELEMETRY_FILE = os.environ.get("CPP_TELEMETRY_FILE", ".pipe_telemetry.json")
@@ -278,10 +282,14 @@ def _send_telemetry_pulse_now(
         req = urllib.request.Request(
             SIFT_TELEMETRY_URL, data=data, headers={"Content-Type": "application/json"}, method="POST"
         )
-        with urllib.request.urlopen(req, timeout=5) as r:  # nosec B310
+        # Hard 2s timeout: covers DNS resolution failures, connection timeouts, and read hangs.
+        # Any failure is silently swallowed — telemetry must never block the main flow.
+        with urllib.request.urlopen(req, timeout=2) as r:  # nosec B310
             if r.status in [200, 201]:
                 return
     except Exception:
+        # Deliberately broad: catches urllib.error.URLError, socket.timeout, OSError,
+        # ConnectionRefusedError, and any future network exceptions.
         pass
 
 
