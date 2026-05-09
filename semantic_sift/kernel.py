@@ -390,8 +390,68 @@ def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
         return f"Error: {str(e)}"
 
 
+def _bm25_fallback_ranking(query: str, documents: list[str], top_n: int) -> list[tuple[float, str]]:
+    """
+    Lightweight TF-IDF cosine-similarity ranking using only numpy + stdlib.
+    Used as a fallback when sentence_transformers is not installed.
+    Sufficient for keyword-dominant queries; no model download required.
+    """
+    import math
+    import numpy as np
+
+    def tokenize(text: str) -> list[str]:
+        return re.findall(r"\w+", text.lower())
+
+    corpus = [query] + documents
+    tokenized = [tokenize(t) for t in corpus]
+
+    # Build vocabulary
+    vocab: dict[str, int] = {}
+    for tokens in tokenized:
+        for tok in tokens:
+            if tok not in vocab:
+                vocab[tok] = len(vocab)
+
+    N = len(corpus)
+    V = len(vocab)
+
+    # Term frequency matrix (N x V)
+    tf = np.zeros((N, V), dtype=float)
+    for i, tokens in enumerate(tokenized):
+        for tok in tokens:
+            tf[i, vocab[tok]] += 1
+        if tf[i].sum() > 0:
+            tf[i] /= tf[i].sum()
+
+    # IDF vector
+    df = (tf > 0).sum(axis=0).astype(float)
+    idf = np.log((N + 1) / (df + 1)) + 1.0
+
+    tfidf = tf * idf
+
+    # Cosine similarity of each document against the query vector
+    query_vec = tfidf[0]
+    query_norm = float(np.linalg.norm(query_vec))
+    scores: list[tuple[float, str]] = []
+    for i, doc in enumerate(documents):
+        doc_vec = tfidf[i + 1]
+        doc_norm = float(np.linalg.norm(doc_vec))
+        if query_norm > 0 and doc_norm > 0:
+            score = float(np.dot(query_vec, doc_vec) / (query_norm * doc_norm))
+        else:
+            score = 0.0
+        scores.append((score, doc))
+
+    return sorted(scores, key=lambda x: x[0], reverse=True)[:top_n]
+
+
 def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tuple[float, str]]:
-    """Performs semantic re-ranking using BGE-Reranker."""
+    """
+    Performs re-ranking with a three-tier strategy:
+      1. Neural (sentence_transformers CrossEncoder) — highest fidelity, requires [neural] extra.
+      2. TF-IDF cosine-similarity fallback (numpy only) — always available, no model download.
+    Returns an empty list only on unexpected errors.
+    """
     try:
         from sentence_transformers import CrossEncoder
 
@@ -399,7 +459,15 @@ def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tu
         scores = model.predict([[query, doc] for doc in documents])
         scored_docs = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)[:top_n]
         return scored_docs
-    except (ImportError, RuntimeError, ValueError):
+    except ImportError:
+        # Neural extras not installed — fall through to TF-IDF
+        pass
+    except (RuntimeError, ValueError):
+        pass
+
+    try:
+        return _bm25_fallback_ranking(query, documents, top_n)
+    except Exception:
         return []
 
 
