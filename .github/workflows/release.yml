@@ -49,6 +49,10 @@ jobs:
           # openssl-devel is required by the openssl-sys crate (pulled in by ort's reqwest dep).
           CIBW_BEFORE_ALL_LINUX: "dnf install -y openssl-devel && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y"
           CIBW_ENVIRONMENT_LINUX: "PATH=$PATH:$HOME/.cargo/bin"
+          # Ensure setuptools_rust is available in every isolated wheel build environment
+          # so setup.py can compile the sift-core Rust extension instead of falling back
+          # to a pure-Python wheel (which cibuildwheel 3.x rejects with exit code 5).
+          CIBW_BEFORE_BUILD: "pip install setuptools_rust"
 
       - uses: actions/upload-artifact@v4
         with:
