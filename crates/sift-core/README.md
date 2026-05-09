@@ -1,5 +1,9 @@
 # 🦀 sift-core
 
+[![Crates.io](https://img.shields.io/crates/v/semantic-sift-core.svg)](https://crates.io/crates/semantic-sift-core)
+[![Docs.rs](https://docs.rs/semantic-sift-core/badge.svg)](https://docs.rs/semantic-sift-core)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE.md)
+
 **High-performance context distillation for local-first AI applications.**
 
 `sift-core` is the native Rust heart of the Semantic-Sift ecosystem. It provides ultra-low-latency text distillation and noise removal, designed specifically to be embedded as a library in Rust applications or bundled as a **Sidecar** for desktop frameworks like **Tauri**.
