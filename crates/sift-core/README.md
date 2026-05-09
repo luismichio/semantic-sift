@@ -26,15 +26,23 @@ Since its inception, it has grown into a tool for developers who want to:
 
 ## 🛠️ Installation
 
+### Pre-built Binaries
+You can download pre-built binaries for Windows, macOS, and Linux from the [**GitHub Releases**](https://github.com/luismichio/semantic-sift/releases) page.
+
+Alternatively, you can use the helper script (requires Python):
+```bash
+python scripts/fetch_sift_core.py
+```
+
 ### As a Rust Library
 Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-semantic-sift-core = { git = "https://github.com/your-repo/semantic-sift", path = "crates/sift-core" }
+semantic-sift-core = { git = "https://github.com/luismichio/semantic-sift", path = "crates/sift-core" }
 ```
 
-### As a CLI / Sidecar
+### Build from Source
 Build the binary:
 
 ```bash

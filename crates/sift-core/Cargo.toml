@@ -1,10 +1,15 @@
 [package]
 name = "semantic-sift-core"
-version = "0.2.7"
+version = "0.3.0"
 edition = "2024"
 authors = ["Luis Kobayashi"]
 description = "High-performance Rust core for context distillation (Studio of Two)"
 license = "Apache-2.0"
+repository = "https://github.com/luismichio/semantic-sift"
+homepage = "https://meechi.me"
+keywords = ["ai", "llm", "context", "tauri", "nlp"]
+categories = ["development-tools", "science", "text-processing"]
+readme = "README.md"
 
 [dependencies]
 regex = "1.11"
