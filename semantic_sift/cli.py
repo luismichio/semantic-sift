@@ -10,7 +10,7 @@ import os
 import uuid
 
 from semantic_sift import kernel
-import telemetry_core
+from semantic_sift import telemetry as telemetry_core
 
 # We use stderr for logging so it doesn't corrupt the stdout data stream!
 logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="[Sift-CLI] %(message)s")

@@ -4,7 +4,7 @@ import json
 import os
 import sys
 
-from telemetry_core import TELEMETRY_FILE, SIFT_CLIENT_ID, SIFT_TELEMETRY_DISABLED
+from semantic_sift.telemetry import TELEMETRY_FILE, SIFT_CLIENT_ID, SIFT_TELEMETRY_DISABLED
 
 
 def main():
