@@ -396,7 +396,6 @@ def _bm25_fallback_ranking(query: str, documents: list[str], top_n: int) -> list
     Used as a fallback when sentence_transformers is not installed.
     Sufficient for keyword-dominant queries; no model download required.
     """
-    import math
     import numpy as np
 
     def tokenize(text: str) -> list[str]:
