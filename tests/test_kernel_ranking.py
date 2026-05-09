@@ -1,4 +1,4 @@
-import sift_kernel
+from semantic_sift import kernel as sift_kernel
 
 
 class _FakeCrossEncoder:

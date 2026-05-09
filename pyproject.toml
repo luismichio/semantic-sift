@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68", "wheel", "setuptools-rust>=1.8.0"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "semantic-sift"
-version = "0.2.7"
+version = "0.3.0"
 description = "Reasoning-first MCP middleware for context distillation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -41,6 +41,11 @@ multi-modal = [
   "markitdown>=0.1"
 ]
 
+# Install the pre-built Rust sift-core binary for maximum performance.
+# The PyPI wheel already includes sift-core for your platform.
+# For editable/dev installs, run: python scripts/fetch_sift_core.py
+native = []
+
 dev = [
   "pytest",
   "pytest-cov",
@@ -49,13 +54,13 @@ dev = [
 ]
 
 [project.scripts]
-semantic-sift = "server:main"
+semantic-sift = "semantic_sift.server:main"
 semantic-sift-stats = "semantic_sift.telemetry_cli:main"
 semantic-sift-onboard = "semantic_sift.onboarding_cli:main"
 semantic-sift-cli = "semantic_sift.cli:main"
 
 [tool.setuptools]
-py-modules = ["server", "sift_kernel", "sift_hook", "telemetry_core"]
+py-modules = ["server"]
 
 [tool.setuptools.packages.find]
 include = ["semantic_sift*"]
@@ -78,7 +83,7 @@ select = ["E", "F", "W"]
 ignore = ["E501"]
 
 [tool.coverage.run]
-source = ["semantic_sift", "sift_kernel", "telemetry_core", "sift_hook"]
+source = ["semantic_sift"]
 omit = ["tests/*", "benchmark_sift.py"]
 
 [tool.coverage.report]

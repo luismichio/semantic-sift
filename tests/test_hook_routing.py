@@ -7,7 +7,7 @@ import sys
 import pytest
 
 
-HOOK_SCRIPT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "sift_hook.py"))
+HOOK_SCRIPT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "semantic_sift", "hook.py"))
 CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".pipe_cache"))
 
 

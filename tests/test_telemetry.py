@@ -1,6 +1,7 @@
 import os
 from unittest.mock import patch
-import telemetry_core
+from semantic_sift import telemetry as telemetry_core
+from semantic_sift import telemetry as _telemetry_impl
 
 
 def test_token_estimation():
@@ -19,19 +20,19 @@ def test_telemetry_pulse_honors_disabled_flag(mock_urlopen):
         mock_urlopen.assert_not_called()
 
 
-@patch("telemetry_core._send_telemetry_pulse_now")
+@patch("semantic_sift.telemetry._send_telemetry_pulse_now")
 def test_telemetry_pulse_sends_correct_payload(mock_send_now, monkeypatch):
     # Patch the inner function that actually fires the HTTP request.
     # send_telemetry_pulse dispatches to a daemon thread; we join all
     # semantic-sift-pulse threads to avoid a race against the assertion.
     import threading
 
-    monkeypatch.setattr(telemetry_core, "SIFT_TELEMETRY_DISABLED", False)
-    monkeypatch.setattr(telemetry_core, "SIFT_TELEMETRY_URL", "https://example.com/api")
+    monkeypatch.setattr(_telemetry_impl, "SIFT_TELEMETRY_DISABLED", False)
+    monkeypatch.setattr(_telemetry_impl, "SIFT_TELEMETRY_URL", "https://example.com/api")
     # Disable rate limiting so the pulse is sent immediately (not queued).
     monkeypatch.setenv("SIFT_PULSE_RATE_LIMIT_S", "0")
-    telemetry_core._PULSE_LAST_SENT.clear()
-    telemetry_core._PULSE_PENDING.clear()
+    _telemetry_impl._PULSE_LAST_SENT.clear()
+    _telemetry_impl._PULSE_PENDING.clear()
 
     telemetry_core.send_telemetry_pulse("sift_logs", 1000, 500, 10.0)
 
@@ -47,18 +48,16 @@ def test_telemetry_pulse_sends_correct_payload(mock_send_now, monkeypatch):
     assert args[2] == 500  # final
 
 
-
-
-@patch("telemetry_core._send_telemetry_pulse_now")
+@patch("semantic_sift.telemetry._send_telemetry_pulse_now")
 def test_telemetry_rate_limit_queues_pending(mock_send, monkeypatch):
     import threading
 
-    monkeypatch.setattr(telemetry_core, "SIFT_TELEMETRY_DISABLED", False)
-    monkeypatch.setattr(telemetry_core, "SIFT_TELEMETRY_URL", "https://example.com/api")
+    monkeypatch.setattr(_telemetry_impl, "SIFT_TELEMETRY_DISABLED", False)
+    monkeypatch.setattr(_telemetry_impl, "SIFT_TELEMETRY_URL", "https://example.com/api")
     monkeypatch.setenv("SIFT_PULSE_RATE_LIMIT_S", "60")
 
-    telemetry_core._PULSE_LAST_SENT.clear()
-    telemetry_core._PULSE_PENDING.clear()
+    _telemetry_impl._PULSE_LAST_SENT.clear()
+    _telemetry_impl._PULSE_PENDING.clear()
 
     # First call goes through immediately; second call is within the rate window
     # so it must be queued into _PULSE_PENDING.
@@ -71,7 +70,7 @@ def test_telemetry_rate_limit_queues_pending(mock_send, monkeypatch):
             t.join(timeout=2.0)
 
     assert mock_send.called
-    assert any("sift_logs" in k for k in telemetry_core._PULSE_PENDING.keys())
+    assert any("sift_logs" in k for k in _telemetry_impl._PULSE_PENDING.keys())
 
 
 def test_detect_client_id_explicit_env_var(monkeypatch):

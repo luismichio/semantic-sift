@@ -94,3 +94,40 @@ AI agents must manually apply specific sifting tools based on the *source* of th
 | **Long Chat** | Conversation Hist. | Use `sift_chat(rate=0.3)` Aggressive to compact analytical investigations. |
 
 *Note: These synergies are automatically injected into agent system prompts during the `sift_onboard` process.*
+---
+
+## 5. `Ecosystem Integration (Context-Pipe)`
+
+Semantic-Sift is one half of the **Studio of Two** ecosystem. The other half is **[Context-Pipe](https://github.com/luismichio/context-pipe)** (`mcp-context-pipe` on PyPI), which handles OS-level pipe orchestration, shadow MCP tool routing, and dynamic multi-node pipeline execution.
+
+### Roles & Boundaries
+
+| Concern | Context-Pipe | Semantic-Sift |
+| :--- | :--- | :--- |
+| **Token Reduction** | No | Yes (`sift_*` tools) |
+| **Pipe Orchestration** | Yes (`run_pipe`, `run_dynamic_pipe`) | No |
+| **Shadow MCP Routing** | Yes (`pipe_list_shadow_tools`) | No |
+| **IDE Onboarding** | Yes (`pipe_onboard`) | Yes (`sift_onboard`) |
+| **Context Balance Sheet** | Yes (pipe-level ROI) | Yes (sift-level ROI) |
+| **Hook Interception** | Yes (`pipe_hook.py`) | Yes (`hook.py`) |
+
+### Recommended Wiring Pattern
+
+For maximum context efficiency, run semantic-sift **both sides** of a context-pipe node:
+
+1. **Before indexing**: Compress large documents with `sift_doc` or `sift_chat` before passing to `context-mode_index`.
+2. **After retrieval**: Distil retrieved code bodies > 100 lines with `sift_chat(rate=0.7)` via the `semantic-refinery` pipe.
+
+```json
+// pipes.json — semantic-refinery pipe
+{
+  "pipes": {
+    "semantic-refinery": [
+      { "type": "subprocess", "cmd": ["semantic-sift-cli", "--rate", "0.7"] }
+    ]
+  }
+}
+```
+
+### Context-Pipe → Semantic-Sift Call Pattern
+When a context-pipe dynamic node needs to compress content on-the-fly, it calls `semantic-sift-cli` as a subprocess node (Type B). The `PIPE_WINDOW_PRESSURE` env var (0.0–1.0) is forwarded to each node; `semantic-sift-cli` reads it to automatically override `--rate` when context pressure is high.

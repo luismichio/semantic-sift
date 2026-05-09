@@ -1,6 +1,6 @@
 import sys
 
-import server
+from semantic_sift import server
 
 
 def test_windsurf_gateway_command_windows():

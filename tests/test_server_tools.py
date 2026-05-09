@@ -3,8 +3,7 @@ import json
 import os
 
 import semantic_sift.tools as tools
-import sift_kernel
-import telemetry_core
+from semantic_sift import telemetry as telemetry_core
 
 
 class _DummySpan:
@@ -86,7 +85,7 @@ def test_sift_onboard_dry_run_reports_no_writes(tmp_path, monkeypatch):
     mcp = _register(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    result = asyncio.run(mcp.tools["sift_onboard"]("Cursor", str(tmp_path), True))
+    result = asyncio.run(mcp.tools["sift_onboard"](environment="Cursor", target_dir=str(tmp_path), dry_run=True))
     assert "Dry-run mode" in result
 
 
@@ -127,7 +126,7 @@ def test_sift_chat_calls_semantic_sift(monkeypatch):
         called_with["rate"] = rate
         return "compressed"
 
-    monkeypatch.setattr(sift_kernel, "perform_hybrid_sift", fake_semantic_sift)
+    monkeypatch.setattr(tools.sift_kernel, "perform_hybrid_sift", fake_semantic_sift)
     result = asyncio.run(mcp.tools["sift_chat"]("some long prose", rate=0.4))
     assert called_with["text"] == "some long prose"
     assert called_with["rate"] == 0.4
@@ -147,7 +146,7 @@ def test_sift_doc_calls_doc_sift(monkeypatch):
         called_with["rate"] = rate
         return "doc_compressed"
 
-    monkeypatch.setattr(sift_kernel, "perform_doc_sift", fake_doc_sift)
+    monkeypatch.setattr(tools.sift_kernel, "perform_doc_sift", fake_doc_sift)
     result = asyncio.run(mcp.tools["sift_doc"]("# Title\nContent", rate=0.3))
     assert called_with["rate"] == 0.3
     assert result == "doc_compressed"
@@ -164,7 +163,7 @@ def test_sift_extraction_calls_extraction_cleaning(monkeypatch):
     def fake_extraction(content, show_diff=False):
         return "cleaned"
 
-    monkeypatch.setattr(sift_kernel, "perform_extraction_cleaning", fake_extraction)
+    monkeypatch.setattr(tools.sift_kernel, "perform_extraction_cleaning", fake_extraction)
     result = asyncio.run(mcp.tools["sift_extraction"]("raw extraction content"))
     assert result == "cleaned"
 
@@ -227,5 +226,39 @@ def test_sift_onboard_none_environment_does_not_crash(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     # Should not raise TypeError even with environment=None
-    result = asyncio.run(mcp.tools["sift_onboard"](None, str(tmp_path), True))
+    result = asyncio.run(mcp.tools["sift_onboard"](environment=None, target_dir=str(tmp_path), dry_run=True))
     assert isinstance(result, str)
+
+
+def test_sift_onboard_autodetects_environment(tmp_path, monkeypatch):
+    """When environment is not supplied, a non-empty IDE label appears in the report."""
+    mcp = _register(monkeypatch)
+    monkeypatch.chdir(tmp_path)
+
+    result = asyncio.run(mcp.tools["sift_onboard"](target_dir=str(tmp_path), dry_run=True))
+    assert "Detected IDE:" in result
+
+
+def test_sift_rank_top_n_env_var(tmp_path, monkeypatch):
+    """SIFT_RANK_TOP_N env var controls the default number of results returned."""
+    mcp = _register(monkeypatch)
+    monkeypatch.setenv("SIFT_RANK_TOP_N", "1")
+    docs = ["alpha beta gamma", "delta epsilon zeta", "eta theta iota"]
+    result = asyncio.run(mcp.tools["sift_rank"](query="alpha", documents=docs))
+    # With top_n=1 only one rank block should appear
+    assert result.count("### Rank") == 1
+    monkeypatch.delenv("SIFT_RANK_TOP_N", raising=False)
+
+
+def test_atomic_cache_write_leaves_no_tmp(tmp_path, monkeypatch):
+    """set_cache must not leave .tmp files behind on a successful write."""
+    import semantic_sift.kernel as kernel
+    monkeypatch.setattr(kernel, "CACHE_DIR", str(tmp_path))
+
+    kernel.set_cache("testkey", "some content")
+
+    files = list(tmp_path.iterdir())
+    names = [f.name for f in files]
+    assert any(n.endswith(".txt") for n in names), "cache file should exist"
+    assert not any(n.endswith(".tmp") for n in names), ".tmp file should be cleaned up"
+

@@ -17,8 +17,8 @@ except ImportError:
     _torch = None  # type: ignore[assignment]
     _TORCH_AVAILABLE = False
 
-import sift_kernel
-import telemetry_core
+from semantic_sift import kernel as sift_kernel
+from semantic_sift import telemetry as telemetry_core
 from semantic_sift.onboarding import apply_onboarding
 
 
@@ -261,20 +261,28 @@ def register_tools(
         return get_sift_stats_logic("all")
 
     @mcp.tool()
-    async def sift_onboard(environment: str | None = None, target_dir: str | None = None, dry_run: bool = False) -> str:
+    async def sift_onboard(*, environment: str | None = None, target_dir: str | None = None, dry_run: bool = False) -> str:
+        # Auto-detect the calling environment when not supplied by the caller.
+        resolved_env: str = environment or telemetry_core.detect_client_id()
+        cuda_status = (
+            f"Available (device {_torch.cuda.current_device()})" if _TORCH_AVAILABLE and _torch.cuda.is_available()
+            else "N/A (torch not installed — run: pip install 'semantic-sift[neural]')" if not _TORCH_AVAILABLE
+            else "Unavailable (CPU only)"
+        )
         report = [
             "# 🔍 Onboarding Status\n",
             "## 💻 Environment",
             f"- Python: {sys.version.split()[0]}",
-            f"- CUDA: {_torch.cuda.is_available() if _TORCH_AVAILABLE else 'N/A (torch not installed)'}",
+            f"- CUDA: {cuda_status}",
             f"- Device: {sift_kernel.get_device()}",
+            f"- Detected IDE: {resolved_env}",
             "- Security: SAST/SCA Audited (0 CVEs)\n",
             "## 📝 Actions",
         ]
 
         cwd = target_dir if target_dir else os.getcwd()
         actions = apply_onboarding(
-            environment or "", cwd, dry_run, runtime_python_exe, runtime_hook_script, runtime_hook_command
+            resolved_env, cwd, dry_run, runtime_python_exe, runtime_hook_script, runtime_hook_command
         )
         for action in actions:
             report.append(f"- {action}")
@@ -318,7 +326,12 @@ def register_tools(
         return "\n".join(report)
 
     @mcp.tool()
-    async def sift_rank(query: str, documents: list[str], top_n: int = 3) -> str:
+    async def sift_rank(query: str, documents: list[str], top_n: int | None = None) -> str:
+        if top_n is None:
+            try:
+                top_n = int(os.environ.get("SIFT_RANK_TOP_N", "3"))
+            except ValueError:
+                top_n = 3
         scored_docs = sift_kernel.perform_ranking(query, documents, top_n)
         if not scored_docs:
             return "Ranking failed or returned no results."
@@ -338,3 +351,36 @@ def register_tools(
             )
             report.append("\n---\n")
         return "\n".join(report)
+
+    @mcp.tool()
+    async def sift_warmup() -> str:
+        """
+        Explicitly triggers neural model warm-up and returns current readiness status.
+
+        Use this tool at agent startup (e.g., in an ``onInit`` hook) to pre-warm the
+        LLMLingua-2 model before the first real sifting call.  Without pre-warming,
+        the first call to ``sift_chat``, ``sift_doc``, or ``sift_read_file`` may block
+        for 500ms–2s while the model loads.
+
+        Returns a JSON object: ``{"ready": bool, "latency_ms": float, "error": str | null}``
+        """
+        import json as _json
+
+        start_t = time.time()
+
+        # Trigger warmup if not already started
+        sift_kernel.start_model_warmup()
+
+        # Poll readiness with a 5s ceiling (generous for first-call scenarios)
+        ready = sift_kernel._MODEL_READY.wait(timeout=5.0)
+        latency_ms = (time.time() - start_t) * 1000
+
+        error: str | None = sift_kernel._MODEL_WARMUP_ERROR
+
+        return _json.dumps(
+            {
+                "ready": ready and error is None,
+                "latency_ms": round(latency_ms, 1),
+                "error": error,
+            }
+        )

@@ -1,45 +1,71 @@
-# 📋 Semantic-Sift Backlog & Tasks
+# 📋 Semantic-Sift Backlog
 
 This document tracks identified challenges, real-world usage observations, and planned improvements for the Semantic-Sift ecosystem.
 
+Last PyPI release: **v0.2.7**. Next publish target: **v0.3.0** (unreleased).
+
 ---
 
-## 🔴 Open Challenges (To be Addressed)
+## 🔴 Open — High Priority
 
-### 1. `sift_analyze` Trigger Blindness
+### `sift_analyze` Trigger Blindness
 **Observation**: During long implementation sessions, the agent may skip sifting for surgical reads that fall just below current thresholds.
 
-**Proposed Solutions**:
 - [ ] **Adaptive Thresholds**: Implement dynamic thresholds in `sift_analyze` (e.g., triggering at 500 chars for high-noise logs but keeping 2000+ for high-signal source code).
 - [ ] **Foundational Sanitization**: Implement a non-semantic "comment stripper" for foundational files (`AGENTS.md`) that preserves instructions but reduces character count without violating the "Never Sift" rule.
 
-### 2. `sift_onboard` Environment Auto-Detection
-**Observation**: The MCP tool already accepts `environment: str | None = None` (no crash). However when `None` is passed, `apply_onboarding()` receives `""` and proceeds without inferring the actual environment — so injection targets for the current IDE are silently skipped. The direct Python call (`apply_onboarding()`) still requires `environment` as a positional arg and will `TypeError` if called without it.
+### `sift_analyze` Confidence Score
+**Observation**: `sift_analyze` returns a binary recommendation (sift / don't sift). A `0.0–1.0` confidence score would allow smarter routing — auto-sift above 0.8, prompt user between 0.5–0.8, skip below 0.5. Feeds directly into the Analytical Feedback Loop item.
 
-**Proposed Solutions**:
-- [ ] **Environment Auto-Detection in `apply_onboarding`**: Inspect `sys.argv`, `os.environ`, and parent process name (via `psutil` or `/proc`) to infer environment (`opencode`, `cursor`, `claude`, etc.) when `environment` is empty/None. Fall back to `"generic"`.
-- [ ] **Make `environment` keyword-only with default `None`** in `apply_onboarding()` signature to prevent direct-call `TypeError`.
+- [ ] Return `confidence` float alongside the recommendation.
 
----
-
-## 🟡 In Progress
-
-### 3. Analytical Feedback Loop
+### Analytical Feedback Loop
 - [ ] **Local LLM Feedback**: Allow the agent to "downvote" a sift if it loses too much meaning, updating local heuristic rules.
 - [ ] **Automatic Rate Adjustment**: Dynamically adjust compression rates based on the observed "Meaning Loss" telemetry.
 
+### `sift_rank` Configurable Default
+**Observation**: `sift_rank` exposes `top_n` in the MCP tool but the server-side default is hardcoded.
+
+- [x] Add `SIFT_RANK_TOP_N` env var (default `3`) respected by the tool when `top_n` is not explicitly passed.
+
+### `get_sift_stats` Markdown Table Output
+**Observation**: `.sift_telemetry.json` contains rich data but `get_sift_stats` returns a raw summary.
+
+- [ ] Add a `format: "markdown" | "json"` param to `get_sift_stats`; default to markdown table showing compression ratios, latency, and platform distribution.
+
+### Per-File-Extension Compression Profiles
+**Observation**: `rate` is a single global float. Different file types warrant different compression aggressiveness (logs vs. source code vs. markdown).
+
+- [ ] Support a `.sift_profiles.json` in the workspace defining per-extension defaults (e.g. `{"*.log": 0.2, "*.ts": 0.6, "*.md": 0.8}`). Hook picks the profile automatically from `file_ext` (already tracked in telemetry).
+
+### Model "Cold Start" Warmup Command
+**Observation**: The `llmlingua-2` model downloads silently in the background via `_warm_up_models()`. Users executing semantic tools for the first time will hit the 1200ms timeout and fall back to heuristics, assuming the tool is broken.
+
+- [ ] Add a dedicated CLI command (e.g., `semantic-sift warmup` or `--download-weights`) for explicit local caching during installation.
+- [ ] Add explicit terminal logging when `_MODEL_WARMUP_STARTED` finishes so users know the semantic engine is online.
+
+### Workspace Root Resolution (IDE Path Traversal Guard)
+**Observation**: `resolve_safe_path` falls back to `os.getcwd()`. When an MCP server is booted by IDEs (like Cursor or Claude Desktop), `os.getcwd()` is often the server's executable directory, not the user's workspace root, causing the path traversal guard to block legitimate reads.
+
+- [ ] Update documentation to explicitly instruct users to pass the `--workspace-root` flag or set the `SIFT_WORKSPACE_ROOT` environment variable in their IDE's `mcp.json` config.
+
+### Custom Slash Commands per CLI
+**Observation**: Users must rely solely on the automatic hook — there is no way to invoke sift tools directly from the chat prompt.
+
+- [ ] Register `/sift`, `/sift-analyze`, and related commands in the config of each supported CLI tool (Gemini CLI, OpenCode, Codex CLI, Claude CLI, etc.). Wire into `sift_onboard` as an additional injection target.
+
 ---
 
-## 🔵 Suggested Improvements
+## 🔵 Open — Architectural / Long-term
 
-### Platform Detection Refactor
-**Observation**: `sift_hook.py` platform detection is a monolithic `if/elif` chain spanning lines 104–145. Each branch simultaneously performs three concerns: (1) detecting the platform, (2) extracting `raw_content` from the platform-specific payload shape, and (3) extracting `agent_label` and `tool_name` overrides. The injection phase (lines 313–327) then repeats a second `if/elif` chain over the same platform labels to write sifted output back into the correct payload key. Adding a new IDE requires editing both chains and understanding the full routing logic — there is no safe insertion point.
+### Platform Detector Registry Refactor
+**Observation**: `semantic_sift/hook.py` platform detection is a monolithic `if/elif` chain spanning two separate phases: detection (lines 104–145) and injection (lines 313–327). Each branch simultaneously handles: (1) detecting the platform, (2) extracting `raw_content`, and (3) extracting `agent_label`/`tool_name` overrides. Adding a new IDE requires editing both chains.
 
 **Concrete problems today**:
-- `VSCode` branch (line 133) is a structural catch-all: any unrecognised payload with `tool_response.llmContent` silently becomes `"VSCode"`. No warning is emitted.
-- `OpenCode` is detected in two separate branches: line 123 (AfterTool with `tool_args`) and line 143 (Compacting event). If one is updated without the other, they drift.
-- `Gemini/OpenClaw` sub-detection (line 131) is a nested conditional inside the Gemini branch — easy to miss.
-- The injection phase (lines 313–327) uses string-grouped `elif` (`["Gemini", "Gemini/OpenClaw"]`, `["VSCode", "Claude", "Qwen"]`) which couples platform identity to payload write logic in a non-obvious way.
+- `VSCode` branch is a structural catch-all: any unrecognised payload with `tool_response.llmContent` silently becomes `"VSCode"`. No warning is emitted.
+- `OpenCode` is detected in two separate branches (AfterTool with `tool_args` and Compacting event). If one is updated without the other, they drift.
+- `Gemini/OpenClaw` sub-detection is a nested conditional inside the Gemini branch — easy to miss.
+- The injection phase uses string-grouped `elif` (`["Gemini", "Gemini/OpenClaw"]`, `["VSCode", "Claude", "Qwen"]`) which couples platform identity to payload write logic non-obviously.
 
 **Proposed Solution — Registry Pattern**:
 
@@ -47,48 +73,18 @@ Replace both `elif` chains with a list of `PlatformDetector` dataclasses. Each d
 
 ```python
 # semantic_sift/platforms/_base.py
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable
 
 @dataclass
 class PlatformDetector:
     label: str
-    # Returns True if this detector matches the current invocation context
-    matches: Callable[[dict, str, dict], bool]      # (data, event_name, env) -> bool
-    # Extracts (raw_content, tool_name_override, agent_label) from the payload
+    matches: Callable[[dict, str, dict], bool]       # (data, event_name, env) -> bool
     extract: Callable[[dict, str], tuple[str, str | None, str | None]]
-    # Writes sifted content back into the payload dict; returns modified dict
-    inject: Callable[[dict, str, str], dict]        # (data, sifted, notification) -> data
+    inject: Callable[[dict, str, str], dict]         # (data, sifted, notification) -> data
 ```
 
-Each platform lives in its own file and registers one or more detectors:
-
-```python
-# semantic_sift/platforms/opencode.py
-from ._base import PlatformDetector
-
-def _matches_aftertool(data, event_name, env):
-    return event_name in ("AfterTool", "PreCompress") and "tool_args" in data
-
-def _matches_compacting(data, event_name, env):
-    return event_name == "Compacting"
-
-def _extract(data, event_name):
-    raw = data.get("tool_response", {}).get("llmContent", "") or data.get("context", "")
-    tool = data.get("tool_name")
-    return raw, tool, None
-
-def _inject(data, sifted, notification):
-    data["tool_response"]["llmContent"] = notification + sifted
-    return data
-
-detectors = [
-    PlatformDetector("OpenCode", _matches_aftertool, _extract, _inject),
-    PlatformDetector("OpenCode", _matches_compacting, _extract, _inject),
-]
-```
-
-`sift_hook.py` detection loop becomes:
+Each platform lives in its own file (`semantic_sift/platforms/opencode.py`, etc.) and registers one or more detectors. `hook.py` detection loop becomes:
 
 ```python
 from semantic_sift.platforms import all_detectors
@@ -96,101 +92,79 @@ from semantic_sift.platforms import all_detectors
 detector = next((d for d in all_detectors() if d.matches(data, event_name, os.environ)), None)
 platform = detector.label if detector else "Unknown"
 raw_content, tool_name_override, agent_label = detector.extract(data, event_name) if detector else ("", None, None)
-# ... sifting logic ...
 data = detector.inject(data, sifted, sift_notification) if detector else data
 ```
 
-**What this buys**:
-- Adding a new IDE = one new file in `semantic_sift/platforms/`, zero changes to `sift_hook.py`
-- Updating an IDE's payload shape = edit only that platform's file
-- Removing an IDE = delete the file; the registry auto-shrinks
-- `Unknown` platform gets an explicit warning log instead of silently falling through to VSCode
-- Both detection and injection for a platform are co-located — no drift between the two `elif` chains
-
 **Constraints**:
-- `matches()` must be evaluated in priority order; env-var detectors (Claude, Qwen, Codex) must be checked before structural detectors (Gemini, OpenCode) since some payloads could match both.
-- The existing `detect_client_id()` in `telemetry_core.py` (startup-time env var + process name detection) is a separate concern and should **not** be merged into this registry — it runs at server start, not per hook call.
-- All existing tests in `tests/test_hook_routing.py` must remain green after the refactor.
+- `matches()` must be evaluated in priority order; env-var detectors (Claude, Qwen, Codex) must be checked before structural detectors (Gemini, OpenCode).
+- `detect_client_id()` in `semantic_sift/telemetry.py` is a separate concern (startup-time, not per-hook) and must not be merged into this registry.
+- All existing tests in `tests/test_hook_routing.py` must remain green.
 
-**Effort estimate**: Medium. The logic already exists — this is a structural reorganisation, not new behaviour.
+**Effort estimate**: Medium — structural reorganisation, not new behaviour.
 
-### Telemetry File Pruning
-**Observation**: `.sift_telemetry.json` grows unbounded. Old sessions accumulate indefinitely.
-- [ ] **TTL-based pruning**: On each `log_telemetry` call, prune sessions older than a configurable `SIFT_TELEMETRY_TTL_DAYS` (default 90). Zero disk impact on normal usage.
+- [ ] Implement `PlatformDetector` base + registry in `semantic_sift/platforms/`.
+- [ ] Migrate all existing platform branches (OpenCode, Gemini, OpenClaw, VSCode, Claude, Qwen, Codex, Windsurf, Cline) to individual detector files.
+- [ ] Replace both `elif` chains in `hook.py` with registry lookup.
+- [ ] Emit explicit `"Unknown"` warning log when no detector matches.
 
 ### VSCode Platform Detection Tightening
 **Observation**: The VSCode branch (`"tool_response" in data and "llmContent" in data["tool_response"]`) is a structural catch-all — any unrecognised IDE with a similar payload silently becomes `"VSCode"` in telemetry.
-- [ ] Add a tighter discriminator (e.g. `VSCODE_IPC_HOOK` env var) or emit a `"Unknown"` platform label with a warning log when falling through.
 
-### `sift_analyze` Confidence Score
-**Observation**: `sift_analyze` returns a binary recommendation (sift / don't sift). A `0.0–1.0` confidence score would allow smarter routing — auto-sift above 0.8, prompt user between 0.5–0.8, skip below 0.5. Feeds directly into the Analytical Feedback Loop item.
-- [ ] Return `confidence` float alongside the recommendation.
+- [ ] Add a tighter discriminator (e.g. `VSCODE_IPC_HOOK` env var) or emit an `"Unknown"` platform label with a warning log when falling through. *(Subsumes into Platform Detector Registry refactor above.)*
 
-### Per-File-Extension Compression Profiles
-**Observation**: `rate` is a single global float. Different file types warrant different compression aggressiveness (logs vs. source code vs. markdown).
-- [ ] Support a `.sift_profiles.json` in the workspace defining per-extension defaults (e.g. `{"*.log": 0.2, "*.ts": 0.6, "*.md": 0.8}`). Hook picks the profile automatically from `file_ext` (already tracked in telemetry).
+### Context-Aware Thresholding (Adaptive Rate)
+**Observation**: Sifting `rate` is static. As the agent's context window fills, a harder compression pass would recover headroom automatically.
 
-### `get_sift_stats` Markdown Table Output
-**Observation**: `.sift_telemetry.json` contains rich data but `get_sift_stats` returns a raw summary. A structured markdown table of compression ratios, latency, and platform distribution would make the data visible directly in-IDE.
-- [ ] Add a `format: "markdown" | "json"` param to `get_sift_stats`; default to markdown table.
+- [ ] Consume `PIPE_WINDOW_PRESSURE` env var (0.0–1.0) in `semantic_sift/kernel.py` and override `--rate` when set.
+  > 🔗 **Cross-project dependency**: `context-pipe` backlog (Phase 3 — Adaptive Thresholding) tracks the triggering side — passing `PIPE_WINDOW_PRESSURE` to each node.
 
-### `sift_rank` Configurable Default
-**Observation**: `sift_rank` exposes `top_n` in the MCP tool but `AGENTS.md` SOP hardcodes "Top 3". The server-side default is also hardcoded.
-- [ ] Add `SIFT_RANK_TOP_N` env var (default `3`) respected by the tool when `top_n` is not explicitly passed.
+### Dynamic Backend Routing (Hybrid Engine)
+**Observation**: ONNX suffers $O(n^2)$ memory scaling for documents >8K tokens. PyTorch with Flash Attention handles these better.
 
-### PyPI Publish
-**Observation**: `pyproject.toml` is already in place. Publishing to PyPI would allow `pip install semantic-sift` and significantly lower the adoption barrier. Also a prerequisite for the npm wrapper path.
-- [ ] Publish to PyPI. Add a GitHub Actions workflow for automated release on tag push.
+- [ ] Refactor the Python MCP server to dynamically switch between the Rust `sift-core` (ONNX) backend for daily tasks and PyTorch for massive documents.
 
-### Model "Cold Start" Warmup Command
-**Observation**: The `llmlingua-2` model downloads silently in the background via `_warm_up_models()`. Users executing semantic tools for the first time will hit the 1200ms timeout and fall back to heuristics, assuming the tool is broken while the 1GB model downloads.
-- [ ] Add a dedicated CLI command (e.g., `semantic-sift warmup` or `--download-weights`) for explicit local caching during installation.
-- [ ] Add explicit terminal logging when `_MODEL_WARMUP_STARTED` finishes so users know the semantic engine is online.
-
-### Atomic Cache Writes (Concurrency)
-**Observation**: In `sift_kernel.py`, `set_cache` writes directly to `.sift_cache/{key}.txt`. In highly asynchronous MCP environments, concurrent requests hitting the same key could lead to `OSError` or corrupted reads.
-- [ ] Implement atomic writes: write to a temporary file (`{key}.tmp`) and use `os.rename(tmp_path, cache_path)` to eliminate race conditions.
-
-### Workspace Root Resolution (IDE Path Traversal Guard)
-**Observation**: `resolve_safe_path` falls back to `os.getcwd()`. When an MCP server is booted by IDEs (like Cursor or Claude Desktop), `os.getcwd()` is often the server's executable directory, not the user's workspace root, causing the path traversal guard to block legitimate reads.
-- [ ] Update documentation to explicitly instruct users to pass the `--workspace-root` flag or set the `SIFT_WORKSPACE_ROOT` environment variable in their IDE's `mcp.json` config.
-
-### Dependency Confusion Warning ("Lite" vs "Neural")
-**Observation**: If a user runs `pip install .` instead of `pip install .[neural]`, `get_device()` gracefully falls back to heuristics due to missing dependencies. However, the user might assume the semantic AI is just poor at compressing if the warning isn't loud enough.
-- [ ] Update the fallback warning string to be explicit: `"[Semantic-Sift: Semantic model unavailable. Did you install with 'pip install .[neural]'? - heuristic mode active]"`.
-
-
-
-## 🟢 Completed (Phase 3: The Native Transition)
-- [x] **Native Rust Sift-Core**: Scaffolding and implementation of `crates/sift-core`, a high-performance Rust port of the distillation engine.
-- [x] **Heuristic Sieve (Native)**: Zero-dependency, ultra-fast regex-based log cleaner.
-- [x] **Semantic Engine (ONNX)**: Native inference wrapper for LLMLingua-2 via `onnxruntime-rs`.
-- [x] **Automated Cross-Platform Releases**: GitHub Actions workflow for building and uploading Windows/macOS/Linux binaries to Releases.
-- [x] **Sidecar Performance Benchmarks**: High-precision `criterion` suite verifying <1ms log sifting.
-- [x] **Interactive Sidecar Demo**: Node.js proof-of-concept for native app integration.
-- [x] **Agentic Chain Protocol (ACP)**: Defined the universal piping standard for modular context distillation.
-- [x] **Management Commands**: Added `semantic-sift-stats` CLI and `/sift-stats` / `/sift-onboard` slash commands.
-- [x] **Apache 2.0 Transition**: Formally transitioned from BSL 1.1 to the Apache License 2.0.
-
-## 🚀 Phase 4: The Intelligent Refinery (Current Roadmap)
-
-### ⛓️ Context-Pipe Evolution
-- [ ] **Dynamic Backend Routing (Hybrid Engine)**: Refactor the Python MCP server to dynamically switch between backends. Use the low-footprint Rust `sift-core` (ONNX) for daily tasks and short contexts, but dynamically load PyTorch (with Flash Attention) for massive documents (>8K tokens) to prevent ONNX $O(n^2)$ memory scaling issues.
-- [ ] **Multi-Parser Registry**: Implement the dynamic discovery engine in both Python and Rust to support `markitdown`, `pandoc`, and `LlamaIndex` as swappable ingestion nodes.
-- [ ] **Chain-Aware Telemetry**: Extend ROI reporting to track the entire "Chain of Custody" (e.g., Ingest -> Rank -> Sift) and report cumulative savings.
-
-### 🧠 Advanced Neural Kernels
-- [ ] **Knapsack Context Optimizer (`sift_pack`)**: Implement a 0/1 Knapsack dynamic programming algorithm to mathematically select the optimal combination of text chunks that maximizes semantic relevance (value) while strictly adhering to a target token limit (weight). This prevents context window overflow and maximizes utilization.
+### Advanced Neural Kernels
+- [ ] **Knapsack Context Optimizer (`sift_pack`)**: 0/1 Knapsack DP algorithm to select the optimal combination of text chunks maximising semantic relevance within a token limit.
 - [ ] **`reranker-core` (Rust/ONNX)**: Port the BGE-Reranker to a standalone Rust sidecar to complete the zero-Python Intelligence Tier.
-- [ ] **Context-Aware Thresholding**: Dynamically adjust the sifting `rate` based on the agent's current context window pressure (e.g., sift harder as the window fills up).
 
-### 🛠️ Ecosystem Adoption
-- [ ] **"Sift-Aware" context-mode**: Prototype the first Native Integration (Tier 2) in the `context-mode` repository.
-- [ ] **CI/CD "Sanitation" Action**: Publish a GitHub Action that uses the Sift sidecar to clean pipeline logs before they are archived or sent to Slack.
+### Multi-Parser Registry
+- [ ] Implement dynamic discovery engine in both Python and Rust to support `markitdown`, `pandoc`, and `LlamaIndex` as swappable ingestion nodes.
 
-## 🟢 Completed (Phase 2: Production Hardening — FIX_PLAN_5_STAR)
+### Chain-Aware Telemetry
+- [ ] Extend ROI reporting to track the entire "Chain of Custody" (e.g., Ingest → Rank → Sift) and report cumulative savings.
+
+### npm Distribution
+- [ ] Investigate publishing as an npm package: (a) thin npm wrapper invoking the Python binary, (b) full JS/TS reimplementation of the heuristic sieve, or (c) MCP-compatible JS server wrapping a compiled binary via Nuitka/PyInstaller.
+
+---
+
+## ⚫ Out of Scope (Tracked in Meechi)
+
+- **Subconscious Entropy Mapping**: Use BERT attention maps to highlight high-signal segments in the Meechi PWA UI. Depends on the ONNX port. → Tracked in [meechi.me](https://meechi.me).
+
+---
+
+## ✅ Completed
+
+### v0.3.0 (unreleased — next publish target)
+- [x] **Root-Module Inversion**: Canonical implementations moved to `semantic_sift/`; root stub files (`sift_kernel.py`, `sift_hook.py`, `telemetry_core.py`) deleted. All test imports updated. Zero DeprecationWarnings.
+- [x] **Telemetry Consent UX**: `_build_telemetry_disclosure()` surfaces opt-in/opt-out notice in every `apply_onboarding()` response.
+- [x] **Telemetry Fallback URL**: `SIFT_TELEMETRY_FALLBACK_URL` env var; silent retry on primary endpoint failure.
+- [x] **CPP Contract Test Suite**: Mock-subprocess suite in `tests/test_cpp_contract.py` validating `run_pipe()` stdin/stdout/error/timeout contract.
+- [x] **`sift_onboard` Environment Auto-Detection**: `environment` is now keyword-only (`*`) with default `None`; auto-detected via `detect_client_id()` when omitted; shown as `Detected IDE:` in the report.
+- [x] **`[neural]` Extra Hint in CUDA Status**: Not-installed state now shows `pip install 'semantic-sift[neural]'` actionable hint.
+- [x] **Atomic Cache Writes**: `set_cache()`, `ensure_markdown_content()`, and `log_telemetry()` use `.tmp` + `os.replace()` — no corrupt files on crash or concurrent writes.
+- [x] **Telemetry TTL Pruning**: `log_telemetry()` prunes sessions older than `SIFT_TELEMETRY_TTL_DAYS` (default `90` days) on every write.
+- [x] **`SIFT_RANK_TOP_N` Env Var**: `sift_rank` `top_n` default resolved at runtime from env var; explicit callers unaffected.
+
+### v0.2.7 (released)
+- [x] **Phase 3 Security Hardening**: `shell=False` enforced; metacharacter guard; `SIFT_ALLOW_GLOBAL_READS` opt-out for path traversal guard.
+- [x] **Opt-In Telemetry**: Telemetry is now a no-op unless `CPP_TELEMETRY_OPTED_IN=true` is explicitly set.
+- [x] **`sift_warmup` MCP Tool**: Explicit neural model warm-up; returns `{"ready": bool, "latency_ms": float, "error": str|null}`.
+
+### v0.2.x — Production Hardening (FIX_PLAN_5_STAR)
 - [x] **Runtime Hook Portability**: Hook command derived from `sys.executable` at runtime; no hardcoded paths.
-- [x] **Startup Validation**: Server fails fast with a clear error if `sift_hook.py` is missing.
+- [x] **Startup Validation**: Server fails fast with a clear error if canonical hook is missing.
 - [x] **Path Traversal Guard**: `resolve_safe_path()` blocks out-of-workspace reads; `SIFT_ALLOW_GLOBAL_READS` opt-out.
 - [x] **Packaging Bootstrap**: `pyproject.toml` with `semantic-sift` console entry point; `pip install .` / `.[neural]` / `.[dev]`.
 - [x] **Platform-Aware Windsurf Gateway**: Windows (`pwsh`) and POSIX shell command generation.
@@ -206,36 +180,31 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 - [x] **`sift_onboard` dry_run**: `dry_run=True` returns planned actions without writing files.
 - [x] **Compaction Fidelity Threshold**: `SIFT_COMPACTION_FIDELITY_THRESHOLD` guards against over-compression.
 - [x] **`sift_chat` Fidelity Warning**: Emits warning when output fidelity drops below threshold.
+- [x] **OpenCode Platform Detection**: `AfterTool` events from OpenCode plugin no longer misidentified as Gemini in telemetry.
+- [x] **Telemetry Secret-Type Metadata Leakage**: Type-specific redaction labels replaced with generic `[REDACTED]` in all telemetry paths.
 
-## 🟢 Completed (Phase 2: Bug Fixes)
-- [x] **OpenCode Platform Detection**: `AfterTool` events from OpenCode plugin (which carry `tool_args`) no longer misidentified as Gemini in telemetry. (`4f9a319`)
-- [x] **Telemetry Secret-Type Metadata Leakage**: Type-specific redaction labels (`[REDACTED_GITHUB_PAT]`, etc.) replaced with generic `[REDACTED]` in all telemetry paths. Descriptive labels retained in local debug logs only. (`655cb9e`)
+### Phase 3 — The Native Transition
+- [x] **Native Rust Sift-Core**: Scaffolding and implementation of `crates/sift-core`.
+- [x] **Heuristic Sieve (Native)**: Zero-dependency, ultra-fast regex-based log cleaner.
+- [x] **Semantic Engine (ONNX)**: Native inference wrapper for LLMLingua-2 via `onnxruntime-rs`.
+- [x] **Automated Cross-Platform Releases**: GitHub Actions workflow for Windows/macOS/Linux binaries.
+- [x] **Sidecar Performance Benchmarks**: `criterion` suite verifying <1ms log sifting.
+- [x] **Interactive Sidecar Demo**: Node.js proof-of-concept for native app integration.
+- [x] **Agentic Chain Protocol (ACP)**: Defined the universal piping standard for modular context distillation.
+- [x] **Management Commands**: Added `semantic-sift-stats` CLI and `/sift-stats` / `/sift-onboard` slash commands.
+- [x] **Apache 2.0 Transition**: Formally transitioned from BSL 1.1 to the Apache License 2.0.
 
-## 🟢 Completed (Phase 1: Multi-Agent & Platform Shielding)
-- [x] **Recursive Subagent Discovery**: Implemented workspace crawling to identify and shield specialized agent folders.
-- [x] **Multi-IDE Hook Support**: Implemented native integrations for Claude, Qwen, Codex, Windsurf, Cline, OpenClaw, and JetBrains.
-- [x] **Security Gateways**: Implemented proactive inhibitors for Windsurf and Cline.
-- [x] **Subagent Telemetry**: Integrated platform "sniffing" and `agent_label` tracking.
-- [x] **MCP Synergy Matrix**: Integrated as a prompt-engineered mandate (Supersedes "Intelligent Tool Awareness").
-- [x] **Environment Awareness**: `sift_analyze` now detects host-level truncation (`<tool_output_masked>`) and adjusts recommendations.
+### Phase 1 — Multi-Agent & Platform Shielding
+- [x] **Recursive Subagent Discovery**: Workspace crawling to identify and shield specialized agent folders.
+- [x] **Multi-IDE Hook Support**: Native integrations for Claude, Qwen, Codex, Windsurf, Cline, OpenClaw, and JetBrains.
+- [x] **Security Gateways**: Proactive inhibitors for Windsurf and Cline.
+- [x] **Subagent Telemetry**: Platform "sniffing" and `agent_label` tracking.
+- [x] **MCP Synergy Matrix**: Integrated as a prompt-engineered mandate.
+- [x] **Environment Awareness**: `sift_analyze` detects host-level truncation (`<tool_output_masked>`) and adjusts recommendations.
 
-## 🟢 Completed (Phase 0)
-- [x] **Threshold Optimization**: Lowered the mandatory trigger threshold to 1,000 characters globally.
+### Phase 0 — Foundation
+- [x] **Threshold Optimization**: Lowered mandatory trigger threshold to 1,000 characters globally.
 - [x] **Kernel Implementation**: LLMLingua-2 integration via FastMCP.
 - [x] **Telemetry Tier**: Local JSON performance tracking.
 - [x] **Structural Sieve**: Regex-based log distillation.
 - [x] **Refinery Loop**: `sift_extraction` for Docling parity.
-
----
-
-## ⚪ Long-term Vision
-
-- [ ] **npm Distribution**: Investigate whether Semantic-Sift can be published as an npm package. Options include: (a) a thin npm wrapper that installs and invokes the Python binary, (b) a full JS/TS reimplementation of the heuristic sieve for Node-native use, or (c) an MCP-compatible JS server wrapping a compiled binary via Nuitka/PyInstaller. Feasibility depends on the binary compilation milestone above.
-
-- [ ] **Custom Slash Commands per CLI**: Register `/sift`, `/sift-analyze`, and related commands in the config of each supported CLI tool (Gemini CLI, OpenCode, Codex CLI, Claude CLI, etc.) so users can invoke sift tools directly from the chat prompt without relying solely on the automatic hook. Would be wired into `sift_onboard` as an additional injection target.
-
----
-
-## 🔗 Out of Scope (Tracked in Meechi)
-
-- **Subconscious Entropy Mapping**: Use BERT attention maps to highlight high-signal segments in the Meechi PWA UI. Depends on the ONNX port above. → Tracked in [meechi.me](https://meechi.me).

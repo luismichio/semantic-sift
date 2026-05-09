@@ -3,7 +3,7 @@
 **The Reasoning-First Middleware for High-Fidelity Agentic Workflows.**
 
 [![CI](https://github.com/luismichio/semantic-sift/actions/workflows/ci.yml/badge.svg)](https://github.com/luismichio/semantic-sift/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-84%20Passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-99%20Passing-brightgreen)](tests/)
 [![Coverage](https://img.shields.io/badge/Coverage-measured-blue)](https://github.com/luismichio/semantic-sift/actions)
 [![PyPI](https://img.shields.io/pypi/v/semantic-sift)](https://pypi.org/project/semantic-sift/)
 [![Python](https://img.shields.io/pypi/pyversions/semantic-sift)](https://pypi.org/project/semantic-sift/)
@@ -19,6 +19,26 @@ While modern LLMs have massive context windows, their reasoning accuracy often d
 
 ### 🧠 Philosophy: The Studio of Two
 Semantic-Sift is grounded in the **Studio of Two** philosophy: the belief that the future of engineering is a high-fidelity partnership between a human architect and a sovereign AI sidecar. By managing the friction of raw data ingestion, Sift allows this "Studio" to focus on building *systems*, not just applying *patches*. It acts as a cognitive filter that ensures both you and your agent are collaborating on the cleanest, most relevant representation of the technical truth.
+
+---
+
+## ⚡ Quickstart (60 seconds)
+
+```bash
+# 1. Install
+pip install "semantic-sift[neural]"
+
+# 2. Onboard your project (writes IDE hooks and opencode.json)
+semantic-sift-onboard   # or: ask your AI "Run sift_onboard()"
+
+# 3. Add to your MCP config (example: Cursor / Claude Desktop)
+# { "mcpServers": { "semantic-sift": { "command": "semantic-sift" } } }
+
+# 4. Warm up the model (optional — avoids first-call latency)
+# Ask your AI: "Run sift_warmup()"
+```
+
+> **Full setup guide** (venv layout, IDE config matrix, Sovereign Pattern): [doc/INTEGRATION_ENCYCLOPEDIA.md](doc/INTEGRATION_ENCYCLOPEDIA.md)
 
 ---
 
@@ -76,6 +96,29 @@ All technical details, architectural logic, and integration guides are strictly 
 ### 🧠 The Context Strategist (AI Engineers)
 *   **The Pain**: LLM hallucination and reasoning degradation caused by messy data streams.
 *   **The Sift**: By delivering high-density context with 95% of the meaning preserved, Sift acts as a **Cognitive Bridge**. It ensures your LLM's attention is focused exclusively on the signal.
+
+---
+
+## ⚡ Performance Tiers
+
+Semantic-Sift ships in two performance tiers. Choose based on your use case:
+
+| | Python MCP Server (`pip install semantic-sift`) | Rust CLI Sidecar (`sift-core`) |
+|---|---|---|
+| **Heuristic log sifting** | ✅ ~500ms | ✅ <1ms (native) |
+| **Neural semantic sift** | ✅ ~500ms (PyTorch) | ✅ ~150ms (ONNX) |
+| **Python dependency** | Required | None |
+| **Rust toolchain** | Not required | Not required (pre-built) |
+| **Delivered via** | PyPI wheel (includes pre-built `sift-core`) | Bundled in wheel; use `fetch_sift_core.py` for dev installs |
+
+**PyPI wheel** (`pip install semantic-sift`): The pre-compiled `sift-core` binary is bundled — no Rust toolchain required.
+
+**Editable/dev install** (`pip install -e .`): The Rust compile step is skipped. Run once to fetch the pre-built binary:
+```bash
+python scripts/fetch_sift_core.py
+```
+
+**Optional `[native]` marker**: For dependency management tools that need an explicit handle, `pip install semantic-sift[native]` is available as a no-op extra (the binary is always included in the wheel).
 
 ---
 
@@ -219,7 +262,9 @@ Semantic-Sift is built on a **Zero-Vulnerability Baseline**:
 - **Pip-Audit (SCA)**: Real-time supply chain monitoring for 0 known vulnerabilities.
 
 Privacy and telemetry controls:
-- Set `SIFT_TELEMETRY_DISABLED=true` to disable telemetry entirely.
+- Set `SIFT_TELEMETRY_OPTED_IN=true` to enable telemetry (opt-in; disabled by default).
+- Set `SIFT_TELEMETRY_DISABLED=true` (legacy kill-switch) to disable telemetry entirely.
+- Set `SIFT_TELEMETRY_TTL_DAYS=90` (default) to control how many days of session history are retained in `.pipe_telemetry.json` before old entries are pruned.
 - Set `SIFT_TELEMETRY_URL=https://your-endpoint` to route metadata pulses to your own endpoint.
 - Set `SIFT_PULSE_RATE_LIMIT_S=10` (default) to control async telemetry pulse frequency.
 
@@ -230,6 +275,7 @@ Performance controls:
 - Set `SIFT_HOOK_TIMEOUT_MS=3000` to cap hook semantic latency before heuristic fallback.
 - Set `SIFT_MODEL_READY_WAIT_MS=1200` to control semantic model warm-up wait time before returning heuristic-mode output.
 - Set `SIFT_COMPACTION_FIDELITY_THRESHOLD=0.3` (default) to control the vocabulary-overlap threshold below which a low-fidelity compaction warning is emitted.
+- Set `SIFT_RANK_TOP_N=3` (default) to set the server-wide default number of results returned by `sift_rank` when `top_n` is not passed explicitly.
 
 Hook logging controls:
 - Set `SIFT_LOG_FILE` to override the hook log path (default: `.gemini/sift_debug.log`).

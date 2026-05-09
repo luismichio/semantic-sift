@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Quality Sprint — v0.3.0 Prep
+
+### ✨ Added
+- **`semantic_sift/tools.py`** (`sift_onboard`): `environment` parameter is now keyword-only with default `None`. When not supplied, the calling IDE/shell is auto-detected via `telemetry_core.detect_client_id()` and surfaced in the onboarding report as `Detected IDE`.
+- **`semantic_sift/tools.py`** (`sift_onboard`): CUDA status line now clearly differentiates three states: available (with device index), unavailable (CPU only), and not installed — with actionable `pip install 'semantic-sift[neural]'` hint.
+- **`semantic_sift/tools.py`** (`sift_rank`): `SIFT_RANK_TOP_N` environment variable sets the default value for `top_n` (default `3`). Callers can still override per-call.
+- **`semantic_sift/kernel.py`** (atomic cache writes): `set_cache()` and `ensure_markdown_content()` now write to a `.tmp` file and atomically rename via `os.replace()` to prevent corrupt cache entries on crash or concurrent writes.
+- **`semantic_sift/telemetry.py`** (atomic telemetry writes): `log_telemetry()` now writes via `.tmp` + `os.replace()` to prevent partial JSON on crash.
+- **`semantic_sift/telemetry.py`** (TTL pruning): `log_telemetry()` prunes telemetry sessions older than `SIFT_TELEMETRY_TTL_DAYS` (default `90`) days on every write, preventing unbounded growth of `.pipe_telemetry.json`.
+
+### 🔧 Changed
+- **`semantic_sift/tools.py`** (`sift_rank`): `top_n` default is now `None` (resolved at runtime from `SIFT_RANK_TOP_N` env var). No behaviour change for callers who pass the argument explicitly.
+
+### 📖 Docs (Doc Audit — Phase 6.2 Alignment)
+- **`doc/ARCHITECTURE.md`**: Fixed stale section 1 header (`sift_kernel.py` → `semantic_sift/kernel.py`). Added missing sections 2 (Hook Interceptor / `semantic_sift/hook.py`), 3 (Telemetry / `semantic_sift/telemetry.py`), and 4 (Tools, Onboarding & CLI) — bringing the spec to full parity with the implemented package.
+- **`doc/TOOL_REFERENCE.md`**: Replaced 6 stale `sift_kernel.` internal references with `kernel.` to reflect the canonical `semantic_sift/kernel.py` module path post-Phase 6.2 Root-Module Inversion.
+- **`doc/ORCHESTRATION_BLUEPRINTS.md`**: Added §5 `Ecosystem Integration (Context-Pipe)` — documents the Studio of Two roles/boundaries table, recommended wiring pattern (compress-before-index and distil-after-retrieval), the `semantic-refinery` pipe snippet, and the `PIPE_WINDOW_PRESSURE` → `--rate` forwarding contract.
+
+
+
+### ✨ Added
+- **`telemetry_core.py`** (`SIFT_TELEMETRY_FALLBACK_URL` — 6.3): New optional env var. When set, a silent secondary telemetry endpoint is attempted if the primary URL (`SIFT_TELEMETRY_URL`) fails (non-2xx, timeout, or any exception). Both attempts are fully async, capped at 2s each, and silently swallowed on failure. Default is empty (disabled). Primary domain `luiskobayashi.com` is unchanged.
+- **`telemetry_core.py`** (`_attempt_send()` — 6.3): New internal helper that encapsulates a single HTTP POST attempt, returning `True` on 2xx. Replaces the inline `try/except urllib` block in `_send_telemetry_pulse_now()`.
+- **`doc/TELEMETRY_SPEC.md`** (`## Fallback Endpoint` — 6.3): New section documenting `SIFT_TELEMETRY_FALLBACK_URL`, the two-step send logic, timeout behaviour, and operator use cases.
+
+### Phase 6.2 — Root-Module Inversion
+
+### ✨ Added
+- **`semantic_sift/kernel.py`** (6.2): Full `sift_kernel` implementation moved here. This is now the canonical source of truth for all distillation logic.
+- **`semantic_sift/telemetry.py`** (6.2): Full `telemetry_core` implementation moved here. Includes `_attempt_send()` + fallback logic (6.3).
+- **`semantic_sift/hook.py`** (6.2): Full `sift_hook` implementation moved here. Imports `semantic_sift.kernel` and `semantic_sift.telemetry` via canonical paths — no root-module cross-dependency.
+- **`semantic_sift/server.py`** (6.2): Full server implementation moved here. Imports `semantic_sift.kernel` directly. Now the canonical `[project.scripts]` entry point.
+
+### 🔧 Changed
+- **`pyproject.toml`** (6.2): Entry point updated from `server:main` to `semantic_sift.server:main`.
+- **Root stubs** (`sift_kernel.py`, `telemetry_core.py`, `sift_hook.py`, `server.py` — 6.2): Reduced to thin re-export stubs (`from semantic_sift.X import *`). DeprecationWarning removal deadline updated from `v0.4.0` to `v0.3.0`.
+
+
+
+
+### ✨ Added
+- **`semantic_sift/tools.py`** (`sift_warmup` — 5.2): New MCP tool registered in `register_tools()`. Explicitly triggers neural model warm-up and returns current readiness status as `{"ready": bool, "latency_ms": float, "error": str|null}`. Polls `sift_kernel._MODEL_READY` (threading.Event) with a 5-second timeout; surfaces `_MODEL_WARMUP_ERROR` on failure. Allows orchestration scripts to pre-warm before first real request.
+- **`doc/TOOL_REFERENCE.md`** (`sift_warmup` entry — 5.2): Full reference entry added after `sift_onboard` — documents parameters, return schema, error states, and recommended usage pattern for `onInit` hooks.
+- **`README.md`** (`## ⚡ Quickstart (60 seconds)` — 5.3): Added a 4-step "Hello World" path: install, onboard, MCP config snippet, optional warm-up. Inserted after the introductory section, before `## 🏛️ Multidisciplinary Value`.
+
+### Phase 4 - Package Structure & API Clarity
+
+### ⚠️ Deprecated
+- **`sift_kernel` (root module — 4.1 → 6.2)**: Root file is now a thin re-export stub; implementation lives in `semantic_sift.kernel`. Emits `DeprecationWarning` on import. Scheduled for removal in v0.3.0.
+- **`telemetry_core` (root module — 4.1 → 6.2)**: Root file is now a thin re-export stub; implementation lives in `semantic_sift.telemetry`. Emits `DeprecationWarning` on import. Scheduled for removal in v0.3.0.
+- **`sift_hook` (root module — 4.1 → 6.2)**: Root file is now a thin re-export stub; implementation lives in `semantic_sift.hook`. Emits `DeprecationWarning` on import. Scheduled for removal in v0.3.0.
+
+### 🔧 Changed
+- **`pyproject.toml`** (4.2): Removed `setuptools-rust>=1.8.0` from `[build-system] requires`. The Rust `sift-core` binary is pre-compiled and bundled in the PyPI wheel; end-users installing from PyPI never need a Rust toolchain. Editable/dev installs continue to use `python scripts/fetch_sift_core.py`. Added `native = []` as a no-op optional dependency group for tooling that requires an explicit handle.
+- **`README.md`** (4.2): Added `## Performance Tiers` section documenting the Python MCP Server vs Rust CLI Sidecar comparison table, the PyPI wheel bundling guarantee, the `fetch_sift_core.py` editable-install path, and the `[native]` optional extra.
+
 ### 🛡️ Security & Privacy
 - **Opt-In Telemetry (3.1)**: Flipped telemetry default from opt-out to **opt-in**. Telemetry is now a no-op unless `SIFT_TELEMETRY_OPTED_IN=true` is set. Legacy `SIFT_TELEMETRY_DISABLED=true` kill-switch is retained for backward compatibility. GDPR/CCPA alignment complete.
 - **Telemetry Endpoint Hardening (3.3)**: Reduced HTTP timeout from 5s to 2s. Exception scope explicitly covers `urllib.error.URLError`, `socket.timeout`, `OSError`, and `ConnectionRefusedError`. Telemetry failures are fully silent and never block the main flow.

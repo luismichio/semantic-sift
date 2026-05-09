@@ -1,4 +1,5 @@
-import sift_kernel
+from semantic_sift import kernel as sift_kernel
+from semantic_sift import kernel as _kernel_impl
 
 
 class _FakeCompressor:
@@ -7,17 +8,17 @@ class _FakeCompressor:
 
 
 def test_perform_semantic_sift_uses_cached_result(monkeypatch):
-    monkeypatch.setattr(sift_kernel, "check_cache", lambda _: "cached-value")
+    monkeypatch.setattr(_kernel_impl, "check_cache", lambda _: "cached-value")
     result = sift_kernel.perform_semantic_sift("hello", rate=0.5)
     assert result == "cached-value"
 
 
 def test_perform_semantic_sift_warmup_fallback(monkeypatch):
     monkeypatch.setenv("SIFT_MODEL_READY_WAIT_MS", "0")
-    monkeypatch.setattr(sift_kernel, "check_cache", lambda _: None)
-    monkeypatch.setattr(sift_kernel, "apply_heuristic_sieve", lambda text: "heuristic-fallback")
-    monkeypatch.setattr(sift_kernel, "start_model_warmup", lambda: None)
-    sift_kernel._MODEL_READY.clear()
+    monkeypatch.setattr(_kernel_impl, "check_cache", lambda _: None)
+    monkeypatch.setattr(_kernel_impl, "apply_heuristic_sieve", lambda text: "heuristic-fallback")
+    monkeypatch.setattr(_kernel_impl, "start_model_warmup", lambda: None)
+    _kernel_impl._MODEL_READY.clear()
 
     result = sift_kernel.perform_semantic_sift("input-text", rate=0.5)
 
@@ -26,13 +27,13 @@ def test_perform_semantic_sift_warmup_fallback(monkeypatch):
 
 
 def test_perform_semantic_sift_unavailable_model_fallback(monkeypatch):
-    monkeypatch.setattr(sift_kernel, "check_cache", lambda _: None)
-    monkeypatch.setattr(sift_kernel, "start_model_warmup", lambda: None)
-    monkeypatch.setattr(sift_kernel, "apply_heuristic_sieve", lambda text: "fallback-text")
+    monkeypatch.setattr(_kernel_impl, "check_cache", lambda _: None)
+    monkeypatch.setattr(_kernel_impl, "start_model_warmup", lambda: None)
+    monkeypatch.setattr(_kernel_impl, "apply_heuristic_sieve", lambda text: "fallback-text")
 
-    sift_kernel._MODEL_READY.set()
-    sift_kernel._COMPRESSOR = None
-    sift_kernel._MODEL_WARMUP_ERROR = "boom"
+    _kernel_impl._MODEL_READY.set()
+    _kernel_impl._COMPRESSOR = None
+    _kernel_impl._MODEL_WARMUP_ERROR = "boom"
 
     result = sift_kernel.perform_semantic_sift("input-text", rate=0.5)
 
@@ -41,18 +42,18 @@ def test_perform_semantic_sift_unavailable_model_fallback(monkeypatch):
 
 
 def test_perform_semantic_sift_uses_ready_compressor(monkeypatch):
-    monkeypatch.setattr(sift_kernel, "check_cache", lambda _: None)
-    monkeypatch.setattr(sift_kernel, "start_model_warmup", lambda: None)
+    monkeypatch.setattr(_kernel_impl, "check_cache", lambda _: None)
+    monkeypatch.setattr(_kernel_impl, "start_model_warmup", lambda: None)
     captured = {}
 
     def _set_cache(key, value):
         captured["value"] = value
 
-    monkeypatch.setattr(sift_kernel, "set_cache", _set_cache)
+    monkeypatch.setattr(_kernel_impl, "set_cache", _set_cache)
 
-    sift_kernel._MODEL_READY.set()
-    sift_kernel._MODEL_WARMUP_ERROR = None
-    sift_kernel._COMPRESSOR = _FakeCompressor()
+    _kernel_impl._MODEL_READY.set()
+    _kernel_impl._MODEL_WARMUP_ERROR = None
+    _kernel_impl._COMPRESSOR = _FakeCompressor()
 
     result = sift_kernel.perform_semantic_sift("input-text", rate=0.6)
 

@@ -1,4 +1,4 @@
-from sift_kernel import apply_heuristic_sieve
+from semantic_sift.kernel import apply_heuristic_sieve
 
 
 def test_sieve_does_not_mangle_api_keys():
@@ -31,7 +31,7 @@ def test_sieve_removes_multiple_timestamps_per_line():
 
 
 def test_secret_redaction_logic():
-    from telemetry_core import redact_secrets_for_telemetry
+    from semantic_sift.telemetry import redact_secrets_for_telemetry
 
     # Test GitHub PAT — generic label for local logs
     assert (
@@ -51,14 +51,15 @@ def test_secret_redaction_logic():
 
 
 def test_telemetry_does_not_log_content_secrets(monkeypatch, tmp_path):
-    import telemetry_core
+    from semantic_sift import telemetry as telemetry_core
+    from semantic_sift import telemetry as _telemetry_impl
     import json
     import uuid
 
     # Enable telemetry opt-in and redirect file to a temp path to avoid cross-test pollution
     telemetry_file = str(tmp_path / "telemetry.json")
-    monkeypatch.setattr(telemetry_core, "SIFT_TELEMETRY_DISABLED", False)
-    monkeypatch.setattr(telemetry_core, "TELEMETRY_FILE", telemetry_file)
+    monkeypatch.setattr(_telemetry_impl, "SIFT_TELEMETRY_DISABLED", False)
+    monkeypatch.setattr(_telemetry_impl, "TELEMETRY_FILE", telemetry_file)
 
     # Use a unique session ID to avoid collisions with stale test data in the telemetry file
     session_id = f"test-pat-redaction-{uuid.uuid4().hex}"

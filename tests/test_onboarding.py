@@ -28,3 +28,33 @@ def test_apply_onboarding_dry_run_returns_plan(tmp_path):
     joined = "\n".join(actions)
     assert "dry-run" in joined.lower()
     assert "Planned action" in joined
+
+
+def test_build_telemetry_disclosure_opted_out(monkeypatch):
+    monkeypatch.delenv("SIFT_TELEMETRY_OPTED_IN", raising=False)
+    msg = onboarding._build_telemetry_disclosure()
+    assert "DISABLED" in msg
+    assert "opt-in" in msg
+    assert "SIFT_TELEMETRY_OPTED_IN" in msg
+
+
+def test_build_telemetry_disclosure_opted_in(monkeypatch):
+    monkeypatch.setenv("SIFT_TELEMETRY_OPTED_IN", "true")
+    msg = onboarding._build_telemetry_disclosure()
+    assert "ENABLED" in msg
+    assert "opt out" in msg
+
+
+def test_apply_onboarding_includes_telemetry_disclosure(tmp_path):
+    actions = onboarding.apply_onboarding(
+        environment="Cursor",
+        target_dir=str(tmp_path),
+        dry_run=True,
+        runtime_python_exe="python",
+        runtime_hook_script="sift_hook.py",
+        runtime_hook_command='"python" "sift_hook.py"',
+    )
+    # Disclosure must be the first line
+    assert "Telemetry:" in actions[0]
+    assert "SIFT_TELEMETRY_OPTED_IN" in actions[0]
+

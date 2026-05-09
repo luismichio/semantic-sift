@@ -1,8 +1,9 @@
-import sift_kernel
+from semantic_sift import kernel as sift_kernel
+from semantic_sift import kernel as _kernel_impl
 
 
 def test_extraction_show_diff_includes_removed_section(monkeypatch):
-    monkeypatch.setattr(sift_kernel, "perform_hybrid_sift", lambda text, rate=0.7: "cleaned output")
+    monkeypatch.setattr(_kernel_impl, "perform_hybrid_sift", lambda text, rate=0.7: "cleaned output")
     content = "Page 1 of 3\nImportant line\nFooter"
 
     result = sift_kernel.perform_extraction_cleaning(content, show_diff=True)
@@ -12,8 +13,8 @@ def test_extraction_show_diff_includes_removed_section(monkeypatch):
 
 
 def test_compaction_adds_low_fidelity_warning(monkeypatch):
-    monkeypatch.setattr(sift_kernel, "perform_hybrid_sift", lambda text, rate=0.2: "tiny")
-    monkeypatch.setattr(sift_kernel, "calculate_vocabulary_overlap", lambda original, compressed: 0.1)
+    monkeypatch.setattr(_kernel_impl, "perform_hybrid_sift", lambda text, rate=0.2: "tiny")
+    monkeypatch.setattr(_kernel_impl, "calculate_vocabulary_overlap", lambda original, compressed: 0.1)
     monkeypatch.setenv("SIFT_COMPACTION_FIDELITY_THRESHOLD", "0.3")
 
     # Input must have both a priority line AND non-priority body text so the
@@ -36,8 +37,8 @@ def test_compaction_priority_lines_not_duplicated(monkeypatch):
     def fake_sift(t: str, rate: float = 0.2) -> str:
         return t  # echo back whatever was passed in
 
-    monkeypatch.setattr(sift_kernel, "perform_hybrid_sift", fake_sift)
-    monkeypatch.setattr(sift_kernel, "calculate_vocabulary_overlap", lambda a, b: 1.0)
+    monkeypatch.setattr(_kernel_impl, "perform_hybrid_sift", fake_sift)
+    monkeypatch.setattr(_kernel_impl, "calculate_vocabulary_overlap", lambda a, b: 1.0)
 
     result = sift_kernel.perform_compaction_summary(text)
 
@@ -55,8 +56,8 @@ def test_compaction_no_negative_token_savings(monkeypatch):
     """Priority lines must not be duplicated — each should appear exactly once in output."""
     text = "Decision: use BSL 1.1\nStatus: license committed\nFile: LICENSE.md updated"
 
-    monkeypatch.setattr(sift_kernel, "perform_hybrid_sift", lambda t, rate=0.2: t)
-    monkeypatch.setattr(sift_kernel, "calculate_vocabulary_overlap", lambda a, b: 1.0)
+    monkeypatch.setattr(_kernel_impl, "perform_hybrid_sift", lambda t, rate=0.2: t)
+    monkeypatch.setattr(_kernel_impl, "calculate_vocabulary_overlap", lambda a, b: 1.0)
 
     result = sift_kernel.perform_compaction_summary(text)
 
@@ -67,8 +68,8 @@ def test_compaction_no_negative_token_savings(monkeypatch):
 
 def test_compaction_structural_snapshot_branch(monkeypatch):
     """With context_hint present, output contains both section headers."""
-    monkeypatch.setattr(sift_kernel, "perform_hybrid_sift", lambda t, rate=0.2: "compressed")
-    monkeypatch.setattr(sift_kernel, "calculate_vocabulary_overlap", lambda a, b: 1.0)
+    monkeypatch.setattr(_kernel_impl, "perform_hybrid_sift", lambda t, rate=0.2: "compressed")
+    monkeypatch.setattr(_kernel_impl, "calculate_vocabulary_overlap", lambda a, b: 1.0)
 
     result = sift_kernel.perform_compaction_summary("Task: write tests\nIrrelevant filler line here")
 

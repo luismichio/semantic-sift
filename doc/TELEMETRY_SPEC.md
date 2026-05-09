@@ -67,11 +67,17 @@ The header format is controlled via the `SIFT_AUDIT_HEADER` environment variable
 
 Semantic-Sift implements a dual-layer logging system: Local persistent logging and Global anonymous pulses.
 
-### Local Telemetry (`.sift_telemetry.json`)
+### Local Telemetry (`.pipe_telemetry.json`)
 *   **Function**: `log_telemetry()` writes aggregated session data to the local disk.
 *   **Schema**: Organizes metrics by `session_id` (a UUID generated on server boot).
 *   **Metrics Tracked**: `calls`, `original_chars`, `final_chars`, `original_tokens`, `final_tokens`, `total_latency_ms`, and `cache_hits`.
 *   **Token Estimation**: Uses a fast heuristic: `max(1, len(text) // 4)`.
+*   **Atomic Writes**: The telemetry file is written via a `.tmp` file and atomically renamed with `os.replace()`. This prevents partial or corrupt JSON if the process crashes mid-write.
+*   **TTL Pruning**: On every `log_telemetry()` call, sessions whose `start_time` is older than `SIFT_TELEMETRY_TTL_DAYS` (default `90`) days are pruned before writing. This caps unbounded file growth with zero manual maintenance.
+
+| Environment Variable | Default | Description |
+|---|---|---|
+| `SIFT_TELEMETRY_TTL_DAYS` | `90` | Sessions older than this many days are pruned on each write. Set to `0` to disable pruning. |
 
 ### Global Telemetry Pulse
 *   **Function**: `send_telemetry_pulse()` fires a **non-blocking, async** POST request dispatched on a daemon thread. The call returns immediately so it never adds latency to the MCP tool response.
@@ -113,9 +119,10 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
 
 ### Retention and Deletion
 
-- Local telemetry registry: `.sift_telemetry.json` in the workspace directory.
+- Local telemetry registry: `.pipe_telemetry.json` in the workspace directory (path overridable via `CPP_TELEMETRY_FILE` env var).
 - The file contains only aggregated counts and timestamps — no content, no prompts, no file paths.
-- To delete local telemetry data, remove `.sift_telemetry.json` from your workspace.
+- Sessions older than `SIFT_TELEMETRY_TTL_DAYS` (default 90) days are automatically pruned on each write.
+- To delete all local telemetry data immediately, remove `.pipe_telemetry.json` from your workspace.
 - For global telemetry policy or deletion requests: https://www.luiskobayashi.com/contact
 
 ---
@@ -129,3 +136,32 @@ Semantic-Sift implements a dual-layer logging system: Local persistent logging a
     *   Blocks all local writing to `.sift_telemetry.json`.
     *   Blocks all network traffic to `SIFT_TELEMETRY_URL`.
     *   Forces `get_machine_id()` to return `"anonymous-user"`.
+
+---
+
+## Fallback Endpoint
+
+### Overview
+
+The primary telemetry endpoint is `SIFT_TELEMETRY_URL` (default: `https://www.luiskobayashi.com/api/sift`). If this endpoint is unreachable (DNS failure, connection timeout, non-2xx response, or any exception), an optional silent fallback endpoint is attempted.
+
+### Environment Variable
+
+| Variable | Default | Description |
+|---|---|---|
+| `SIFT_TELEMETRY_FALLBACK_URL` | `""` (disabled) | Secondary endpoint URL. If empty, no fallback is attempted. |
+
+### Behaviour
+
+1. `_attempt_send(primary_url, data)` is called. Returns `True` on HTTP 2xx.
+2. If it returns `False` **and** `SIFT_TELEMETRY_FALLBACK_URL` is set (non-empty), `_attempt_send(fallback_url, data)` is called.
+3. Both attempts have independent 2-second timeouts.
+4. Both failures are silently swallowed — telemetry never blocks the main flow.
+5. The fallback is only fired in a background thread — worst-case latency overhead is 4 seconds, entirely out of band.
+
+### Notes
+
+- The fallback URL is **never hardcoded** — it is always user-supplied.
+- If `SIFT_TELEMETRY_DISABLED=true`, neither the primary nor the fallback is attempted.
+- The fallback receives an identical JSON payload to the primary.
+- This feature is designed for operators who want redundancy (e.g., a local aggregator as backup).

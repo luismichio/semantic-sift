@@ -64,6 +64,19 @@ def _is_cpp_present(target_dir: str) -> bool:
     return False
 
 
+def _build_telemetry_disclosure() -> str:
+    """Returns a human-readable telemetry consent notice for display during onboarding."""
+    opted_in = os.environ.get("SIFT_TELEMETRY_OPTED_IN", "").lower() == "true"
+    status = "ENABLED" if opted_in else "DISABLED (opt-in)"
+    return (
+        f"Telemetry: {status}. "
+        "Semantic-Sift may collect anonymous context-reduction metrics (bytes in/out, node latency). "
+        "No code, prompts, or PII are ever recorded. "
+        "To opt in, set the environment variable SIFT_TELEMETRY_OPTED_IN=true. "
+        "To opt out at any time, unset or set it to false."
+    )
+
+
 def apply_onboarding(
     environment: str,
     target_dir: str,
@@ -74,6 +87,9 @@ def apply_onboarding(
 ) -> list[str]:
     actions = []
     cwd = target_dir if target_dir else os.getcwd()
+
+    # Always surface telemetry consent notice first
+    actions.append(_build_telemetry_disclosure())
 
     if _is_cpp_present(cwd):
         return [

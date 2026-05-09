@@ -15,7 +15,7 @@ from unittest.mock import patch
 
 
 # sift_hook.main() is the entry point we are testing.
-import sift_hook
+from semantic_sift import hook as sift_hook
 
 
 # ---------------------------------------------------------------------------

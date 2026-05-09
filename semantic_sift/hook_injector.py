@@ -9,11 +9,12 @@ import sys
 def build_runtime_hook_command() -> tuple[str, str, str]:
     python_exe = os.path.abspath(sys.executable)
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    hook_script = os.path.abspath(os.path.join(repo_root, "sift_hook.py"))
+    # Canonical hook script location (sift_hook.py root stub removed in v0.3.0)
+    hook_script = os.path.abspath(os.path.join(repo_root, "semantic_sift", "hook.py"))
     if not os.path.exists(hook_script):
         raise RuntimeError(
             f"Semantic-Sift startup failed: hook script not found at '{hook_script}'. "
-            "Ensure sift_hook.py is present next to server.py."
+            "Ensure semantic_sift/hook.py is present in the installed package."
         )
     cmd_str = f'"{python_exe}" "{hook_script}"'
     return python_exe, hook_script, cmd_str
