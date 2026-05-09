@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Fixed (CI Hardening)
+- **`setup.py`**: `setuptools_rust` import is now conditional — falls back to `rust_extensions = []` when the package is absent. Editable installs (`pip install -e .`) and CI test runs no longer require a Rust toolchain; the pre-built `sift-core` binary is bundled in the PyPI wheel and fetched via `scripts/fetch_sift_core.py` for dev clones.
+- **`.github/workflows/ci.yml`**: Removed stale mypy targets (`telemetry_core.py`, `sift_kernel.py`, `sift_hook.py`) that were deleted in the Phase 6.2 Root-Module Inversion. Targets updated to `server.py semantic_sift/`.
+
 ### Quality Sprint — v0.3.0 Prep
 
 ### ✨ Added

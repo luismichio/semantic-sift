@@ -35,7 +35,7 @@ jobs:
         run: ruff check .
 
       - name: Type check — mypy
-        run: mypy semantic_sift/ telemetry_core.py sift_kernel.py server.py sift_hook.py
+        run: mypy server.py semantic_sift/
 
       - name: Test — pytest with coverage
         run: pytest --tb=short -q --cov --cov-report=term-missing
