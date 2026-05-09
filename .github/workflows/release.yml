@@ -36,7 +36,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.4.1
         env:
-          CIBW_SKIP: "pp* cp36-* cp37-* cp38-* cp39-* *-win32 *-musllinux*" # PyPy, old CPython, 32-bit Windows, musllinux (Alpine — no dnf/openssl-devel)
+          CIBW_SKIP: "cp38-* cp39-* *-win32 *-musllinux*" # old CPython, 32-bit Windows, musllinux (Alpine — no dnf/openssl-devel); pp*/cp36-*/cp37-* removed — cibuildwheel 3.x doesn't build these by default
           CIBW_ARCHS_MACOS: "arm64 x86_64" # build both Apple Silicon and Intel wheels on the ARM runner
           # ort rc.10 prebuilt ONNX Runtime dylib requires macOS 10.12+; set deployment target to match.
           CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.12"
