@@ -6,81 +6,32 @@ on:
       - "v*"
 
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # macos-14 is ARM64 (Apple Silicon). Intel (x86_64) wheels are cross-compiled on the same runner
-        # via CIBW_ARCHS_MACOS — Apple's toolchain natively supports ARM→x86_64 cross-compile.
-        # macos-13 no longer exists as a GitHub-hosted runner image.
-        # ubuntu-latest builds Linux manylinux wheels; Rust is installed inside the container via
-        # CIBW_BEFORE_ALL_LINUX so ort's download-binaries feature works without a host Rust install.
-        os: [ubuntu-latest, windows-latest, macos-14]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install Rust (macOS and Windows only)
-        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'windows')
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          # x86_64-apple-darwin is required for cross-compiling Intel wheels on the ARM macos-14 runner
-          targets: ${{ matrix.os == 'macos-14' && 'x86_64-apple-darwin' || '' }}
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v3.4.1
-        env:
-          CIBW_SKIP: "cp38-* cp39-* *-win32 *-musllinux*" # old CPython, 32-bit Windows, musllinux (Alpine — no dnf/openssl-devel); pp*/cp36-*/cp37-* removed — cibuildwheel 3.x doesn't build these by default
-          CIBW_ARCHS_MACOS: "arm64 x86_64" # build both Apple Silicon and Intel wheels on the ARM runner
-          # ort rc.10 prebuilt ONNX Runtime dylib requires macOS 10.12+; set deployment target to match.
-          CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.12"
-          # Linux: build inside manylinux_2_34 container (glibc 2.34+).
-          # manylinux_2_28 (glibc 2.28) lacks __libc_single_threaded (added in glibc 2.32),
-          # which is pulled in by the rustix crate via the Rust stdlib on current stable toolchain.
-          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_34"
-          CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_34"
-          # Install Rust + OpenSSL headers inside the manylinux container.
-          # openssl-devel is required by the openssl-sys crate (pulled in by ort's reqwest dep).
-          CIBW_BEFORE_ALL_LINUX: "dnf install -y openssl-devel && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y"
-          CIBW_ENVIRONMENT_LINUX: "PATH=$PATH:$HOME/.cargo/bin"
-          # Ensure setuptools_rust is available in every isolated wheel build environment
-          # so setup.py can compile the sift-core Rust extension instead of falling back
-          # to a pure-Python wheel (which cibuildwheel 3.x rejects with exit code 5).
-          CIBW_BEFORE_BUILD: "pip install setuptools_rust"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
-
-  build_sdist:
-    name: Build source distribution
+  build_wheel:
+    name: Build pure-Python wheel
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      - name: Build sdist
+
+      - name: Build wheel and sdist
         run: |
           uv pip install build --system
-          python -m build --sdist
+          python -m build
+
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-sdist
-          path: dist/*.tar.gz
+          name: dist-packages
+          path: dist/*
 
   upload_pypi:
-    needs: [build_wheels, build_sdist]
+    needs: [build_wheel]
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -91,9 +42,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-*
+          name: dist-packages
           path: dist
-          merge-multiple: true
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
