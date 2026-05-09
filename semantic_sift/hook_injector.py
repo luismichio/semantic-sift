@@ -488,7 +488,7 @@ echo '{"cancel": false}'
             try:
                 with open(cline_bash_path, "w", encoding="utf-8", newline="\n") as f:
                     f.write(cline_bash_content)
-                os.chmod(cline_bash_path, 0o755)
+                os.chmod(cline_bash_path, 0o755)  # nosec B103 — hook script must be executable
                 actions.append("Injected Cline PreToolUse bash hook.")
             except OSError as e:
                 actions.append(f"Error configuring Cline bash hook: {str(e)}")
