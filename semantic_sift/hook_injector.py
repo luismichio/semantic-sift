@@ -224,16 +224,40 @@ export const SemanticSiftPlugin = async ({{ $ }}) => {{
   return {{
     hooks: {{
       "tool.execute.after": async (input, output) => {{
-        const rawContent = output.result;
-        if (typeof rawContent !== 'string' || rawContent.length < 500) return;
+        let rawContent = "";
+        let isMCP = false;
+
+        // 1. Detect Shape (Resolves upstream bug: sst/opencode#25918)
+        if (output.content && Array.isArray(output.content)) {{
+          isMCP = true;
+          rawContent = output.content.map((c: any) => c.text || "").join("\\n");
+        }} else if (typeof output.result === 'string') {{
+          rawContent = output.result;
+        }} else if (typeof output.output === 'string') {{
+          rawContent = output.output;
+        }}
+
+        if (!rawContent || rawContent.length < 500) return;
         if (rawContent.includes("--- [Semantic-Sift: Native Execution] ---")) return;
+
         try {{
           const pythonExe = "{python_exe}";
           const siftScript = "{hook_script}";
           const payload = {{ hook_event_name: "AfterTool", tool_name: input.tool, tool_args: input.args, tool_response: {{ llmContent: rawContent }} }};
           const response = await $`${{pythonExe}} ${{siftScript}}`.input(JSON.stringify(payload)).text();
           const siftedData = JSON.parse(response);
-          if (siftedData?.tool_response?.llmContent) output.result = siftedData.tool_response.llmContent;
+
+          // 3. Mutate specific shape
+          if (siftedData?.tool_response?.llmContent) {{
+            const sifted = siftedData.tool_response.llmContent;
+            if (isMCP) {{
+              output.content = [{{ type: 'text', text: sifted }}];
+            }} else if (typeof output.result === 'string') {{
+              output.result = sifted;
+            }} else if (typeof output.output === 'string') {{
+              output.output = sifted;
+            }}
+          }}
         }} catch (error) {{ console.error("[Semantic-Sift Plugin] failed:", error); }}
       }}
     }}

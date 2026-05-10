@@ -127,6 +127,14 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 - [ ] **Knapsack Context Optimizer (`sift_pack`)**: 0/1 Knapsack DP algorithm to select the optimal combination of text chunks maximising semantic relevance within a token limit.
 - [ ] **`reranker-core` (Rust/ONNX)**: Port the BGE-Reranker to a standalone Rust sidecar to complete the zero-Python Intelligence Tier.
 
+### Native Mobile Integration (Capacitor)
+**Observation**: Meechi is a multi-platform digital space (Desktop/Mobile). On Desktop, it uses `sift-core` as a sidecar, but OS security on mobile (iOS/Android) prevents this architectural pattern.
+
+- [ ] **Native Mobile Plugin**: Refactor `sift-core` to be compiled as a static library (`.a` for iOS) or dynamic library (`.so` for Android).
+- [ ] **UniFFI Bindings**: Use UniFFI to generate Swift and Kotlin bindings for the `SemanticEngine` and `apply_heuristic_sieve`.
+- [ ] **Capacitor Bridge**: Implement a Capacitor Native Plugin that wraps the Rust library, enabling zero-Python context distillation in the mobile version of Meechi.
+- [ ] **Mobile Execution Providers**: Enable `CoreML` (iOS) and `NNAPI` (Android) execution providers in the `ort` crate configuration to leverage mobile NPUs.
+
 ### Multi-Parser Registry
 - [ ] Implement dynamic discovery engine in both Python and Rust to support `markitdown`, `pandoc`, and `LlamaIndex` as swappable ingestion nodes.
 
@@ -147,6 +155,10 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 ## ✅ Completed
 
 ### v0.3.0 (unreleased — next publish target)
+- [x] **crates.io Publication**: `semantic-sift-core` v0.3.0 published as a standalone high-performance primitive.
+- [x] **Native Engine Documentation**: Created comprehensive `crates/sift-core/README.md` with hybrid architecture details, Meechi origin story, and promotion-ready badges.
+- [x] **Tauri Promotion Manifest**: Drafted engineering-focused community promotion material in `doc/posts/tauri_show_and_tell.md`.
+- [x] **OpenCode Plugin Shape-Awareness**: Refactored the generated OpenCode TypeScript plugin to be "shape-aware," handling both Native tool (`output.result`) and MCP tool (`output.content`) response formats. Resolves silent failures for MCP tools (sst/opencode#25918).
 - [x] **Root-Module Inversion**: Canonical implementations moved to `semantic_sift/`; root stub files (`sift_kernel.py`, `sift_hook.py`, `telemetry_core.py`) deleted. All test imports updated. Zero DeprecationWarnings.
 - [x] **Telemetry Consent UX**: `_build_telemetry_disclosure()` surfaces opt-in/opt-out notice in every `apply_onboarding()` response.
 - [x] **Telemetry Fallback URL**: `SIFT_TELEMETRY_FALLBACK_URL` env var; silent retry on primary endpoint failure.

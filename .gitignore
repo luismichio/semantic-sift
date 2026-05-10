@@ -47,3 +47,4 @@ test_sift.py
 .pipe_identity
 .pipe_telemetry.json
 .pipe_cache/
+doc/posts/
