@@ -111,18 +111,11 @@ def main() -> None:
         tool_name = find_tool_name(data) or "unknown"
 
         # --- Platform Identity (WHO is calling) ---
-        # Single authoritative source: telemetry_core.detect_client_id() reads the subprocess
-        # environment using the same priority-ordered _ENV_MAP used by the MCP server.
-        # This ensures Antigravity env vars (ANTIGRAVITY_AGENT etc.) are checked before
-        # inherited VS Code / Claude vars, regardless of hook payload shape.
         platform = telemetry_core.detect_client_id()
 
-        # --- Payload Parsing (HOW to extract content) — orthogonal to identity above ---
-        # Each branch reads raw_content and agent_label from the payload shape.
-        # Platform label is NOT set here; identity is already resolved above.
+        # --- Payload Parsing ---
         if os.environ.get("CLAUDE_TOOL_NAME"):
             tool_name = os.environ.get("CLAUDE_TOOL_NAME", tool_name)
-            # Subagent detection for Claude
             agent_label = os.environ.get("CLAUDE_AGENT_NAME") or os.environ.get("CLAUDE_SUBAGENT_ID")
             raw_content = (
                 data.get("result", "")
@@ -142,7 +135,6 @@ def main() -> None:
             )
         elif os.environ.get("CODEX_TOOL_NAME"):
             tool_name = os.environ.get("CODEX_TOOL_NAME", tool_name)
-            # Subagent detection for Codex
             agent_label = data.get("context", {}).get("agent_name")
             raw_content = (
                 data.get("result", "")
@@ -152,12 +144,10 @@ def main() -> None:
                 else raw_input
             )
         elif event_name in ["AfterTool", "PreCompress"]:
-            # OpenCode native plugin sends tool_args alongside tool_name; Gemini never does.
             if "tool_args" in data:
                 tool_name = data.get("tool_name", tool_name)
                 raw_content = data.get("tool_response", {}).get("llmContent", "")
             else:
-                # Gemini/OpenClaw shape — refine platform label only if env didn't resolve it
                 if platform == "Generic CLI":
                     agent_label = data.get("hookSpecificOutput", {}).get("threadLabel") or data.get("sessionId")
                     if (
@@ -172,7 +162,6 @@ def main() -> None:
         elif "tool_response" in data and "llmContent" in data["tool_response"]:
             raw_content = data["tool_response"]["llmContent"]
         elif "result" in data and isinstance(data["result"], str):
-            # Subagent detection from result prefix metadata (Cursor convention)
             if data["result"].startswith("[Explore]"):
                 agent_label = "Explore"
             elif data["result"].startswith("[Bash]"):
@@ -187,10 +176,8 @@ def main() -> None:
             log(f"Handling structural {event_name} event for {platform}")
             if event_name == "Compacting" and raw_content:
                 summary = sift_kernel.perform_compaction_summary(raw_content)
-                # Inject summary into OpenCode output
                 data["summary"] = summary
 
-                # Log Compaction ROI
                 telemetry_core.log_telemetry(
                     HOOK_SESSION,
                     START_TIME,
@@ -206,11 +193,10 @@ def main() -> None:
                 sys.stdout.write(json.dumps(data))
                 return
 
-            # For advisory-only PreCompress, just pulse telemetry
             telemetry_core.send_telemetry_pulse(
                 tool_name=f"event_{event_name.lower()}",
                 original=len(raw_content),
-                final=0,  # Advisory only
+                final=0,
                 latency=0,
                 tier_override="Structural",
                 client_id_override=platform,
@@ -223,7 +209,7 @@ def main() -> None:
             sys.stdout.write(raw_input)
             return
 
-        # --- New: Echo Detector & OTel Integration ---
+        # --- Echo Detector & OTel Integration ---
         is_echo = telemetry_core.check_echo(raw_content)
         tracer = telemetry_core.get_tracer()
 
@@ -235,25 +221,20 @@ def main() -> None:
 
             if is_echo:
                 log(f"ECHO DETECTED for {tool_name} (Agent: {agent_label or 'Main'}) - Bypassing BERT")
-                # Even for echoes, we inject the header so the user knows why it bypassed
                 header = telemetry_core.generate_audit_header(len(raw_content), len(raw_content), 0, is_echo=True)
 
-                # Re-wrap in the correct JSON schema for the platform
                 bypassed_content = header + raw_content
                 if platform in ("Gemini", "Gemini/OpenClaw", "VSCode"):
                     data["tool_response"]["llmContent"] = bypassed_content
                 else:
-                    # Cursor, OpenCode, Claude, Codex, Qwen, Antigravity, unknown — all use 'result' key
                     data["result"] = f"[Echo Bypassed] {bypassed_content}"
 
                 sys.stdout.write(json.dumps(data))
                 return
 
-            if (
-                "--- [Semantic-Sift Audit] ---" in raw_content
-                or "--- [Context-Pipe: Native Execution] ---" in raw_content
-            ):
-                log(f"Bypassing Native Execution for {tool_name}")
+            # Self-Aware Bypass (Sift-Centric Mandate)
+            if "--- [Semantic-Sift Audit] ---" in raw_content:
+                log(f"Self-aware bypass for {tool_name} (Sift header detected).")
                 sys.stdout.write(raw_input)
                 return
 
@@ -274,11 +255,9 @@ def main() -> None:
 
             # --- A. Auto-Ranking (Search Tools) ---
             if any(x in tool_name.lower() for x in ["search", "grep", "find"]):
-                # If we have query info (Gemini AfterTool includes args)
                 args = data.get("tool_args", {})
                 query = args.get("pattern") or args.get("query") or args.get("substring_pattern")
                 if query and isinstance(raw_content, str):
-                    # Try to split by common chunk delimiters if it looks like multi-file output
                     chunks = re.split(r"\n(?=File: |Path: |---)", raw_content)
                     if len(chunks) > 2:
                         log(f"Auto-Ranking {len(chunks)} search results for query: {query}")
@@ -293,7 +272,6 @@ def main() -> None:
                 is_html = "<html" in raw_content.lower()[:500] or "<!doctype html" in raw_content.lower()[:500]
                 has_md_ext = any(x in raw_content[:200].lower() for x in [".md", "# ", "---"])
 
-                # Normalize HTML to Markdown first if needed
                 working_content = raw_content
                 if is_html:
                     md_converter = sift_kernel.get_markitdown()
@@ -301,13 +279,11 @@ def main() -> None:
                         try:
                             log(f"Normalizing HTML to Markdown for {tool_name}")
                             import io
-
                             if hasattr(md_converter, "convert_stream"):
                                 result = md_converter.convert_stream(io.StringIO(raw_content), file_extension=".html")
                                 working_content = result.text_content
                             else:
                                 import tempfile
-
                                 temp_path = None
                                 try:
                                     with tempfile.NamedTemporaryFile(
@@ -330,9 +306,7 @@ def main() -> None:
                         working_content, rate=0.6, timeout_s=timeout_s
                     )
                     if timed_out_semantic:
-                        log(
-                            f"Semantic timeout for {tool_name} after {timeout_s:.2f}s. Falling back to heuristic sieve."
-                        )
+                        log(f"Semantic timeout for {tool_name} after {timeout_s:.2f}s. Falling back to heuristic.")
                         fallback = sift_kernel.apply_heuristic_sieve(raw_content)
                         if len(fallback) < len(raw_content):
                             sifted = "[Semantic-Sift: Heuristic Fallback - timeout]\n" + fallback
@@ -354,15 +328,11 @@ def main() -> None:
                 latency = (time.time() - start_t) * 1000
                 log(f"Subconscious {sift_type} successful: saved {len(raw_content) - len(sifted)} chars")
 
-                # Combine sift type with intercepted tool name for high-fidelity telemetry
                 telemetry_name = f"{sift_type}:{tool_name}"
-
-                # Detect extension for telemetry
                 hook_file_ext = "html" if is_html else "txt"
                 if any(x in tool_name.lower() for x in ["search", "grep", "find"]):
                     hook_file_ext = "grep"
 
-                # Record accurate telemetry
                 telemetry_core.log_telemetry(
                     HOOK_SESSION,
                     START_TIME,
@@ -375,7 +345,6 @@ def main() -> None:
                     file_ext=hook_file_ext,
                 )
 
-                # Inject back to platform
                 msg = f"\n\n[NOTE: This tool output was automatically distilled by Semantic-Sift to remove {len(raw_content) - len(sifted)} chars of noise.]"
                 if platform in ["Gemini", "Gemini/OpenClaw"]:
                     if "hookSpecificOutput" not in data:
@@ -383,18 +352,15 @@ def main() -> None:
                     data["hookSpecificOutput"]["additionalContext"] = msg
                     data["tool_response"]["llmContent"] = sift_notification + sifted
                 elif platform in ["VSCode", "Claude", "Qwen"]:
-                    # Claude and Qwen act essentially identically to VSCode in terms of payload manipulation for basic JSON structures
                     if "tool_response" in data:
                         data["tool_response"]["llmContent"] = sift_notification + sifted
                     elif "result" in data:
                         data["result"] = f"[Sifted] {sifted}"
                     else:
-                        # If it's a pure string payload wrapped in JSON
                         data = f"{sift_notification}{sifted}"
                 elif platform == "Cursor":
                     data["result"] = f"[Sifted] {sifted}"
 
-            # 5. Output modified JSON
             sys.stdout.write(json.dumps(data))
 
     except Exception as e:

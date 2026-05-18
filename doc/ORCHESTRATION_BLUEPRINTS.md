@@ -118,14 +118,19 @@ For maximum context efficiency, run semantic-sift **both sides** of a context-pi
 1. **Before indexing**: Compress large documents with `sift_doc` or `sift_chat` before passing to `context-mode_index`.
 2. **After retrieval**: Distil retrieved code bodies > 100 lines with `sift_chat(rate=0.7)` via the `semantic-refinery` pipe.
 
+In this model, the **orchestrator remains silent**. Visible identity and audit headers are provided by `semantic-sift-cli` nodes, ensuring a clean context window.
+
 ```json
 // pipes.json — semantic-refinery pipe
 {
-  "pipes": {
-    "semantic-refinery": [
-      { "type": "subprocess", "cmd": ["semantic-sift-cli", "--rate", "0.7"] }
-    ]
-  }
+  "pipes": [
+    {
+      "name": "semantic-refinery",
+      "nodes": [
+        { "cmd": "semantic-sift-cli", "args": ["semantic", "--rate", "0.7"] }
+      ]
+    }
+  ]
 }
 ```
 

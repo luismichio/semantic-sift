@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Luis Kobayashi. All rights reserved.
+
 """Core distillation logic for Semantic-Sift. Canonical import path."""
+
 import re
 import os
 import json
@@ -16,6 +18,8 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Input Size Guard — protects against OOM in the MCP server process.
 # Default: 50MB. Override via SIFT_MAX_INPUT_MB environment variable.
+
+
 def _get_max_input_bytes() -> int:
     raw = os.environ.get("SIFT_MAX_INPUT_MB", "50")
     try:
@@ -32,6 +36,7 @@ def _get_size_guard_logger():  # type: ignore[return]
     global _SIZE_GUARD_LOGGER
     if _SIZE_GUARD_LOGGER is None:
         import logging
+
         _SIZE_GUARD_LOGGER = logging.getLogger("semantic_sift.input_guard")
     return _SIZE_GUARD_LOGGER
 
@@ -52,10 +57,13 @@ def _enforce_input_size_guard(text: str) -> str:
     _get_size_guard_logger().warning(
         "Input exceeds maximum size (%dMB). Truncated from %d to %d bytes. "
         "Set SIFT_MAX_INPUT_MB to increase the limit.",
-        mb_limit, len(encoded), limit,
+        mb_limit,
+        len(encoded),
+        limit,
     )
     notice = f"[Semantic-Sift: Input truncated at {mb_limit}MB limit — set SIFT_MAX_INPUT_MB to increase]\n\n"
     return notice + truncated
+
 
 # Lazy Device Detection
 DEVICE = "cpu"
@@ -71,9 +79,9 @@ _MODEL_WARMUP_ERROR = None
 def resolve_safe_path(path: str, workspace_root: str | None = None) -> str:
     """Resolve a file path and enforce workspace-bound access by default."""
     requested_path = os.path.realpath(os.path.abspath(os.path.expanduser(path)))
-
     if os.environ.get("SIFT_ALLOW_GLOBAL_READS", "false").lower() == "true":
         import logging
+
         logging.getLogger("semantic_sift.security").warning(
             "SIFT_ALLOW_GLOBAL_READS is enabled — workspace path safety checks are BYPASSED. "
             "Path: %s. Set SIFT_ALLOW_GLOBAL_READS=false to re-enable sandboxing.",
@@ -141,7 +149,7 @@ def get_device() -> str:
             _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
         except ImportError:
             _DEVICE = "cpu"
-        DEVICE = _DEVICE
+    DEVICE = _DEVICE
     return _DEVICE
 
 
@@ -181,7 +189,6 @@ def start_model_warmup() -> None:
     global _MODEL_WARMUP_STARTED
     if _MODEL_WARMUP_STARTED:
         return
-
     with _MODEL_WARMUP_LOCK:
         if _MODEL_WARMUP_STARTED:
             return
@@ -206,7 +213,6 @@ def ensure_markdown_content(path: str) -> str:
     """Converts binary files to Markdown using MarkItDown with local caching."""
     ext = os.path.splitext(path)[1].lower()
     binary_exts = [".pdf", ".docx", ".xlsx", ".pptx", ".zip", ".html", ".htm"]
-
     if ext not in binary_exts:
         return load_raw_text(path)
 
@@ -269,6 +275,11 @@ def load_file_content(path: str) -> str:
 def apply_heuristic_sieve(text: str) -> str:
     """Sifts through raw technical logs to remove noise."""
     text = _enforce_input_size_guard(text)
+
+    # Self-Aware Bypass
+    if "--- [Semantic-Sift Audit] ---" in text:
+        return text
+
     lines = text.splitlines()
     sifted = []
     # Broad timestamp support: ISO-8601, Legacy (YYMMDD), and Bracketed (Vercel)
@@ -344,11 +355,15 @@ def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
     2. Large texts (>30,000 chars) -> Python/PyTorch (Flash Attention).
     """
     text = _enforce_input_size_guard(text)
+
+    # Self-Aware Bypass
+    if "--- [Semantic-Sift Audit] ---" in text:
+        return text
+
     if len(text) < 30000:
         rust_result = _call_rust_sifter(text, rate)
         if rust_result:
             return rust_result
-
     # Fallback to PyTorch for large text or if Rust is missing
     return perform_semantic_sift(text, rate=rate)
 
@@ -356,6 +371,11 @@ def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
 def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
     """Performs BERT-based prompt compression using PyTorch."""
     text = _enforce_input_size_guard(text)
+
+    # Self-Aware Bypass
+    if "--- [Semantic-Sift Audit] ---" in text:
+        return text
+
     cache_key = get_cache_key("sift_chat", text, rate=rate)
     if cached := check_cache(cache_key):
         return cached
@@ -374,9 +394,7 @@ def perform_semantic_sift(text: str, rate: float = 0.5) -> str:
     if _COMPRESSOR is None:
         fallback = apply_heuristic_sieve(text)
         if _MODEL_WARMUP_ERROR:
-            return (
-                f"[Semantic-Sift: Semantic model unavailable - heuristic mode active]\n{fallback if fallback else text}"
-            )
+            return f"[Semantic-Sift: Semantic model unavailable - heuristic mode active]\n{fallback if fallback else text}"
         return fallback if fallback else text
 
     try:
@@ -425,12 +443,12 @@ def _bm25_fallback_ranking(query: str, documents: list[str], top_n: int) -> list
     # IDF vector
     df = (tf > 0).sum(axis=0).astype(float)
     idf = np.log((N + 1) / (df + 1)) + 1.0
-
     tfidf = tf * idf
 
     # Cosine similarity of each document against the query vector
     query_vec = tfidf[0]
     query_norm = float(np.linalg.norm(query_vec))
+
     scores: list[tuple[float, str]] = []
     for i, doc in enumerate(documents):
         doc_vec = tfidf[i + 1]
@@ -447,8 +465,8 @@ def _bm25_fallback_ranking(query: str, documents: list[str], top_n: int) -> list
 def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tuple[float, str]]:
     """
     Performs re-ranking with a three-tier strategy:
-      1. Neural (sentence_transformers CrossEncoder) — highest fidelity, requires [neural] extra.
-      2. TF-IDF cosine-similarity fallback (numpy only) — always available, no model download.
+    1. Neural (sentence_transformers CrossEncoder) — highest fidelity, requires [neural] extra.
+    2. TF-IDF cosine-similarity fallback (numpy only) — always available, no model download.
     Returns an empty list only on unexpected errors.
     """
     try:
@@ -473,6 +491,11 @@ def perform_ranking(query: str, documents: list[str], top_n: int = 3) -> list[tu
 def perform_doc_sift(text: str, rate: float = 0.4) -> str:
     """Hybrid sifting for long documentation."""
     text = _enforce_input_size_guard(text)
+
+    # Self-Aware Bypass
+    if "--- [Semantic-Sift Audit] ---" in text:
+        return text
+
     cleaned = apply_heuristic_sieve(text)
     return perform_hybrid_sift(cleaned, rate=rate)
 
@@ -480,9 +503,13 @@ def perform_doc_sift(text: str, rate: float = 0.4) -> str:
 def perform_compaction_summary(text: str) -> str:
     """Sifts session history for structural compaction snapshots."""
     text = _enforce_input_size_guard(text)
+
+    # Self-Aware Bypass
+    if "--- [Semantic-Sift Audit] ---" in text:
+        return text
+
     priorities = re.findall(r"(?:Decision|Status|File|Task).*?:.*", text, re.IGNORECASE)
     context_hint = "\n".join(priorities) if priorities else ""
-
     priority_set = set(priorities)
     remaining_lines = [line for line in text.splitlines() if line.strip() not in priority_set]
     text_for_summary = "\n".join(remaining_lines).strip()
@@ -499,12 +526,14 @@ def perform_compaction_summary(text: str) -> str:
     except ValueError:
         fidelity_threshold = 0.3
 
-    if fidelity_score < fidelity_threshold:
-        summary += f"\n\n[Semantic-Sift: Low fidelity compaction detected - vocabulary overlap: {fidelity_score:.1%}.]"
-
+    output = summary
     if context_hint:
-        return f"## Structural Snapshot\n{context_hint}\n\n## Semantic Summary\n{summary}"
-    return summary
+        output = f"## Structural Snapshot\n{context_hint}\n\n## Semantic Summary\n{summary}"
+
+    if fidelity_score < fidelity_threshold:
+        output = f"🚨 Low fidelity compaction detected (Score: {fidelity_score:.2f})\n\n" + output
+
+    return output
 
 
 def calculate_vocabulary_overlap(original: str, compressed: str) -> float:
@@ -519,19 +548,26 @@ def calculate_vocabulary_overlap(original: str, compressed: str) -> float:
 def perform_extraction_cleaning(content: str, show_diff: bool = False) -> str:
     """Sifts raw OCR/Docling extractions."""
     content = _enforce_input_size_guard(content)
+
+    # Self-Aware Bypass
+    if "--- [Semantic-Sift Audit] ---" in content:
+        return content
+
     refined = content
     for pattern in [r"Page \d+ of \d+", r"© .*? All rights reserved", r"---+\s*$", r"^\s*·\s*$"]:
         refined = re.sub(pattern, "", refined, flags=re.MULTILINE | re.IGNORECASE)
 
     cleaned = perform_hybrid_sift(refined, rate=0.7)
+
     if not show_diff:
         return cleaned
 
     diff_lines = list(
-        difflib.unified_diff(
-            content.splitlines(), cleaned.splitlines(), fromfile="original", tofile="sifted", lineterm=""
-        )
+        difflib.unified_diff(content.splitlines(), cleaned.splitlines(), fromfile="original", tofile="sifted", lineterm="")
     )
     removed_lines = [line[1:] for line in diff_lines if line.startswith("-") and not line.startswith("---")]
     removed_section = "\n".join(removed_lines) if removed_lines else "(No explicit line removals detected.)"
+
     return cleaned + "\n\n--- REMOVED CONTENT ---\n" + removed_section
+
+# --- [Semantic-Sift Audit] ---

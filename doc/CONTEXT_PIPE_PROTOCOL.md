@@ -15,11 +15,10 @@ Every tool in the pipe must support `stdin` for input and `stdout` for output.
 - **Middleware tools** (Filters/Sifters) process the stream.
 - **Downstream tools** (Consumers) receive the refined signal.
 
-### 2. The Native Execution Signature (The Bypass)
-To prevent **Double-Sifting** (infinite loops or data destruction by reactive hooks), any tool that performs native context distillation MUST append the following signature to its output:
-`--- [Semantic-Sift: Native Execution] ---`
+### 2. Self-Aware Node Bypass
+To prevent **Double-Sifting** (infinite loops or data destruction by reactive hooks), any node that performs context distillation is responsible for its own bypass logic. 
 
-When a "Blind Hook" (like Cursor or VS Code) sees this signature, it must instantly pass the data through without further modification.
+**Rule**: All distillation nodes MUST check their input for an existing audit header (e.g., `--- [Semantic-Sift Audit] ---`). If a header is detected, the node must immediately pass the input to `stdout` unmodified. This ensures that already-refined data is not corrupted by subsequent sifting passes while allowing orchestrators (like `context-pipe`) to remain transparent and silent.
 
 ### 3. Dynamic Discovery (Lazy Orchestration)
 Orchestrators (like `semantic-sift`) should not force heavy dependencies. They should dynamically discover available "Upstream" nodes at runtime by checking the system `PATH` or local library registry.
@@ -51,8 +50,8 @@ function searchAndStream(query) {
     // Pipe results through the local Sift Sidecar
     const sifted = spawnSync('sift-core', ['logs'], { input: rawResults });
     
-    // Return clean data with the Native Signature
-    return sifted.stdout.toString() + "\n--- [Semantic-Sift: Native Execution] ---";
+    // Return clean data with the Engine Header
+    return "--- [Semantic-Sift Audit] ---\n" + sifted.stdout.toString();
 }
 ```
 

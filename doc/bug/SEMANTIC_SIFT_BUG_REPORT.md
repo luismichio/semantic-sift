@@ -15,17 +15,18 @@ A critical part of the resolution involved the **OpenCode Native Plugin**.
 *   **What it was**: OpenCode uses a **Node.js / TypeScript** environment for its middleware (`.opencode/plugins/semantic-sift.ts`).
 *   **The Fix**: We patched this Node.js logic to scan for the unique Content-Signature. Because OpenCode is a "Smart Hook" platform, it *could* have used the `tool_name`, but we standardized it to use the **Content-Signature Bypass** to ensure that the Node.js plugin behaves identically to the Python-based `sift_hook.py` used in Cursor and VS Code.
 
-### The Content-Signature Bypass
-To solve the "Double-Sifting" threat across all 14 analyzed IDEs (regardless of whether they are Node.js, Python, or Shell-based), we implemented a structural marker:
-`--- [Semantic-Sift: Native Execution] ---`
+### The Self-Aware Node Bypass
+To solve the "Double-Sifting" threat across all platforms (regardless of whether they are Node.js, Python, or Shell-based), we implemented a self-aware bypass mechanism:
+`--- [Semantic-Sift Audit] ---`
 
-1.  **Ingestion**: `sift_read_file` (Python MCP) sifts the file and appends this signature.
-2.  **Interception**: The middleware (both the **Node.js** OpenCode plugin and the **Python** `sift_hook.py`) detects this signature and instantly returns the content unmodified.
+1.  **Ingestion**: `sift_read_file` (Python MCP) sifts the file and prepends this audit header.
+2.  **Interception**: The engine (both the **Node.js** OpenCode plugin and the **Python** `sift_hook.py`) detects this existing header in the input and instantly returns the content unmodified.
 
 ### Final Verification
 - **Verified**: Unit tests pass (12/12).
 - **Verified**: Security audit clean (0 Bandit issues).
 - **Verified**: ROI confirmed (22.7% context savings unlocked for all IDEs).
+- **Verified**: Sift-Centric architecture implemented (Orchestrator silence verified).
 
 The "Antigravity Gap" is officially closed. Agents are now mandated to use proactive path-native sifting, preventing context flooding before it starts.
 
@@ -123,7 +124,7 @@ Based on the matrix, the ecosystem is divided into distinct vulnerability classe
 ### Class B: Blind Hooks (Cursor, Roo Code, VS Code Copilot)
 *   **The Gap**: These platforms support hooks, but they pipe the raw output to `sift_hook.py` without including the `tool_name`.
 *   **The Threat (Double-Sifting)**: If an agent uses `sift_read_file`, the MCP server returns compressed text. The Blind Hook intercepts this. Because it lacks `tool_name`, it relies on heuristic sniffing (`len > 500`, `has_md_ext`). Since the sifted output usually contains Markdown, the hook will incorrectly identify it as raw prose and run it through semantic compression again (Double-Sifting).
-*   **The Fix (Content-Signature Bypass)**: We CANNOT rely on `tool_name.startswith("sift_")` in the hook. Instead, `sift_read_file` and all MCP-side sifting tools MUST prepend a unique signature (e.g., `[Semantic-Sift: Native Execution]`) to their returned string. `sift_hook.py` must scan `raw_content` for this signature and instantly bypass processing.
+*   **The Fix (Self-Aware Bypass)**: We CANNOT rely on `tool_name.startswith("sift_")` in the hook. Instead, `sift_read_file` and all MCP-side sifting tools MUST prepend their own audit header: `--- [Semantic-Sift Audit] ---`. `sift_hook.py` must scan `raw_content` for this header and instantly bypass processing. This ensures unified, deterministic bypassing across all platforms.
 
 ### Class C: Smart Hooks (Gemini CLI, OpenCode, Cline, OpenClaw, Qwen CLI)
 *   **The Gap**: These platforms correctly provide the `tool_name` in the hook payload.
@@ -150,7 +151,8 @@ While resolving local file I/O friction is paramount, several missing workflows 
    - *Workflow Fix:* `AGENTS.md` must explicitly instruct agents to manually pipe large `serena` string outputs through `sift_chat(rate=0.7)` to guarantee structural preservation.
 
 ## 8. Final Execution Strategy (Zero-Gap Implementation)
-1. **Patch the Shields (Middleware Protocol)**: Implement Content-Signature Bypass in `sift_hook.py` so it ignores payloads containing `[Semantic-Sift: Native Execution]`. Update `sift_hook.py` with Structured Data Exemptions. Update `sift_onboard` to verify hook compatibility.
+1. **Patch the Shields (Middleware Protocol)**: Implement Self-Aware Bypass in `sift_hook.py` so it ignores payloads containing `--- [Semantic-Sift Audit] ---`. Update `sift_hook.py` with Structured Data Exemptions. Update `sift_onboard` to verify hook compatibility.
 2. **Build Path-Native Core**: Update `sift_kernel.py` with robust `load_file_content(path)` logic (handling UTF-8/Latin-1 encoding fallbacks).
-3. **Expose Tools**: Add `sift_read_file` and `sift_analyze_file` to `server.py`, ensuring they output the Content-Signature.
+3. **Expose Tools**: Add `sift_read_file` and `sift_analyze_file` to `server.py`, ensuring they prepend the Audit Header.
 4. **Update Protocol**: Rewrite the Auto-Sift Mandate in all infused `.rules` files to strictly prioritize the new proactive tool suite over reactive sifting, particularly targeting "Unshielded" environments like Antigravity.
+5. **Architectural Silence**: Silence the `context-pipe` orchestrator to remove redundant metadata and signatures, fulfilling the Sift-Centric model.

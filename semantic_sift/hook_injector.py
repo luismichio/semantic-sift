@@ -29,7 +29,6 @@ def get_windsurf_gateway_command() -> str:
             '[Console]::Error.WriteLine("[BLOCKED by Semantic-Sift] File > 1KB. Use sift_read_file instead."); '
             'exit 2 } }"'
         )
-
     return (
         'SIZE=$(stat -c %s "$WINDSURF_TOOL_ARGS" 2>/dev/null || stat -f %z "$WINDSURF_TOOL_ARGS" 2>/dev/null || wc -c < "$WINDSURF_TOOL_ARGS" 2>/dev/null); '
         'if [ "$SIZE" -gt 1024 ] 2>/dev/null; then '
@@ -41,7 +40,6 @@ def get_windsurf_gateway_command() -> str:
 def discover_agent_configs(target_dir: str) -> list[str]:
     found_paths = []
     agent_dirs = [".codex/agents", ".cursor/agents", ".junie/agents", ".agents"]
-
     for d in agent_dirs:
         full_dir = os.path.join(target_dir, d)
         if os.path.exists(full_dir):
@@ -55,7 +53,6 @@ def discover_agent_configs(target_dir: str) -> list[str]:
             continue
         if "AGENTS.md" in files and root != target_dir:
             found_paths.append(os.path.join(root, "AGENTS.md"))
-
     return found_paths
 
 
@@ -88,6 +85,7 @@ def merge_hook_json(path: str, hook_key: str, new_hook: dict, version: int | Non
     data: dict = {"hooks": {}}
     if version:
         data["version"] = version
+
     if os.path.exists(path):
         try:
             with open(path, "r", encoding="utf-8") as f:
@@ -97,9 +95,10 @@ def merge_hook_json(path: str, hook_key: str, new_hook: dict, version: int | Non
 
     if "hooks" not in data:
         data["hooks"] = {}
-    hooks_list = data["hooks"].get(hook_key, [])
 
+    hooks_list = data["hooks"].get(hook_key, [])
     exists = any(h.get("command") == new_hook.get("command") for h in hooks_list)
+
     if not exists:
         data["hooks"][hook_key] = [new_hook] + hooks_list
         with open(path, "w", encoding="utf-8") as f:
@@ -121,15 +120,16 @@ def update_instruction_files(
 ) -> list[str]:
     actions = []
     cwd = target_dir if target_dir else os.getcwd()
+
     python_exe = runtime_python_exe
     hook_script = runtime_hook_script
     cmd_str = runtime_hook_command
+
     block_id = f"<!-- SIFT_SECTION_START:{section_id} -->"
     block_end = f"<!-- SIFT_SECTION_END:{section_id} -->"
     full_payload = f"\n{block_id}\n---\n\n{header}\n{content}\n{block_end}\n"
 
     env_lower = environment.lower() if environment else ""
-
     targets = instruction_targets[:]
     subagent_paths = discover_agent_configs(cwd)
     targets.extend(subagent_paths)
@@ -139,7 +139,6 @@ def update_instruction_files(
         if os.path.exists(target_path):
             try:
                 filename = os.path.basename(target_path)
-
                 if target_path.endswith(".toml"):
                     if update_toml_config(target_path, section_id, content):
                         actions.append(f"Shielded subagent config: `{filename}`.")
@@ -182,7 +181,7 @@ def update_instruction_files(
                     cursor_data = json.load(f)
                 if "hooks" in cursor_data and "beforeMCPExecution" in cursor_data["hooks"]:
                     actions.append(
-                        "🚨 ALERT: `beforeMCPExecution` security gateway detected in Cursor hooks. You MUST whitelist `sift_read_file` and `sift_analyze_file` or they will be blocked."
+                        "🔍 ALERT: `beforeMCPExecution` security gateway detected in Cursor hooks. You MUST whitelist `sift_read_file` and `sift_analyze_file` or they will be blocked."
                     )
             except (OSError, json.JSONDecodeError):
                 pass
@@ -200,7 +199,6 @@ def update_instruction_files(
         gemini_commands_dir = os.path.join(cwd, ".gemini", "commands")
         os.makedirs(gemini_commands_dir, exist_ok=True)
         gemini_command_path = os.path.join(gemini_commands_dir, "sift-stats.toml")
-
         gemini_command_content = """description = "View Semantic-Sift token savings and telemetry dashboard"
 prompt = \"\"\"
 !{semantic-sift-stats}
@@ -238,12 +236,13 @@ export const SemanticSiftPlugin = async ({{ $ }}) => {{
         }}
 
         if (!rawContent || rawContent.length < 500) return;
-        if (rawContent.includes("--- [Semantic-Sift: Native Execution] ---")) return;
+        if (rawContent.includes("--- [Semantic-Sift Audit] ---")) return;
 
         try {{
           const pythonExe = "{python_exe}";
           const siftScript = "{hook_script}";
           const payload = {{ hook_event_name: "AfterTool", tool_name: input.tool, tool_args: input.args, tool_response: {{ llmContent: rawContent }} }};
+
           const response = await $`${{pythonExe}} ${{siftScript}}`.input(JSON.stringify(payload)).text();
           const siftedData = JSON.parse(response);
 
@@ -263,6 +262,7 @@ export const SemanticSiftPlugin = async ({{ $ }}) => {{
     }}
   }};
 }};
+
 export default SemanticSiftPlugin;
 """
         try:
@@ -290,7 +290,6 @@ export default SemanticSiftPlugin;
                         "tool": "sift_onboard",
                         "args": {"environment": "OpenCode"},
                     }
-
                 if "/sift-stats" not in opencode_config["commands"]:
                     opencode_config["commands"]["/sift-stats"] = {
                         "description": "View Semantic-Sift token savings and telemetry dashboard",
@@ -299,9 +298,10 @@ export default SemanticSiftPlugin;
                         "tool": "get_sift_stats",
                         "args": {"scope": "all"},
                     }
-                    with open(opencode_config_path, "w", encoding="utf-8") as f:
-                        json.dump(opencode_config, f, indent=2)
-                    actions.append("Injected `/sift-stats` command into opencode.json.")
+
+                with open(opencode_config_path, "w", encoding="utf-8") as f:
+                    json.dump(opencode_config, f, indent=2)
+                actions.append("Injected `/sift-stats` command into opencode.json.")
             except (OSError, json.JSONDecodeError) as e:
                 actions.append(f"Error updating opencode.json commands: {str(e)}")
 
@@ -330,19 +330,19 @@ export default SemanticSiftPlugin;
                             if inner_hook.get("command") == cmd_str:
                                 exists = True
                                 break
-
                 if not exists:
                     claude_hook = {
                         "matcher": "mcp__.*__.*",
                         "hooks": [{"type": "command", "command": cmd_str}],
                     }
                     c_data["hooks"]["PostToolUse"] = [claude_hook] + c_data["hooks"]["PostToolUse"]
-                    try:
-                        with open(c_path, "w", encoding="utf-8") as f:
-                            json.dump(c_data, f, indent=2)
-                        actions.append(f"Merged into Claude Code hooks at {c_path}.")
-                    except OSError as e:
-                        actions.append(f"Failed to merge Claude Code hooks: {e}")
+
+                try:
+                    with open(c_path, "w", encoding="utf-8") as f:
+                        json.dump(c_data, f, indent=2)
+                    actions.append(f"Merged into Claude Code hooks at {c_path}.")
+                except OSError as e:
+                    actions.append(f"Failed to merge Claude Code hooks: {e}")
 
     if "qwen" in env_lower:
         qwen_paths = [
@@ -375,12 +375,13 @@ export default SemanticSiftPlugin;
                         "hooks": [{"type": "command", "command": cmd_str}],
                     }
                     q_data["hooks"]["PostToolUse"] = [qwen_hook] + q_data["hooks"]["PostToolUse"]
-                    try:
-                        with open(q_path, "w", encoding="utf-8") as f:
-                            json.dump(q_data, f, indent=2)
-                        actions.append(f"Merged into Qwen CLI hooks at {q_path}.")
-                    except OSError as e:
-                        actions.append(f"Failed to merge Qwen CLI hooks: {e}")
+
+                try:
+                    with open(q_path, "w", encoding="utf-8") as f:
+                        json.dump(q_data, f, indent=2)
+                    actions.append(f"Merged into Qwen CLI hooks at {q_path}.")
+                except OSError as e:
+                    actions.append(f"Failed to merge Qwen CLI hooks: {e}")
 
     if "windsurf" in env_lower:
         windsurf_paths = [
@@ -394,11 +395,11 @@ export default SemanticSiftPlugin;
                         w_data = json.load(f)
                 except (OSError, json.JSONDecodeError):
                     w_data = {}
+
                 if "pre_mcp_tool_use" not in w_data:
                     w_data["pre_mcp_tool_use"] = []
 
                 gateway_cmd = get_windsurf_gateway_command()
-
                 exists = any(h.get("command") == gateway_cmd for h in w_data["pre_mcp_tool_use"])
                 if not exists:
                     w_data["pre_mcp_tool_use"].insert(
@@ -409,12 +410,13 @@ export default SemanticSiftPlugin;
                             "command": gateway_cmd,
                         },
                     )
-                    try:
-                        with open(w_path, "w", encoding="utf-8") as f:
-                            json.dump(w_data, f, indent=2)
-                        actions.append(f"Injected Security Gateway into Windsurf hooks at {w_path}.")
-                    except OSError as e:
-                        actions.append(f"Failed to merge Windsurf hooks: {e}")
+
+                try:
+                    with open(w_path, "w", encoding="utf-8") as f:
+                        json.dump(w_data, f, indent=2)
+                    actions.append(f"Injected Security Gateway into Windsurf hooks at {w_path}.")
+                except OSError as e:
+                    actions.append(f"Failed to merge Windsurf hooks: {e}")
 
     if "openclaw" in env_lower:
         openclaw_plugin_path = os.path.join(cwd, ".openclaw", "plugins", "semantic-sift.ts")
@@ -426,7 +428,8 @@ export default function (api) {{
   api.on("tool:after", async (event, ctx) => {{
     const rawContent = ctx.result;
     if (typeof rawContent !== 'string' || rawContent.length < 500) return;
-    if (rawContent.includes("--- [Semantic-Sift: Native Execution] ---")) return;
+    if (rawContent.includes("--- [Semantic-Sift Audit] ---")) return;
+
     try {{
       const pythonExe = "{python_exe}";
       const siftScript = "{hook_script}";
@@ -435,10 +438,10 @@ export default function (api) {{
       // Execute Python interceptor
       const {{ execSync }} = require('child_process');
       const response = execSync(`${{pythonExe}} ${{siftScript}}`, {{ input: JSON.stringify(payload), encoding: 'utf-8' }});
-
       const siftedData = JSON.parse(response);
+
       if (siftedData?.tool_response?.llmContent) {{
-         ctx.result = siftedData.tool_response.llmContent;
+        ctx.result = siftedData.tool_response.llmContent;
       }}
     }} catch (error) {{ console.error("[Semantic-Sift Plugin] failed:", error); }}
   }});
@@ -548,11 +551,12 @@ echo '{"cancel": false}'
                         "hooks": [{"type": "command", "command": cmd_str}],
                     }
                     co_data["hooks"]["PostToolUse"] = [codex_hook] + co_data["hooks"]["PostToolUse"]
-                    try:
-                        with open(co_path, "w", encoding="utf-8") as f:
-                            json.dump(co_data, f, indent=2)
-                        actions.append(f"Merged into Codex CLI hooks at {co_path}.")
-                    except OSError as e:
-                        actions.append(f"Failed to merge Codex CLI hooks: {e}")
+
+                try:
+                    with open(co_path, "w", encoding="utf-8") as f:
+                        json.dump(co_data, f, indent=2)
+                    actions.append(f"Merged into Codex CLI hooks at {co_path}.")
+                except OSError as e:
+                    actions.append(f"Failed to merge Codex CLI hooks: {e}")
 
     return actions

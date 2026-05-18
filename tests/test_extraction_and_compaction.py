@@ -24,7 +24,7 @@ def test_compaction_adds_low_fidelity_warning(monkeypatch):
     )
 
     assert "Low fidelity compaction detected" in result
-    assert "vocabulary overlap" in result
+    assert "Score: 0.10" in result
 
 
 def test_compaction_priority_lines_not_duplicated(monkeypatch):

@@ -8,16 +8,24 @@ import logging
 import time
 import os
 import uuid
+from datetime import datetime
 
 from semantic_sift import kernel
 from semantic_sift import telemetry as telemetry_core
+
+# Force UTF-8 for standard streams on Windows
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
 
 # We use stderr for logging so it doesn't corrupt the stdout data stream!
 logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="[Sift-CLI] %(message)s")
 logger = logging.getLogger("semantic_sift_cli")
 
 SESSION_ID = f"cli-{uuid.uuid4().hex[:8]}"
-START_TIME = time.ctime()
+START_TIME = datetime.now().astimezone().isoformat()
 
 
 def main():
@@ -32,12 +40,19 @@ def main():
     parser.add_argument("--rate", type=float, default=0.5, help="Compression rate for semantic tasks")
     parser.add_argument("--query", type=str, help="Search query for reranking (rank mode only)")
     parser.add_argument("--top-n", type=int, default=3, help="Number of results to return (rank mode only)")
-
+    parser.add_argument("--no-header", action="store_true", help="Do not prepend the audit header")
     args = parser.parse_args()
 
     # 1. Read from standard input
     input_data = sys.stdin.read()
     if not input_data:
+        return
+
+    # Self-Aware Bypass: Do not process data that already carries a Sift Audit header.
+    # This prevents double-sifting in multi-layered or recursive orchestration.
+    if "--- [Semantic-Sift Audit] ---" in input_data:
+        logger.info("Header detected, bypassing sifting.")
+        sys.stdout.write(input_data)
         return
 
     start_t = time.time()
@@ -67,6 +82,7 @@ def main():
         logger.info(f"Routing {char_count} chars to Heuristic Engine.")
         result = kernel.apply_heuristic_sieve(input_data)
         sift_engine = "heuristic"
+
     else:
         # NEURAL PATH: Semantic compression
         if char_count > 30000:
@@ -106,6 +122,7 @@ def main():
         or os.environ.get("GEMINI_TOOL_NAME")
         or f"cli_{args.type}"
     )
+
     platform = telemetry_core.detect_client_id()
 
     # Send pulse
@@ -120,6 +137,10 @@ def main():
     )
 
     # 4. Output to standard output
+    if not args.no_header:
+        header = telemetry_core.generate_audit_header(char_count, len(result), latency)
+        sys.stdout.write(header)
+
     sys.stdout.write(result)
 
     # 5. Flush telemetry (Ensure pulse completes before process exit)
@@ -128,3 +149,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# --- [Semantic-Sift Audit] ---

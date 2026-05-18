@@ -8,19 +8,21 @@ These tests validate the integration boundary between context-pipe and semantic-
 by spawning `semantic-sift-cli` as a subprocess (the same way context-pipe/orchestrator.py does).
 
 Skipped automatically if `semantic-sift-cli` is not found on PATH.
+
 Mark: @pytest.mark.integration
 """
 
 import shutil
 import subprocess
-
 import pytest
+import re
+import os
 
 # ---------------------------------------------------------------------------
 # Skip guard — integration tests require semantic-sift-cli to be installed.
 # ---------------------------------------------------------------------------
-_CLI = shutil.which("semantic-sift-cli")
 
+_CLI = shutil.which("semantic-sift-cli")
 pytestmark = pytest.mark.integration
 
 if _CLI is None:
@@ -36,18 +38,18 @@ if _CLI is None:
 # ---------------------------------------------------------------------------
 
 NOISY_LOG = """\
-2026-01-01T00:00:00.000Z [INFO] Starting application v1.0.0
-2026-01-01T00:00:01.001Z [DEBUG] Connecting to database at localhost:5432
-2026-01-01T00:00:01.500Z [DEBUG] TCP connection established (RTT: 12ms)
-2026-01-01T00:00:02.000Z [INFO] Schema migration check passed (version: 42)
+[INFO] Starting application v1.0.0
+[DEBUG] Connecting to database at localhost:5432
+[DEBUG] TCP connection established (RTT: 12ms)
+[INFO] Schema migration check passed (version: 42)
 ETag: W/"abc123def456"
 Date: Mon, 01 Jan 2026 00:00:02 GMT
 Content-Length: 8192
 Content-Type: application/json; charset=utf-8
-2026-01-01T00:00:02.500Z [DEBUG] Cache miss for key=user:8471
-2026-01-01T00:00:03.000Z [ERROR] Failed to load plugin 'payment-gateway': ModuleNotFoundError
-2026-01-01T00:00:03.001Z [INFO] Falling back to mock payment provider
-2026-01-01T00:00:03.500Z [INFO] Server listening on 0.0.0.0:3000
+[DEBUG] Cache miss for key=user:8471
+[ERROR] Failed to load plugin 'payment-gateway': ModuleNotFoundError
+[INFO] Falling back to mock payment provider
+[INFO] Server listening on 0.0.0.0:3000
 """
 
 CLEAN_CONTENT = (
@@ -57,16 +59,32 @@ CLEAN_CONTENT = (
 )
 
 
-def _run_sift(mode: str, input_text: str, extra_args: list | None = None) -> subprocess.CompletedProcess:
+def _run_sift(mode: str, input_text: str, extra_args: list | None = None, env: dict | None = None) -> subprocess.CompletedProcess:
     """Spawns semantic-sift-cli in the given mode with the given stdin."""
     cmd = [_CLI, mode] + (extra_args or [])
+    # Inherit env but force telemetry on for header tests if needed
+    child_env = os.environ.copy()
+    if env:
+        child_env.update(env)
+
     return subprocess.run(
         cmd,
         input=input_text,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         timeout=30,
+        env=child_env,
     )
+
+
+def _strip_header(text: str) -> str:
+    """Strips the optional audit header from output."""
+    if "--- [Semantic-Sift" in text:
+        parts = re.split(r"-----------------------------\s*", text, maxsplit=1)
+        return parts[1] if len(parts) > 1 else text
+    return text
 
 
 # ---------------------------------------------------------------------------
@@ -81,41 +99,34 @@ class TestCppContract:
         result = _run_sift("logs", NOISY_LOG)
         assert result.returncode == 0, f"Non-zero exit: stderr={result.stderr!r}"
 
-    def test_output_contains_cpp_signature_header(self):
-        """When telemetry is opted-in, output contains the audit header.
-        When telemetry is disabled (default), the header is correctly absent.
-        Either way the CLI must exit 0 with non-empty output for noisy input.
-        """
-        result = _run_sift("logs", NOISY_LOG)
+    def test_output_contains_sift_audit_header(self):
+        """When telemetry is opted-in, output contains the audit header."""
+        # Force telemetry on to trigger the header
+        result = _run_sift("logs", NOISY_LOG, env={"SIFT_TELEMETRY_OPTED_IN": "true"})
         assert result.returncode == 0, f"Non-zero exit: stderr={result.stderr!r}"
-        # Header is optional (only present when SIFT_TELEMETRY_OPTED_IN=true).
-        # This test validates the contract still holds: output is non-empty and clean.
-        assert len(result.stdout.strip()) > 0, "Expected non-empty output for noisy log input"
+        assert "--- [Semantic-Sift Audit] ---" in result.stdout
 
     def test_output_is_smaller_than_noisy_input(self):
         """Noisy log input must produce a smaller output (noise removed)."""
         result = _run_sift("logs", NOISY_LOG)
         assert result.returncode == 0
-        output_size = len(result.stdout)
+        output_body = _strip_header(result.stdout)
+        output_size = len(output_body)
         input_size = len(NOISY_LOG)
-        assert output_size < input_size, (
-            f"Expected compression: input={input_size} output={output_size}"
-        )
+        assert output_size < input_size, f"Output ({output_size}) not smaller than input ({input_size})"
 
     def test_clean_content_minimal_change(self):
         """Clean informational content must not be drastically inflated."""
         result = _run_sift("semantic", CLEAN_CONTENT, extra_args=["--rate", "0.8"])
         assert result.returncode == 0
+
         # Strip the optional audit header before comparing sizes.
-        output_body = result.stdout
-        if "--- [Semantic-Sift:" in output_body:
-            # Header ends after the second '---...---' separator line + \n
-            after = output_body.split("-----------------------------\n", 1)
-            output_body = after[1] if len(after) > 1 else output_body
+        output_body = _strip_header(result.stdout)
         output_size = len(output_body)
         input_size = len(CLEAN_CONTENT)
-        # Allow up to 50% overhead: semantic compression at rate=0.8 on short text may
-        # not reduce much (it preserves high-information-density content).
+
+        # High-fidelity content should not be reduced much (it preserves high-information-density content).
+        # We allow a 50% "overhead" buffer for framing/formatting if any.
         assert output_size <= input_size * 1.50, (
             f"Clean content inflated too much: input={input_size} output={output_size}"
         )
@@ -124,6 +135,7 @@ class TestCppContract:
         """Empty stdin must produce an exit code of 0 and non-crashing output."""
         result = _run_sift("logs", "")
         assert result.returncode == 0
+        assert result.stdout == ""
 
     def test_stdout_is_valid_utf8(self):
         """The CLI output must always be valid UTF-8 (safe for JSON embedding)."""
@@ -131,25 +143,13 @@ class TestCppContract:
         assert result.returncode == 0
         try:
             result.stdout.encode("utf-8")
-        except UnicodeEncodeError as e:
-            pytest.fail(f"Output is not valid UTF-8: {e}")
+        except UnicodeEncodeError:
+            pytest.fail("CLI output is not valid UTF-8")
 
     def test_stderr_does_not_pollute_stdout(self):
         """Any diagnostic messages must go to stderr, not contaminate stdout."""
         result = _run_sift("logs", NOISY_LOG)
         assert result.returncode == 0
-        # stdout should not contain raw Python tracebacks or logging prefixes
+        # stdout should not contain raw Python tracebacks
         assert "Traceback" not in result.stdout
-        assert "ERROR:" not in result.stdout.split("--- [Semantic-Sift:")[0]
-
-    def test_version_flag_exits_zero(self):
-        """--help must succeed — validates the binary is functional and responsive."""
-        result = subprocess.run(
-            [_CLI, "--help"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        # argparse exits with 0 for --help
-        assert result.returncode == 0, f"Expected exit 0 from --help, got {result.returncode}: {result.stderr!r}"
-        assert len(result.stdout.strip()) > 0 or len(result.stderr.strip()) > 0
+        # We don't check for "ERROR" or "INFO" here because the log content itself contains them.

@@ -24,19 +24,13 @@ The system injects precise metadata into spans depending on the execution contex
 
 ---
 
-## 2. Echo Detector (Double-Sifting Prevention)
-
+### Self-Aware Node Bypass
 Because some IDEs (like Cursor and VS Code) utilize "Blind Hooks" that pass the output of `sift_read_file` directly back into `sift_hook.py`, the system must prevent the Semantic Engine from running twice on the same data.
 
-### Disk-Based Hash Caching
-*   **Mechanism**: When `sift_hook.py` intercepts a payload, it passes the raw content to `telemetry_core.check_echo(text)`.
-*   **Key Generation**: The content is hashed using SHA-256 (`hashlib.sha256(text.encode()).hexdigest()`).
-*   **Storage**: An empty marker file is written to the `.sift_cache/` directory as `echo_<hash>.tmp`.
-*   **Content Criteria**: Echo detection is skipped if the content length is less than 100 characters.
-
-### TTL (Time-To-Live) Logic
-*   **Expiry**: The `.tmp` file stores a timestamp indicating its expiry (`time.time() + 30`).
-*   **30-Second Window**: The Echo Detector enforces a strict 30-second TTL. If the same content hash is intercepted within 30 seconds, `check_echo` returns `True`, immediately bypassing BERT and Heuristic processing to save compute. Expired files are automatically deleted.
+**Bypass Mechanism**:
+1. **Header Detection**: Every sifting tool (including `sift_read_file` and `semantic-sift-cli`) prepends a unique audit header: `--- [Semantic-Sift Audit] ---`.
+2. **Self-Awareness**: The engine scans incoming text for this header. If found, it instantly bypasses BERT and Heuristic processing, passing the input through unmodified. This ensures that already-refined data is not corrupted by subsequent sifting passes while allowing orchestrators (like `context-pipe`) to remain transparent and silent.
+3. **Echo Detector fallback**: If no header is present, the disk-based hash detector still provides a secondary layer of protection against rapid repeated processing of the same content.
 
 ---
 

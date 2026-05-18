@@ -5,9 +5,12 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.1] — 2026-05-18
 
-### 🐛 Fixed (CI Hardening)
+### ✨ Quality Sprint — v0.3.1 Prep
+
+### ✨ Added
+- **Nesting-Aware Telemetry Discovery**: Updated the `_check_opt_in()` utility to recursively search for the `SIFT_TELEMETRY_OPTED_IN` key within `.gemini/settings.json`, resolving a pulse gap where cloud telemetry was silenced in Gemini CLI hook subprocesses.
 - **`setup.py`**: `setuptools_rust` import is now conditional — falls back to `rust_extensions = []` when the package is absent. Editable installs (`pip install -e .`) and CI test runs no longer require a Rust toolchain; the pre-built `sift-core` binary is bundled in the PyPI wheel and fetched via `scripts/fetch_sift_core.py` for dev clones.
 - **`.github/workflows/ci.yml`**: Removed stale mypy targets (`telemetry_core.py`, `sift_kernel.py`, `sift_hook.py`) that were deleted in the Phase 6.2 Root-Module Inversion. Targets updated to `server.py semantic_sift/`.
 - **`semantic_sift/cli.py`**: Replaced `import telemetry_core` with `from semantic_sift import telemetry as telemetry_core` — eliminates `ModuleNotFoundError` on Linux CI where the deleted root stub is not on `sys.path`.
@@ -17,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Quality Sprint — v0.3.0 Prep
 
 ### ✨ Added
+- **Nesting-Aware Telemetry Discovery**: Updated the `_check_opt_in()` utility to recursively search for the `SIFT_TELEMETRY_OPTED_IN` key within `.gemini/settings.json`, resolving a pulse gap where cloud telemetry was silenced in Gemini CLI hook subprocesses.
 - **`semantic_sift/tools.py`** (`sift_onboard`): `environment` parameter is now keyword-only with default `None`. When not supplied, the calling IDE/shell is auto-detected via `telemetry_core.detect_client_id()` and surfaced in the onboarding report as `Detected IDE`.
 - **`semantic_sift/tools.py`** (`sift_onboard`): CUDA status line now clearly differentiates three states: available (with device index), unavailable (CPU only), and not installed — with actionable `pip install 'semantic-sift[neural]'` hint.
 - **`semantic_sift/tools.py`** (`sift_rank`): `SIFT_RANK_TOP_N` environment variable sets the default value for `top_n` (default `3`). Callers can still override per-call.
