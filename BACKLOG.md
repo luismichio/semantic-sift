@@ -154,8 +154,8 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 
 ## ✅ Completed
 
-### v0.3.0 (unreleased — next publish target)
-- [x] **crates.io Publication**: `semantic-sift-core` v0.3.0 published as a standalone high-performance primitive.
+### v0.3.2 (unreleased — next publish target)
+- [x] **crates.io Publication**: `semantic-sift-core` v0.3.2 published as a standalone high-performance primitive.
 - [x] **Native Engine Documentation**: Created comprehensive `crates/sift-core/README.md` with hybrid architecture details, Meechi origin story, and promotion-ready badges.
 - [x] **Tauri Promotion Manifest**: Drafted engineering-focused community promotion material in `doc/posts/tauri_show_and_tell.md`.
 - [x] **OpenCode Plugin Shape-Awareness**: Refactored the generated OpenCode TypeScript plugin to be "shape-aware," handling both Native tool (`output.result`) and MCP tool (`output.content`) response formats. Resolves silent failures for MCP tools (sst/opencode#25918).

@@ -5,6 +5,14 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.3.2] — 2026-05-22
+
+### 🛡️ Google Antigravity CLI Support
+- **Antigravity Rule Injection**: Updated `sift_onboard` to support the new Google Antigravity CLI structure. Slash commands (like `/sift-stats`) are now automatically injected as Markdown rules into the `.agents/rules/` directory.
+- **Architecture Fidelity**: Maintained engine independence while providing clear documentation for routing Antigravity through the `context-pipe` orchestrator or direct `SIFT_WORKSPACE_ROOT` configuration.
+
 ## [0.3.1] — 2026-05-18
 
 ### ✨ Quality Sprint — v0.3.1 Prep

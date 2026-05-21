@@ -13,7 +13,7 @@ Semantic-Sift is designed as a local-first MCP sidecar. This policy documents ho
 
 ## Telemetry Model
 
-### Consent Policy (Opt-In, as of v0.3.0)
+### Consent Policy (Opt-In, as of v0.3.2)
 
 Telemetry is **opt-in** by default. No usage data is collected unless you explicitly enable it.
 

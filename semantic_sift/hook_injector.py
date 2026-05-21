@@ -9,7 +9,7 @@ import sys
 def build_runtime_hook_command() -> tuple[str, str, str]:
     python_exe = os.path.abspath(sys.executable)
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    # Canonical hook script location (sift_hook.py root stub removed in v0.3.0)
+    # Canonical hook script location (sift_hook.py root stub removed in v0.3.2)
     hook_script = os.path.abspath(os.path.join(repo_root, "semantic_sift", "hook.py"))
     if not os.path.exists(hook_script):
         raise RuntimeError(
@@ -204,13 +204,32 @@ prompt = \"\"\"
 !{semantic-sift-stats}
 \"\"\"
 """
-        if not os.path.exists(gemini_command_path):
-            try:
+        try:
+            if not os.path.exists(gemini_command_path):
                 with open(gemini_command_path, "w", encoding="utf-8") as f:
                     f.write(gemini_command_content)
                 actions.append("Injected `/sift-stats` custom command into Gemini CLI.")
-            except OSError as e:
-                actions.append(f"Error configuring Gemini CLI command: {str(e)}")
+        except OSError as e:
+            actions.append(f"Error configuring Gemini CLI command: {str(e)}")
+
+    if "antigravity" in env_lower:
+        antigravity_rules_dir = os.path.join(cwd, ".agents", "rules")
+        os.makedirs(antigravity_rules_dir, exist_ok=True)
+        sift_stats_path = os.path.join(antigravity_rules_dir, "sift-stats.md")
+        sift_stats_content = """---
+description: View Semantic-Sift token savings and telemetry dashboard
+globs: []
+alwaysApply: false
+---
+Call get_sift_stats from the semantic-sift MCP server. Display tokens saved, total latency, and cache hits.
+"""
+        try:
+            if not os.path.exists(sift_stats_path):
+                with open(sift_stats_path, "w", encoding="utf-8") as f:
+                    f.write(sift_stats_content)
+                actions.append("Injected `/sift-stats` rule into Antigravity CLI (.agents/rules).")
+        except OSError as e:
+            actions.append(f"Error configuring Antigravity rule: {str(e)}")
 
     if "opencode" in env_lower:
         opencode_plugin_path = os.path.join(cwd, ".opencode", "plugins", "semantic-sift.ts")
