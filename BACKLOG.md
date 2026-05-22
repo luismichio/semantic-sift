@@ -2,7 +2,7 @@
 
 This document tracks identified challenges, real-world usage observations, and planned improvements for the Semantic-Sift ecosystem.
 
-Last PyPI release: **v0.2.7**. Next publish target: **v0.3.0** (unreleased).
+Last PyPI release: **v0.3.1**. Next publish target: **v0.3.2** (unreleased).
 
 ---
 
