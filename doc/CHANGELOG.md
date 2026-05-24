@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] — 2026-05-24
+### 🐛 Fixed & Hardened
+- **Unicode Surrogate Robustness (Windows)**: Updated `semantic_sift/kernel.py` and `semantic_sift/cli.py` to use `backslashreplace` error handling during encoding. This prevents `UnicodeEncodeError: surrogates not allowed` crashes when the CLI outputs text containing lone surrogates (often from malformed inputs or specific model outputs) on Windows.
+- **Windows Console UTF-8 Enforcement**: Hardened the stdout/stderr reconfiguration in the CLI to ensure consistent behavior across different Windows terminal environments.
+
 ## [0.3.2] — 2026-05-22
 
 ### 🛡️ Google Antigravity CLI Support

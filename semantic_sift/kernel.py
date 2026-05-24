@@ -304,7 +304,8 @@ def apply_heuristic_sieve(text: str) -> str:
 
 def get_cache_key(tool_name: str, text: str, **kwargs: Any) -> str:
     payload = f"{tool_name}:{text}:{json.dumps(kwargs, sort_keys=True)}"
-    return hashlib.sha256(payload.encode()).hexdigest()
+    # Use backslashreplace to handle lone surrogates that would otherwise crash .encode()
+    return hashlib.sha256(payload.encode("utf-8", "backslashreplace")).hexdigest()
 
 
 def check_cache(key: str) -> str | None:
@@ -339,6 +340,8 @@ def _call_rust_sifter(text: str, rate: float) -> str | None:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
         )
         stdout, stderr = process.communicate(input=text)
         if process.returncode == 0:

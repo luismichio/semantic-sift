@@ -13,12 +13,12 @@ from datetime import datetime
 from semantic_sift import kernel
 from semantic_sift import telemetry as telemetry_core
 
-# Force UTF-8 for standard streams on Windows
+# Force UTF-8 for standard streams on Windows and handle surrogates gracefully
 if sys.platform == "win32":
     if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
     if hasattr(sys.stderr, "reconfigure"):
-        sys.stderr.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
 
 # We use stderr for logging so it doesn't corrupt the stdout data stream!
 logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="[Sift-CLI] %(message)s")
@@ -98,6 +98,8 @@ def main():
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
+                    encoding="utf-8",
+                    errors="backslashreplace",
                 )
                 stdout, stderr = process.communicate(input=input_data)
                 if process.returncode == 0:
