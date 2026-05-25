@@ -5,7 +5,12 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.4] — 2026-05-25
+### ✨ Features & Parity
+- **Documentation Alignment**: Purged stale BERT references in favor of **LLMLingua-2**.
+- **Absolute Mandate**: Unified onboarding mandate to be a clear binary requirement, removing the "> 1KB" condition.
+- **Adaptive Rate Implementation**: Enabled core implementation of `PIPE_WINDOW_PRESSURE` adaptive rate override in `kernel.py`.
+- **Doc Sifting Rate Fix**: Fixed `sift_read_file` to correctly honor the user-supplied `rate` for documentation files.
 
 ## [0.3.3] — 2026-05-24
 ### 🐛 Fixed & Hardened
@@ -208,6 +213,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Initial Release**: The birth of the "Sanitation Tier" for agentic workflows.
 - **Server Core**: Implemented as a standalone Python FastMCP server.
 - **The Sieve**: Heuristic regex-based log distillation (`sift_logs`).
-- **The Sift**: Semantic BERT-based natural language pruning (`sift_chat`).
+- **The Sift**: Neural LLMLingua-2 natural language pruning (`sift_chat`).
 - **Hybrid Sift**: Multi-stage distillation for long documentation (`sift_doc`).
 - **RAG Refinery**: OCR/PDF artifact cleaning for LlamaIndex synergy (`sift_extraction`).

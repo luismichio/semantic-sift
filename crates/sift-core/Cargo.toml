@@ -1,6 +1,6 @@
 [package]
 name = "semantic-sift-core"
-version = "0.3.3"
+version = "0.3.4"
 edition = "2024"
 authors = ["Luis Kobayashi"]
 description = "High-performance Rust core for context distillation (Studio of Two)"

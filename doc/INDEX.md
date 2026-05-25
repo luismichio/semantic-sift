@@ -31,7 +31,7 @@ This document defines the decoupled structure of the Semantic-Sift documentation
         *   `sift_analyze_file`: Calculates noise ratio and recommends sifting actions.
     *   **Content Distillation**:
         *   `sift_logs`: Cleans raw technical logs.
-        *   `sift_chat`: BERT-based compression on natural language prose.
+        *   `sift_chat`: LLMLingua-2 compression on natural language prose.
         *   `sift_doc`: Hybrid structural and semantic distillation for long documents.
         *   `sift_extraction`: Cleans OCR and PDF parsing artifacts.
     *   **Ranking & Utilities**:

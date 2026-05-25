@@ -306,8 +306,8 @@ def _attempt_send(url: str, data: bytes) -> bool:
     """POSTs pre-encoded JSON to `url`. Returns True on HTTP 2xx. All exceptions silently swallowed."""
     try:
         req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
-        # Hard 2s timeout per attempt: covers DNS, connect, and read hangs.
-        with urllib.request.urlopen(req, timeout=2) as r:  # nosec B310
+        # Hard 5s timeout per attempt: covers DNS, connect, and read hangs.
+        with urllib.request.urlopen(req, timeout=5) as r:  # nosec B310
             return r.status in [200, 201, 202, 204]
     except Exception:
         return False
@@ -498,10 +498,16 @@ def log_telemetry(
 
             data[session_id]["tools"][safe_tool] = tool_stats
 
-            tmp_path = TELEMETRY_FILE + ".tmp"
-            with open(tmp_path, "w") as f:
-                json.dump(data, f, indent=2)
-            os.replace(tmp_path, TELEMETRY_FILE)
+            import uuid
+            tmp_path = f"{TELEMETRY_FILE}.{uuid.uuid4().hex}.tmp"
+            try:
+                with open(tmp_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
+                os.replace(tmp_path, TELEMETRY_FILE)
+            except Exception:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+                raise
 
         if not cache_hit and not skip_pulse:
             send_telemetry_pulse(

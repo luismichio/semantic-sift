@@ -47,7 +47,7 @@ This document provides the exhaustive operator's manual for all FastMCP tools ex
 *   **Output**: The cleaned text string.
 
 ### `sift_chat`
-**Intent**: Performs intelligent BERT-based semantic compression on natural language prose and conversation history.
+**Intent**: Performs intelligent **LLMLingua-2** semantic compression on natural language prose and conversation history.
 *   **Arguments**:
     *   `text` (str): The prose or chat history string to be semantically condensed.
     *   `rate` (float, default: `0.5`): The compression target. `0.3` = Aggressive (save 70%), `0.5` = Balanced, `0.7` = Gentle (save 30%).

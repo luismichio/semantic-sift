@@ -21,7 +21,7 @@ The optimal workflow utilizes `sift_analyze_file` as an exploratory "radar" befo
         *   *Rationale*: The Heuristic Engine will incinerate timestamps and progress bars before the text ever hits the context window, saving up to 80% of token costs.
     *   **Scenario B: Massive Length (> 8000 characters)**
         *   *Action*: Execute `sift_read_file(path, type="doc")` or `sift_read_file(path, type="chat")`.
-        *   *Rationale*: The file is too large for raw ingestion. The Semantic Engine will apply BERT-based prompt compression to distill the prose to its core meaning.
+        *   *Rationale*: The file is too large for raw ingestion. The Semantic Engine will apply **LLMLingua-2** prompt compression to distill the prose to its core meaning.
     *   **Scenario C: Short & Concise (< 1000 characters)**
         *   *Action*: Read the file natively (using standard IDE tools) or use `sift_read_file(path, type="auto")`.
         *   *Rationale*: The overhead of sifting is unnecessary for tiny configurations or scripts.
@@ -82,7 +82,7 @@ To ensure every agent thread follows the context sanitation protocol:
 
 ## 4. The MCP Synergy Matrix (Operational Recipes)
 
-AI agents must manually apply specific sifting tools based on the *source* of the data to avoid context corruption (e.g., BERT destroying JSON syntax).
+AI agents must manually apply specific sifting tools based on the *source* of the data to avoid context corruption (e.g., LLMLingua-2 destroying JSON syntax).
 
 | Data Source | MCP Tool Example | Recommended Recipe |
 | :--- | :--- | :--- |

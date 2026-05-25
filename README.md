@@ -15,7 +15,7 @@
 
 Semantic-Sift is a local [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that acts as an intelligent "Sanitation Tier" between your raw data and your AI’s context window. 
 
-While modern LLMs have massive context windows, their reasoning accuracy often degrades as noise increases. Semantic-Sift solves this by distilling technical logs, long-form documents, and chat histories into high-density context. It treats your context window as a precious resource—optimizing for **Signal-to-Noise Ratio (SNR)** so your models spend more time reasoning and less time navigating boilerplate.
+While modern LLMs have massive context windows, their reasoning accuracy often degrades as noise increases. Semantic-Sift solves this by distilling technical logs, long-form documents, and chat histories into high-density context using **LLMLingua-2**. It treats your context window as a precious resource—optimizing for **Signal-to-Noise Ratio (SNR)** so your models spend more time reasoning and less time navigating boilerplate.
 
 ### 🧠 Philosophy: The Studio of Two
 Semantic-Sift is grounded in the **Studio of Two** philosophy: the belief that the future of engineering is a high-fidelity partnership between a human architect and a sovereign AI sidecar. By managing the friction of raw data ingestion, Sift allows this "Studio" to focus on building *systems*, not just applying *patches*. It acts as a cognitive filter that ensures both you and your agent are collaborating on the cleanest, most relevant representation of the technical truth.
@@ -128,7 +128,7 @@ python scripts/fetch_sift_core.py
 
 **Option A: Quick Install (PyPI)**
 
-> **ℹ️ What you get:** The PyPI wheel includes the pre-compiled `sift-core` Rust binary — no Rust toolchain required. The `[neural]` extra adds PyTorch (~1.5 GB) for large-payload fallback; `[multi-modal]` adds MarkItDown for PDF/DOCX/XLSX ingestion. Expect several minutes for the first install due to PyTorch download size.
+> **ℹ️ What you get:** The PyPI wheel includes the pre-compiled `sift-core` Rust binary — no Rust toolchain required. The `[neural]` extra adds PyTorch (~1.5 GB) for large-payload fallback using **LLMLingua-2**; `[multi-modal]` adds MarkItDown for PDF/DOCX/XLSX ingestion. Expect several minutes for the first install due to PyTorch download size.
 
 ```bash
 uv venv

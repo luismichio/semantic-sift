@@ -363,6 +363,19 @@ def perform_hybrid_sift(text: str, rate: float = 0.5) -> str:
     if "--- [Semantic-Sift Audit] ---" in text:
         return text
 
+    # Adaptive Rate Override via PIPE_WINDOW_PRESSURE (0.0 - 1.0)
+    # Higher pressure = lower rate (more aggressive compression)
+    pressure_raw = os.environ.get("PIPE_WINDOW_PRESSURE")
+    if pressure_raw:
+        try:
+            pressure = max(0.0, min(1.0, float(pressure_raw)))
+            # If pressure is 1.0, we want a very low rate (e.g. 0.2)
+            # If pressure is 0.0, we keep the requested rate.
+            # formula: override = requested * (1 - pressure) + 0.2 * pressure
+            rate = rate * (1 - pressure) + 0.2 * pressure
+        except ValueError:
+            pass
+
     if len(text) < 30000:
         rust_result = _call_rust_sifter(text, rate)
         if rust_result:

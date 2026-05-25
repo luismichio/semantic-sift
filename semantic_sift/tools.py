@@ -130,7 +130,7 @@ def register_tools(
         if sifter_type == "logs":
             result = sift_kernel.apply_heuristic_sieve(content)
         elif sifter_type == "doc":
-            result = sift_kernel.perform_doc_sift(content)
+            result = sift_kernel.perform_doc_sift(content, rate=rate)
         elif sifter_type == "extraction":
             result = sift_kernel.perform_extraction_cleaning(content)
         else:

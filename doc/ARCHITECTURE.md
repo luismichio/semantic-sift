@@ -30,7 +30,6 @@ To support high-performance, local-first desktop applications (like **Meechi**),
 ### Heuristic Sieve (Native)
 The Rust core implements a high-fidelity port of the Heuristic Sieve using the `regex` crate. It provides instant, zero-dependency log cleaning suitable for short-lived subprocess execution.
 
-### Semantic Engine (ONNX)
 The Rust core utilizes **ONNX Runtime** (via the `ort` crate) to execute the **LLMLingua-2** token classification model. This allows for neural context distillation without a Python interpreter or a massive PyTorch footprint.
 - **Model Format**: Standard `.onnx` model file + `tokenizer.json`.
 - **Inference Strategy**: Tokenizes input, performs a single-pass classification, and reconstructs the string based on a probability threshold derived from the target `rate`.

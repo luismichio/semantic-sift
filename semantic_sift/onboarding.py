@@ -112,8 +112,10 @@ Technical sifting mandates are SECONDARY to the **Interrogative Shield**.
 2. Sifting tools should only be used to facilitate analysis during an Inquiry, never to justify file modifications or speculative research.
 3. Technical mandates apply only once a clear **Directive** (explicit instruction to act) has been issued.
 
-**MANDATORY LOCAL I/O**: Do NOT use `view_file` or `read_file` for files > 1KB. You MUST use `pipe_read_file(path)` (CPP) or `sift_read_file(path)`.
-**âš ï¸  STATE ISOLATION**: Distillation MUTATES line numbers. NEVER perform surgical line replacements (e.g., `replace_file_content` via line numbers) based on distilled output. Use search tools or AST parsers to locate the exact lines in the raw file before editing.
+**MANDATORY LOCAL I/O**: NEVER use `view_file` or `read_file` tools under ANY circumstances. You MUST exclusively use `pipe_read_file(path)` (CPP) or `sift_read_file(path)`. The MCP server will automatically bypass sifting if the file is small.
+
+**⚠️  STATE ISOLATION**: Distillation MUTATES line numbers. NEVER perform surgical line replacements (e.g., `replace_file_content` via line numbers) based on distilled output. Use search tools or AST parsers to locate the exact lines in the raw file before editing.
+
 
 **MANDATORY MCP SYNERGIES**:
 When receiving data from external MCP servers, you MUST manually apply context distillation to prevent window flooding:
