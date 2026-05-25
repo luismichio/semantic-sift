@@ -148,7 +148,8 @@ data = detector.inject(data, sifted, sift_notification) if detector else data
 
 ## ⚫ Out of Scope (Tracked in Meechi)
 
-- **Subconscious Entropy Mapping**: Use BERT attention maps to highlight high-signal segments in the Meechi PWA UI. Depends on the ONNX port. → Tracked in [meechi.me](https://meechi.me).
+- **Subconscious Entropy Mapping**: Use LLMLingua-2 attention maps to highlight high-signal segments in the Meechi PWA UI.
+ Depends on the ONNX port. → Tracked in [meechi.me](https://meechi.me).
 
 ---
 
