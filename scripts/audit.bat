@@ -16,7 +16,7 @@ echo "✅ Tests Passed."
 echo.
 
 echo "[2/4] Running Static Security Scan (Bandit)..."
-bandit -r server.py sift_hook.py telemetry_core.py -ll
+bandit -r server.py semantic_sift -ll
 if %errorlevel% neq 0 (
     echo "❌ Security vulnerabilities found!"
     exit /b %errorlevel%
@@ -34,7 +34,7 @@ echo "✅ Dependencies Clean."
 echo.
 
 echo "[4/5] Running Type Checks (mypy)..."
-mypy server.py sift_kernel.py sift_hook.py telemetry_core.py semantic_sift
+mypy server.py semantic_sift
 if %errorlevel% neq 0 (
     echo "❌ Type checking failed!"
     exit /b %errorlevel%

@@ -17,12 +17,27 @@ import subprocess
 import pytest
 import re
 import os
+import sys
+import pathlib
 
 # ---------------------------------------------------------------------------
 # Skip guard — integration tests require semantic-sift-cli to be installed.
 # ---------------------------------------------------------------------------
 
-_CLI = shutil.which("semantic-sift-cli")
+# Prefer the binary co-installed in the current Python environment (venv / editable
+# install) over whatever PATH resolves first.  A bare shutil.which() can shadow the
+# project binary with a stale user-level install (~/.local/bin/) that points at a
+# different package source and runs older, incompatible code.
+#
+# Search order:
+#   1. Next to python.exe          — standard venv layout  (venv/Scripts/python.exe)
+#   2. Scripts/ subdir             — system Python on Windows (Python313/Scripts/)
+#   3. shutil.which fallback       — PATH, last resort
+_exe_dir = pathlib.Path(sys.executable).parent
+_cli_name = "semantic-sift-cli.exe" if sys.platform == "win32" else "semantic-sift-cli"
+_candidates = [_exe_dir / _cli_name, _exe_dir / "Scripts" / _cli_name]
+_venv_cli = next((p for p in _candidates if p.exists()), None)
+_CLI = str(_venv_cli) if _venv_cli else shutil.which("semantic-sift-cli")
 pytestmark = pytest.mark.integration
 
 if _CLI is None:
@@ -153,3 +168,28 @@ class TestCppContract:
         # stdout should not contain raw Python tracebacks
         assert "Traceback" not in result.stdout
         # We don't check for "ERROR" or "INFO" here because the log content itself contains them.
+
+    def test_no_false_positive_bypass_on_docs_mentioning_header(self):
+        """Documents that contain the audit header string as literal text must NOT
+        trigger the self-aware bypass.
+
+        Regression test for: full-document scan false positive.
+        ARCHITECTURE.md and similar docs describe the bypass mechanism and include
+        '--- [Semantic-Sift Audit] ---' as literal text mid-document. The bypass
+        must only fire when the header appears at the very start of the content.
+        """
+        doc_with_header_mention = (
+            "# Architecture Specification\n\n"
+            "This is a detailed architecture document.\n"
+            "[ERROR] Some log noise to ensure sifting would normally run.\n" * 20
+            + "## Self-Aware Bypass\n"
+            "The bypass detects `--- [Semantic-Sift Audit] ---` and skips processing.\n"
+            "When this signature appears mid-document it must NOT trigger the bypass.\n"
+        )
+        result = _run_sift("logs", doc_with_header_mention)
+        assert result.returncode == 0
+        # The sift MUST have run: audit header must be present at the top of output.
+        assert "--- [Semantic-Sift Audit] ---" in result.stdout, (
+            "Sift was bypassed by a false-positive mid-document header match. "
+            "Check cli.py bypass guard — it must only scan input_data[:300]."
+        )

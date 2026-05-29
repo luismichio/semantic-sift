@@ -233,7 +233,9 @@ def main() -> None:
                 return
 
             # Self-Aware Bypass (Sift-Centric Mandate)
-            if "--- [Semantic-Sift Audit] ---" in raw_content:
+            # NOTE: Only scan the leading 300 chars to avoid false positives on
+            # documents that contain the header string as literal text.
+            if "--- [Semantic-Sift Audit] ---" in raw_content[:300]:
                 log(f"Self-aware bypass for {tool_name} (Sift header detected).")
                 sys.stdout.write(raw_input)
                 return

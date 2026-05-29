@@ -279,6 +279,8 @@ def generate_audit_header(original_len: int, sifted_len: int, latency_ms: float,
     style = os.environ.get("SIFT_AUDIT_HEADER", "full").lower()
     if style == "silent":
         return ""
+    if style == "compact":
+        return "--- [Semantic-Sift Audit] ---\n"
 
     reduction = (1 - (sifted_len / original_len)) * 100 if original_len > 0 else 0
     guard_status = "Trace-Verified (No Echo)" if not is_echo else "🚨 ECHO DETECTED"

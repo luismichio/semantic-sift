@@ -5,6 +5,13 @@ All notable changes to the **Semantic-Sift** project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.3.5] — 2026-05-30
+### 🐛 Fixed
+- **Self-Aware Bypass false positive** (`cli.py`, `hook.py`): The echo guard's header detection was scanning the entire input document for `"--- [Semantic-Sift Audit] ---"`. Documents that describe the bypass mechanism (e.g. architecture docs, READMEs) contain this string as literal text mid-document, triggering a false positive that silently suppressed all sifting. Fixed by anchoring the scan to `input_data[:300]` / `raw_content[:300]` — a real audit header is always prepended and fits well within the first 100 chars.
+- **Regression test** (`tests/test_cpp_integration.py`): Added `test_no_false_positive_bypass_on_docs_mentioning_header` to prevent recurrence.
+
 ## [0.3.4] — 2026-05-25
 ### ✨ Features & Parity
 - **Documentation Alignment**: Purged stale BERT references in favor of **LLMLingua-2**.

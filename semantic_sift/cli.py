@@ -50,7 +50,10 @@ def main():
 
     # Self-Aware Bypass: Do not process data that already carries a Sift Audit header.
     # This prevents double-sifting in multi-layered or recursive orchestration.
-    if "--- [Semantic-Sift Audit] ---" in input_data:
+    # NOTE: Only scan the leading 300 chars — the header is always prepended, so it
+    # will always be at the very start. A full-document scan causes false positives
+    # on docs that contain the header string as literal text (e.g. architecture docs).
+    if "--- [Semantic-Sift Audit] ---" in input_data[:300]:
         logger.info("Header detected, bypassing sifting.")
         sys.stdout.write(input_data)
         return
