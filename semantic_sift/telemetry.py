@@ -439,8 +439,25 @@ def log_telemetry(
         with _TELEMETRY_LOCK:
             data = {}
             if os.path.exists(TELEMETRY_FILE):
-                with open(TELEMETRY_FILE, "r") as f:
-                    data = json.load(f)
+                try:
+                    with open(TELEMETRY_FILE, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                except json.JSONDecodeError as exc:
+                    corrupt_ts = datetime.now().strftime("%Y%m%dT%H%M%SZ")
+                    corrupt_path = f"{TELEMETRY_FILE}.corrupt.{corrupt_ts}"
+                    LOGGER.warning(
+                        "Telemetry file '%s' is malformed (%s). Backing up to '%s' and reinitializing.",
+                        TELEMETRY_FILE, str(exc), corrupt_path
+                    )
+                    try:
+                        os.rename(TELEMETRY_FILE, corrupt_path)
+                    except Exception as err:
+                        LOGGER.error("Failed to rename corrupt telemetry file: %s", err)
+                        try:
+                            os.remove(TELEMETRY_FILE)
+                        except Exception:
+                            pass
+                    data = {}
 
             # --- TTL Pruning ---
             try:

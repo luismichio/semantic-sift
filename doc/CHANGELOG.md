@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] — 2026-06-02
+### 🐛 Fixed
+- **Telemetry JSON Resilience** (`semantic_sift/telemetry.py`): Added self-healing telemetry load logic. Malformed or corrupt `TELEMETRY_FILE` JSON no longer triggers unhandled exceptions or blocks subsequent telemetry writes. The corrupt file is automatically renamed to `.pipe_telemetry.json.corrupt.<timestamp>` and a clean statistics state is initialized.
+
 ## [0.3.5] — 2026-05-30
 ### 🐛 Fixed
 - **Self-Aware Bypass false positive** (`cli.py`, `hook.py`): The echo guard's header detection was scanning the entire input document for `"--- [Semantic-Sift Audit] ---"`. Documents that describe the bypass mechanism (e.g. architecture docs, READMEs) contain this string as literal text mid-document, triggering a false positive that silently suppressed all sifting. Fixed by anchoring the scan to `input_data[:300]` / `raw_content[:300]` — a real audit header is always prepended and fits well within the first 100 chars.
