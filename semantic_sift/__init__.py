@@ -2,4 +2,4 @@
 # Copyright (c) 2026 Luis Kobayashi. All rights reserved.
 """Semantic-Sift package namespace."""
 
-__version__ = "0.3.6"
+__version__ = "0.3.7"

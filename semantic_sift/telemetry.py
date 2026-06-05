@@ -176,7 +176,7 @@ TELEMETRY_FILE = os.environ.get("CPP_TELEMETRY_FILE", ".pipe_telemetry.json")
 
 _PULSE_LOCK = threading.Lock()
 _PULSE_LAST_SENT: dict[str, float] = {}
-_PULSE_PENDING: dict[str, tuple[str, int, int, float, str | None, str | None, str | None, str | None, str | None]] = {}
+_PULSE_PENDING: dict[str, tuple[str, int, int, float, str | None, str | None, str | None, str | None, str | None, int | None, int | None, str | None]] = {}
 _PULSE_THREADS: list[threading.Thread] = []
 
 LOGGER = logging.getLogger("semantic_sift.telemetry")
@@ -325,6 +325,9 @@ def _send_telemetry_pulse_now(
     agent_label: str | None = None,
     file_ext: str | None = None,
     reason: str | None = None,
+    pipe_original_chars: int | None = None,
+    pipe_final_chars: int | None = None,
+    pipe_name: str | None = None,
 ) -> None:
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL:
         return
@@ -355,6 +358,19 @@ def _send_telemetry_pulse_now(
         "reason": reason,
     }
 
+    if pipe_original_chars is not None:
+        payload["pipe_original_chars"] = pipe_original_chars
+        payload["pipe_original_tokens"] = estimate_tokens(" " * pipe_original_chars)
+    if pipe_final_chars is not None:
+        payload["pipe_final_chars"] = pipe_final_chars
+        pipe_final_tokens = estimate_tokens(" " * pipe_final_chars)
+        payload["pipe_final_tokens"] = pipe_final_tokens
+        if pipe_original_chars is not None:
+            pipe_orig_tokens = estimate_tokens(" " * pipe_original_chars)
+            payload["pipe_tokens_saved"] = int(pipe_orig_tokens) - int(pipe_final_tokens)
+    if pipe_name is not None:
+        payload["pipe_name"] = pipe_name
+
     data = json.dumps(payload).encode()
     if not _attempt_send(SIFT_TELEMETRY_URL, data) and SIFT_TELEMETRY_FALLBACK_URL:
         _attempt_send(SIFT_TELEMETRY_FALLBACK_URL, data)
@@ -370,6 +386,9 @@ def send_telemetry_pulse(
     agent_label: str | None = None,
     file_ext: str | None = None,
     reason: str | None = None,
+    pipe_original_chars: int | None = None,
+    pipe_final_chars: int | None = None,
+    pipe_name: str | None = None,
 ) -> None:
     if SIFT_TELEMETRY_DISABLED or not SIFT_TELEMETRY_URL:
         return
@@ -391,6 +410,9 @@ def send_telemetry_pulse(
                 agent_label,
                 file_ext,
                 reason,
+                pipe_original_chars,
+                pipe_final_chars,
+                pipe_name,
             )
             return
 
@@ -409,7 +431,20 @@ def send_telemetry_pulse(
         if pending:
             _send_telemetry_pulse_now(*pending)
 
-    payload = (tool_name, original, final, latency, tier_override, client_id_override, agent_label, file_ext, reason)
+    payload = (
+        tool_name,
+        original,
+        final,
+        latency,
+        tier_override,
+        client_id_override,
+        agent_label,
+        file_ext,
+        reason,
+        pipe_original_chars,
+        pipe_final_chars,
+        pipe_name,
+    )
     t = threading.Thread(target=_worker, args=(payload,), daemon=True, name="semantic-sift-pulse")
     with _PULSE_LOCK:
         _PULSE_THREADS.append(t)
@@ -432,6 +467,9 @@ def log_telemetry(
 ) -> None:
     if SIFT_TELEMETRY_DISABLED:
         return
+
+    if os.environ.get("CPP_RUNNING_IN_PIPE") == "true":
+        skip_pulse = True
 
     safe_tool = redact_secrets_for_telemetry(tool_name)
     safe_label = redact_secrets_for_telemetry(agent_label) if agent_label else None
@@ -514,6 +552,9 @@ def log_telemetry(
             tool_stats["total_latency_ms"] += latency_ms
             if cache_hit:
                 tool_stats["cache_hits"] = tool_stats.get("cache_hits", 0) + 1
+
+            if os.environ.get("CPP_RUNNING_IN_PIPE") == "true":
+                tool_stats["is_node"] = True
 
             data[session_id]["tools"][safe_tool] = tool_stats
 

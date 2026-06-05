@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.7] — 2026-06-06
+
+### Added
+- Extended `send_telemetry_pulse` and `_send_telemetry_pulse_now` with `pipe_original_chars`, `pipe_final_chars`, and `pipe_name` parameters so Context-Pipe can attribute context-cleaning savings in the Sift cloud pulse alongside raw sifting performance.
+- Added `CPP_RUNNING_IN_PIPE` environment variable guard in `log_telemetry` to prevent double-counting when Semantic-Sift runs as a node inside a Context-Pipe graph.
+
+### Fixed
+- Fixed Mypy type errors introduced by the pipe telemetry enrichment: `_PULSE_PENDING` dict type annotation extended to include the three new `int | None` / `str | None` pipe fields; `pipe_tokens_saved` subtraction now uses explicit `int()` casts to avoid union-type operator errors.
+- Upgraded `pip` tool dependency to 26.1.2 (PYSEC-2026-196).
+
 ## [0.3.6] — 2026-06-02
 ### 🐛 Fixed
 - **Telemetry JSON Resilience** (`semantic_sift/telemetry.py`): Added self-healing telemetry load logic. Malformed or corrupt `TELEMETRY_FILE` JSON no longer triggers unhandled exceptions or blocks subsequent telemetry writes. The corrupt file is automatically renamed to `.pipe_telemetry.json.corrupt.<timestamp>` and a clean statistics state is initialized.
