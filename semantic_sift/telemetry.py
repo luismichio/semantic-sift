@@ -468,6 +468,20 @@ def log_telemetry(
     if SIFT_TELEMETRY_DISABLED:
         return
 
+    # Cap original_chars to the max input limit to prevent truncation discrepancy
+    try:
+        raw_limit = os.environ.get("SIFT_MAX_INPUT_MB", "50")
+        max_chars_limit = max(1, int(raw_limit)) * 1024 * 1024
+    except ValueError:
+        max_chars_limit = 50 * 1024 * 1024
+
+    if original_chars > max_chars_limit:
+        original_chars = max_chars_limit
+
+    # Safety guard: ensure original_chars is never less than final_chars
+    if original_chars < final_chars:
+        original_chars = final_chars
+
     if os.environ.get("CPP_RUNNING_IN_PIPE") == "true":
         skip_pulse = True
 

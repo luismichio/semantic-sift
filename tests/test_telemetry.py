@@ -127,3 +127,39 @@ def test_detect_client_id_fallback(monkeypatch):
     result = telemetry_core.detect_client_id()
     # Result is either a known IDE (unlikely in CI) or the fallback
     assert isinstance(result, str) and len(result) > 0
+
+
+@patch("semantic_sift.telemetry._send_telemetry_pulse_now")
+def test_log_telemetry_caps_original_chars_to_max_limit(mock_send_now, monkeypatch):
+    import threading
+    monkeypatch.setattr(_telemetry_impl, "SIFT_TELEMETRY_DISABLED", False)
+    monkeypatch.setattr(_telemetry_impl, "SIFT_TELEMETRY_URL", "https://example.com/api")
+    monkeypatch.setenv("SIFT_PULSE_RATE_LIMIT_S", "0")
+    monkeypatch.setenv("SIFT_MAX_INPUT_MB", "2")  # 2MB limit
+
+    _telemetry_impl._PULSE_LAST_SENT.clear()
+    _telemetry_impl._PULSE_PENDING.clear()
+
+    # Input length is 3MB, which exceeds the 2MB limit.
+    original_len = 3 * 1024 * 1024
+    final_len = 1 * 1024 * 1024
+
+    telemetry_core.log_telemetry(
+        "test_session_caps",
+        "2026-06-07T12:00:00Z",
+        "sift_test_caps",
+        original_len,
+        final_len,
+        5.0,
+    )
+
+    # Wait for the daemon thread to finish.
+    for t in threading.enumerate():
+        if t.name == "semantic-sift-pulse":
+            t.join(timeout=2.0)
+
+    assert mock_send_now.called
+    args, _ = mock_send_now.call_args
+    # original_chars should be capped to 2MB (2097152 bytes)
+    assert args[1] == 2 * 1024 * 1024
+    assert args[2] == final_len
